@@ -125,13 +125,13 @@ class AstLeaf:
 
 
 
-OPS = {'+':'add', '-':'sub'}
+OPS = ('+', '-', '.', '==', '!=', '<', '>')
 
 @dc
 class AstExpr:
     left  : "AstExpr | AstLeaf"
     right : "AstExpr | AstLeaf"
-    op    : Literal['add', 'sub']
+    op    : str
 
     @classmethod
     def parse(cls, stream):
@@ -140,7 +140,7 @@ class AstExpr:
         if stream.peek() not in OPS:
             return left
 
-        op = OPS[stream.pop()]
+        op = stream.pop()
         right = AstLeaf.parse(stream)
         return cls(left, right, op)
 
@@ -151,10 +151,11 @@ class AstExpr:
         emit('pop rbx')
 
         match self.op:
-            case 'add': emit('add rax, rbx')
-            case 'sub': emit('sub rax, rbx')
-
-
+            case '+': emit('add rax, rbx')
+            case '-': emit('sub rax, rbx')
+            case '.':
+                emit("add rax, rbx")
+                emit("mov rax, [rax]")
 
 
 
@@ -194,6 +195,38 @@ class AstReturn:
         emit('ret')
 
 @dc
+class AstLabel:
+    name : str
+
+    @classmethod
+    def parse(cls, stream):
+        stream.expect('lab')
+        name = stream.pop()
+        stream.expect(';')
+        return cls(name)
+
+    def compile(self, emit, scope):
+        emit(scope.render_label(name) + ':')
+
+@dc
+class AstJump:
+    target : str
+    cond   : "AstExpr | None"
+
+    @classmethod
+    def parse(cls, stream):
+        stream.expect('jump')
+        target = stream.pop()
+        cond = None
+
+        if stream.peek() == '~':
+            stream.pop()
+            cond = AstExpr.parse(stream)
+
+        stream.expect(';')
+        return cls(target, cond)
+
+@dc
 class AstBlock:
     nodes : list
 
@@ -203,6 +236,8 @@ class AstBlock:
             case 'put': return AstPut.parse(stream)
             case 'sub': return AstCall.parse(stream)
             case 'return': return AstReturn.parse(stream)
+            case 'lab': return AstLabel.parse(stream)
+            case 'jump': return AstJump.parse(stream)
             case x:
                 print(f"Error: Unknown node prefix: `{x}`")
                 sys.exit(1)
@@ -247,6 +282,7 @@ class AstFnDef:
 
     @dc
     class _LocalScope:
+        fn_name : str
         vars : dict[str, int] #variable name to address
         allocer : int = 0
 
@@ -270,9 +306,12 @@ class AstFnDef:
                 addr = vaddr * WORD_SIZE
                 emit(f'pop qword [vars + {addr}]')
 
+        def render_label(self, name):
+            return f"__local_{self.fn_name}_{name}"
+
 
     def compile(self, emit):
-        scope = self._LocalScope({})
+        scope = self._LocalScope(self.name, {})
         emit(f"{self.name}:")
 
         #allocate local parameter variables
