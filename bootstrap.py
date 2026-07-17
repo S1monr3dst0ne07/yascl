@@ -129,7 +129,7 @@ class AstLeaf:
                 if name == 'syscall':
                     emit('syscall')
                 else:
-                    emit(f'call {name}')
+                    emit(f"call {name.replace(':', '_')}")
 
                 scope.restore(emit)
 
@@ -343,7 +343,7 @@ class AstFnDef:
     @classmethod
     def parse(cls, stream):
         stream.expect('fn')
-        name = stream.pop()
+        name = stream.pop().replace(':', '_')
         stream.expect('(') #)
         
         params = []
@@ -428,10 +428,21 @@ class AstProg:
             match stream.peek():
                 case 'fn': fns.append(AstFnDef.parse(stream))
                 case 'seq': cls.parse_seq(stream)
+                case 'use':
+                    stream.expect('use')
+                    path = stream.pop().strip('"')
+                    print(path)
+                    sub = AstProg.file(path)
+                    fns += sub.fns
                 case x: 
                     print(f"Error: Invalid toplevel prefix: {x}")
+                    sys.exit(1)
 
         return cls(fns)
+
+    @staticmethod
+    def file(path):
+        return AstProg.parse(tokenize(path))
 
     def compile(self, emit):
         for fn in self.fns:
@@ -465,9 +476,7 @@ def finalize(emit):
 
 
 def main():
-    path = sys.argv[1]
-    stream = tokenize(path)
-    root = AstProg.parse(stream)
+    root = AstProg.file(sys.argv[1])
 
     asm = []
     emitter = lambda x: asm.append(x)
