@@ -9,6 +9,17 @@ from typing import Literal, Any
 WORD_SIZE = 8
 
 
+def fresh_gen():
+    i = 0
+    while True:
+        yield f"__fresh_{i}"
+        i += 1
+
+fresh = fresh_gen()
+consts = {}
+strings = {}
+
+
 def tokenize(path):
     with open(path) as f:
         src = f.read()
@@ -279,15 +290,28 @@ class AstFnDef:
 class AstProg:
     fns : list[AstFnDef]
 
+    @staticmethod
+    def parse_seq(stream):
+        stream.expect('seq')
+        name = stream.pop()
+        stream.expect('{') #}
+        i = 0
+        while stream.peek() != '}':
+            consts[name + "::" + stream.pop()] = i
+            i += 1
+            if stream.peek() == ',': stream.pop()
+        stream.expect('}')
+
+
     @classmethod
     def parse(cls, stream):
-        
         fns = []
-
         while stream.has():
             match stream.peek():
                 case 'fn': fns.append(AstFnDef.parse(stream))
-                case x: print(x)
+                case 'seq': cls.parse_seq(stream)
+                case x: 
+                    print(f"Error: Invalid toplevel prefix: {x}")
 
         return cls(fns)
 
