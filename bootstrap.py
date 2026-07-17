@@ -491,18 +491,23 @@ def runtime(emit):
     emit("syscall")
 
 def finalize(emit):
+    #basic buffers
     VAR_COUNT = 100 # concurrent local variables
-    #emit strings
     emit("segment writeable readable")
     emit(f'vars: \n\trq {VAR_COUNT}')
     emit(f"buf: \n\trb 4096 \n\tdb 10")
 
+    #emit strings
     for label, string in strings.items():
         string = string.encode('utf-8').decode('unicode_escape')
         emit(f"{label}:")
         for char in string:
             emit(f"\tdq {ord(char)}")
         emit("\tdq 0")
+
+    #emit static buffers
+    for label, words in statics.items():
+        emit(f"{label}: dq {words}")
 
 
 
