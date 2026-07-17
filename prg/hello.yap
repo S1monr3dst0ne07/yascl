@@ -21,7 +21,9 @@ fn strlen(str)
 
 fn print(str)
 {
-    syscall(Syscall::WRITE, 0, str, strlen(str));
+    put words = strlen(str);
+    put bytes = words + words + words + words + words + words + words + words;
+    syscall(Syscall::WRITE, 0, str, bytes);
 }
 
 

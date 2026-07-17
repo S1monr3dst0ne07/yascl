@@ -167,7 +167,7 @@ class AstExpr:
             return left
 
         op = stream.pop()
-        right = AstLeaf.parse(stream)
+        right = AstExpr.parse(stream)
         return cls(left, right, op)
 
     def load(self, emit, scope):
@@ -180,8 +180,19 @@ class AstExpr:
             case '+': emit('add rax, rbx')
             case '-': emit('sub rax, rbx')
             case '.':
+                emit(f"lea rbx, [rbx*{WORD_SIZE}]")
                 emit("add rax, rbx")
                 emit("mov rax, [rax]")
+            case '==' | '!=' | '<' | '>':
+                emit('cmp rax, rbx')
+                match self.op:
+                    case '==': emit('sete cl')
+                    case '!=': emit('setne cl')
+                    case '>':  emit("setg cl")
+                    case '<':  emit("setl cl")
+                emit('xor rax, rax')
+                emit('mov al, cl')
+
 
 
 
