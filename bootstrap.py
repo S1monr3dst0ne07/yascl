@@ -5,6 +5,8 @@ import sys, os
 from dataclasses import dataclass as dc
 from typing import Literal, Any
 
+# 64-bit compiler
+WORD_SIZE = 8
 
 
 def tokenize(path):
@@ -71,6 +73,21 @@ class AstLeaf:
             case x if x.isalpha(): return cls(x, 'var')
             case x: print(x)
 
+    def load(self, emit, scope): #load into rax
+        match self.kind:
+            case 'lit': emit(f'mov rax, {self.value}')
+            case 'var': emit(f'mov rax, [vars + {scope[self.value]}]')
+
+    def store(self, emit, scope): #store from rax
+        match self.kind:
+            case 'lit': 
+                print("Error: Trying to store into literal value")
+                sys.exit(1)
+            case 'var':
+                scope.alloc(self.value)
+                emit(f'mov [vars + {scope[self.value]}], rax')
+
+
 
 
 OPS = {'+':'add', '-':'sub'}
@@ -92,6 +109,19 @@ class AstExpr:
         right = AstLeaf.parse(stream)
         return cls(left, right, op)
 
+    def load(self, emit, scope):
+        self.right.load(emit, scope)
+        emit('push rax')
+        self.left.load(emit, scope)
+        emit('pop rbx')
+
+        match self.op:
+            case 'add': emit('add rax, rbx')
+            case 'sub': emit('sub rax, rbx')
+
+
+
+
 
 
 @dc
@@ -107,6 +137,10 @@ class AstPut:
         src = AstExpr.parse(stream)
         stream.expect(';')
         return cls(dst, src)
+
+    def compile(self, emit, scope):
+        self.src.load(emit, scope)
+        self.dst.store(emit, scope)
 
 @dc
 class AstCall:
@@ -128,6 +162,7 @@ class AstCall:
         stream.expect(')')
         stream.expect(';')
         return cls(name, params)
+
 
 
 
@@ -155,6 +190,10 @@ class AstBlock:
         stream.expect('}')
         return cls(nodes)
 
+    def compile(self, emit, scope):
+        for node in self.nodes:
+            node.compile(emit, scope)
+
 
 @dc
 class AstFnDef:
@@ -178,6 +217,30 @@ class AstFnDef:
         body = AstBlock.parse(stream)
         return cls(name, params, body)
 
+    @dc
+    class _LocalScope:
+        vars : dict[str, int] #variable name to address
+        allocer : int = 0
+
+        def alloc(self, name):
+            if name in self.vars: return
+
+            self.vars[name] = self.allocer * WORD_SIZE
+            self.allocer += 1
+
+        def __getitem__(self, name):
+            return self.vars[name]
+
+
+    def compile(self, emit):
+        scope = self._LocalScope({})
+
+        #!TODO implement ABI
+        emit(f"{self.name}:")
+        self.body.compile(emit, scope)
+        emit("ret")
+
+
 @dc
 class AstProg:
     fns : list[AstFnDef]
@@ -194,19 +257,37 @@ class AstProg:
 
         return cls(fns)
 
+    def compile(self, emit):
+        for fn in self.fns:
+            fn.compile(emit)
 
 
-
-
-
+def runtime(emit):
+    VAR_COUNT = 100 # concurrent local variables
+    emit('format ELF64 executable')
+    emit('entry start')
+    emit(f'vars: \n\trq {VAR_COUNT}')
+    emit(f"buf: \n\trb 4096 \n\tdb 10")
+    emit('segment readable executable')
+    emit("start:")
+    emit("call main")
+    emit("mov rdi, rax")
+    emit("mov rax, 60")
+    emit("syscall")
 
 
 def main():
     path = sys.argv[1]
     stream = tokenize(path)
     root = AstProg.parse(stream)
-    print(root)
 
+    asm = []
+    emitter = lambda x: asm.append(x)
+    runtime(emitter)
+    root.compile(emitter)
+
+    with open('build.asm', 'w') as f:
+        f.write('\n'.join(asm))
 
 
 
