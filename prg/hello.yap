@@ -1,20 +1,34 @@
 
 
 
-fn compute(a, b)
+seq Syscall
 {
-    put sum = a + b;
-    return sum + 1;
+    READ,
+    WRITE,
 }
+
+fn strlen(str)
+{
+    put len = 0 - 1;
+    lab loop;
+        put len = len + 1;
+        put char = str.len;
+    jump loop ~ char != 0;
+
+    return len;
+}
+
+
+fn print(str)
+{
+    syscall(Syscall::WRITE, 0, str, strlen(str));
+}
+
 
 
 fn main()
 {
-    put a = 2;
-    put b = 3;
-    put value = compute(a, b);
-
-    return value;
+    print("hello world\n");
 }
 
 

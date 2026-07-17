@@ -83,7 +83,7 @@ ABI = ('rax', 'rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9')
 @dc
 class AstLeaf:
     value : Any
-    kind : Literal['lit', 'var', 'call', 'const', 'meta']
+    kind : Literal['lit', 'var', 'call', 'const', 'meta', 'string']
 
     @classmethod
     def parse(cls, stream):
@@ -97,7 +97,8 @@ class AstLeaf:
                 stream.expect(')')
                 return cls((name, params), 'call')
 
-            case x if x.isdigit(): return cls(x, 'lit')
+            case string if '"' in string: return cls(string.strip('"'), 'string')
+            case number if number.isdigit(): return cls(number, 'lit')
             case x: return cls(x, 'meta') #resolve during compile
 
     def _resolve(self, scope, store=False):
@@ -125,8 +126,17 @@ class AstLeaf:
                     param.load(emit, scope)
                     emit(f'mov {reg}, rax')
 
-                emit(f'call {name}')
+                if name == 'syscall':
+                    emit('syscall')
+                else:
+                    emit(f'call {name}')
+
                 scope.restore(emit)
+
+            case 'string':
+                label = next(fresh)
+                strings[label] = self.value
+                emit(f'mov rax, {label}')
 
 
     def store(self, emit, scope): #store from rax
@@ -403,17 +413,29 @@ class AstProg:
 
 
 def runtime(emit):
-    VAR_COUNT = 100 # concurrent local variables
     emit('format ELF64 executable')
     emit('entry start')
-    emit(f'vars: \n\trq {VAR_COUNT}')
-    emit(f"buf: \n\trb 4096 \n\tdb 10")
     emit('segment readable executable')
     emit("start:")
     emit("call main")
     emit("mov rdi, rax")
     emit("mov rax, 60")
     emit("syscall")
+
+def finalize(emit):
+    VAR_COUNT = 100 # concurrent local variables
+    #emit strings
+    emit("segment writeable readable")
+    emit(f'vars: \n\trq {VAR_COUNT}')
+    emit(f"buf: \n\trb 4096 \n\tdb 10")
+
+    for label, string in strings.items():
+        string = string.encode('utf-8').decode('unicode_escape')
+        emit(f"{label}:")
+        for char in string:
+            emit(f"\tdq {ord(char)}")
+        emit("\tdq 0")
+
 
 
 def main():
@@ -425,6 +447,7 @@ def main():
     emitter = lambda x: asm.append(x)
     runtime(emitter)
     root.compile(emitter)
+    finalize(emitter)
 
     with open('build.asm', 'w') as f:
         f.write('\n'.join(asm))
