@@ -18,6 +18,7 @@ def fresh_gen():
 fresh = fresh_gen()
 consts = {}
 strings = {}
+statics = {}
 
 
 def tokenize(path):
@@ -301,6 +302,27 @@ class AstInplace:
         self.expr.load(emit, scope)
 
 @dc
+class AstStatic:
+    words : int
+    expr : AstExpr
+
+    @classmethod
+    def parse(cls, stream):
+        stream.expect('static')
+        words = int(stream.pop())
+        stream.expect('~')
+        expr = AstExpr.parse(stream)
+        stream.expect(';')
+        return cls(words, expr)
+
+    def compile(self, emit, scope):
+        name = fresh()
+        statics[name] = self.words
+        emit(f'mov rax, {name}')
+        self.expr.store(emit, scope)
+
+
+@dc
 class AstBlock:
     nodes : list
 
@@ -312,6 +334,7 @@ class AstBlock:
             case 'return': return AstReturn.parse(stream)
             case 'lab': return AstLabel.parse(stream)
             case 'jump': return AstJump.parse(stream)
+            case 'static': return AstStatic.parse(stream)
             case name if stream.peek(1):
                 return AstInplace.parse(stream)
             case x:
