@@ -7,23 +7,23 @@ seq Syscall
     WRITE,
 }
 
-fn strlen(str)
+fn outchar(char)
 {
-    put len = 0 - 1;
-    lab loop;
-        put len = len + 1;
-        put char = str.len;
-    jump loop ~ char != 0;
+    put buffer = " ";
+    put buffer.0 = char;
 
-    return len;
+    syscall(Syscall::WRITE, 0, buffer, 1);
 }
 
 
 fn print(str)
 {
-    put words = strlen(str);
-    put bytes = words + words + words + words + words + words + words + words;
-    syscall(Syscall::WRITE, 0, str, bytes);
+    put i = 0;
+    lab loop;
+        put char = str.i;
+        put i = i + 1;
+        outchar(char);
+    jump loop ~ char != 0;
 }
 
 

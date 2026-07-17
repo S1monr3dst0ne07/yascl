@@ -193,6 +193,21 @@ class AstExpr:
                 emit('xor rax, rax')
                 emit('mov al, cl')
 
+    def store(self, emit, scope):
+        if self.op != '.':
+            print("Error: Non-dot-operator lvalue")
+            sys.exit(1)
+
+        emit('push rax')
+        self.right.load(emit, scope)
+        emit('push rax')
+        self.left.load(emit, scope)
+        emit('pop rbx')
+        emit(f"lea rbx, [rbx*{WORD_SIZE}]")
+        emit("add rax, rbx")
+        emit('pop rbx')
+        emit("mov [rax], rbx")
+
 
 
 
