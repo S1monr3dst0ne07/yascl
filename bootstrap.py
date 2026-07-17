@@ -42,8 +42,8 @@ def tokenize(path):
     class Streamer:
         toks : list[str]
 
-        def peek(self):
-            return self.toks[0]
+        def peek(self, offset=0):
+            return self.toks[offset]
         def pop(self):
             return self.toks.pop(0)
         def has(self):
@@ -61,7 +61,7 @@ def tokenize(path):
     for char in src:
         kind = get(char)
 
-        if state != kind:
+        if state != kind or state in ('bo', 'bc', 'po', 'pc'):
             if state not in (None, 'format'):
                 toks.append(buffer)
             buffer = ''
@@ -70,6 +70,7 @@ def tokenize(path):
         state = kind
 
     
+    print(toks)
     return Streamer(toks)
 
 # shares ABI with linux system calls
@@ -227,6 +228,16 @@ class AstJump:
         return cls(target, cond)
 
 @dc
+class AstInplace:
+    expr : AstExpr
+
+    @classmethod
+    def parse(cls, stream):
+        expr = AstExpr.parse(stream)
+        stream.expect(';')
+        return cls(expr)
+
+@dc
 class AstBlock:
     nodes : list
 
@@ -238,6 +249,8 @@ class AstBlock:
             case 'return': return AstReturn.parse(stream)
             case 'lab': return AstLabel.parse(stream)
             case 'jump': return AstJump.parse(stream)
+            case name if stream.peek(1):
+                return AstInplace.parse(stream)
             case x:
                 print(f"Error: Unknown node prefix: `{x}`")
                 sys.exit(1)
