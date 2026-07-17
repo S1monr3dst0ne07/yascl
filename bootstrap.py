@@ -35,6 +35,7 @@ def tokenize(path):
             case '(': return 'po'
             case ')': return 'pc'
             case ';': return 'eos'
+            case '"': return 'quote'
             case ' ' | '\t' | '\n': return 'format'
             case _: return 'symb'
 
@@ -61,7 +62,10 @@ def tokenize(path):
     for char in src:
         kind = get(char)
 
-        if state != kind or state in ('bo', 'bc', 'po', 'pc'):
+        if state == 'quote':
+            string = not string
+
+        if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string:
             if state not in (None, 'format'):
                 toks.append(buffer)
             buffer = ''
@@ -70,7 +74,6 @@ def tokenize(path):
         state = kind
 
     
-    print(toks)
     return Streamer(toks)
 
 # shares ABI with linux system calls
@@ -80,7 +83,7 @@ ABI = ('rax', 'rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9')
 @dc
 class AstLeaf:
     value : Any
-    kind : Literal['lit', 'var', 'call']
+    kind : Literal['lit', 'var', 'call', 'const', 'meta']
 
     @classmethod
     def parse(cls, stream):
@@ -95,13 +98,24 @@ class AstLeaf:
                 return cls((name, params), 'call')
 
             case x if x.isdigit(): return cls(x, 'lit')
-            case x if x.isalpha(): return cls(x, 'var')
-            case x: print(x)
+            case x: return cls(x, 'meta') #resolve during compile
+
+    def _resolve(self, scope, store=False):
+        if self.kind != 'meta': return
+
+        if   self.value in consts: self.kind = 'const'
+        elif self.value in scope:  self.kind = 'var'
+        elif store: self.kind = 'var'
+        else:
+            print(f"Error: Unable to resolve leaf: {self.value}")
+            sys.exit(1)
 
     def load(self, emit, scope): #load into rax
+        self._resolve(scope)
         match self.kind:
-            case 'lit': emit(f'mov rax, {self.value}')
-            case 'var': emit(f'mov rax, [vars + {scope[self.value]}]')
+            case 'lit':   emit(f'mov rax, {self.value}')
+            case 'const': emit(f'mov rax, {consts[self.value]}')
+            case 'var':   emit(f'mov rax, [vars + {scope[self.value]}]')
             case 'call':
                 name, params = self.value
                 scope.save(emit)
@@ -116,8 +130,9 @@ class AstLeaf:
 
 
     def store(self, emit, scope): #store from rax
+        self._resolve(scope, store=True)
         if self.kind != 'var':
-            print("Error: Trying to store into literal value")
+            print("Error: Trying to store into non-variable value")
             sys.exit(1)
 
         scope.alloc(self.value)
@@ -207,7 +222,7 @@ class AstLabel:
         return cls(name)
 
     def compile(self, emit, scope):
-        emit(scope.render_label(name) + ':')
+        emit(scope.render_label(self.name) + ':')
 
 @dc
 class AstJump:
@@ -227,6 +242,15 @@ class AstJump:
         stream.expect(';')
         return cls(target, cond)
 
+    def compile(self, emit, scope):
+        label = scope.render_label(self.target)
+        if self.cond is not None:
+            self.cond.load(emit, scope)
+            emit("cmp rax, 0")
+            emit(f"jne {label}")
+        else:
+            emit(f"jmp {label}")
+
 @dc
 class AstInplace:
     expr : AstExpr
@@ -236,6 +260,9 @@ class AstInplace:
         expr = AstExpr.parse(stream)
         stream.expect(';')
         return cls(expr)
+
+    def compile(self, emit, scope):
+        self.expr.load(emit, scope)
 
 @dc
 class AstBlock:
@@ -307,6 +334,9 @@ class AstFnDef:
 
         def __getitem__(self, name):
             return self.vars[name]
+
+        def __contains__(self, name):
+            return name in self.vars
 
         def save(self, emit):
             for vaddr in range(self.allocer):
