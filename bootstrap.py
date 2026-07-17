@@ -89,6 +89,10 @@ class AstLeaf:
     @classmethod
     def parse(cls, stream):
         match stream.pop():
+            case '(': #)
+                expr = AstExpr.parse(stream)
+                stream.expect(')')
+                return expr
             case name if stream.peek() == '(': #)
                 stream.pop()
                 params = []
@@ -320,7 +324,7 @@ class AstStatic:
         return cls(words, expr)
 
     def compile(self, emit, scope):
-        name = fresh()
+        name = next(fresh)
         statics[name] = self.words
         emit(f'mov rax, {name}')
         self.expr.store(emit, scope)
