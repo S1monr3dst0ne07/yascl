@@ -17,6 +17,7 @@ def tokenize(path):
         match char:
             case x if x.isalpha(): return 'iden'
             case '_': return 'iden'
+            case ':': return 'iden'
             case x if x.isdigit(): return 'numb'
             case '{': return 'bo'
             case '}': return 'bc'
@@ -60,15 +61,27 @@ def tokenize(path):
     
     return Streamer(toks)
 
+# shares ABI with linux system calls
+ABI = ('rax', 'rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9')
+
 
 @dc
 class AstLeaf:
     value : Any
-    kind : Literal['lit', 'var']
+    kind : Literal['lit', 'var', 'call']
 
     @classmethod
     def parse(cls, stream):
         match stream.pop():
+            case name if stream.peek() == '(': #)
+                stream.pop()
+                params = []
+                while stream.peek() != ')':
+                    params.append(AstExpr.parse(stream))
+                    if stream.peek() == ',': stream.pop()
+                stream.expect(')')
+                return cls((name, params), 'call')
+
             case x if x.isdigit(): return cls(x, 'lit')
             case x if x.isalpha(): return cls(x, 'var')
             case x: print(x)
@@ -77,15 +90,26 @@ class AstLeaf:
         match self.kind:
             case 'lit': emit(f'mov rax, {self.value}')
             case 'var': emit(f'mov rax, [vars + {scope[self.value]}]')
+            case 'call':
+                name, params = self.value
+                scope.save(emit)
+                regs = ABI[:len(params)]
+
+                for reg, param in zip(regs[::-1], params[::-1]):
+                    param.load(emit, scope)
+                    emit(f'mov {reg}, rax')
+
+                emit(f'call {name}')
+                scope.restore(emit)
+
 
     def store(self, emit, scope): #store from rax
-        match self.kind:
-            case 'lit': 
-                print("Error: Trying to store into literal value")
-                sys.exit(1)
-            case 'var':
-                scope.alloc(self.value)
-                emit(f'mov [vars + {scope[self.value]}], rax')
+        if self.kind != 'var':
+            print("Error: Trying to store into literal value")
+            sys.exit(1)
+
+        scope.alloc(self.value)
+        emit(f'mov [vars + {scope[self.value]}], rax')
 
 
 
@@ -142,29 +166,21 @@ class AstPut:
         self.src.load(emit, scope)
         self.dst.store(emit, scope)
 
+
 @dc
-class AstCall:
-    name : str
-    params : list[str]
+class AstReturn:
+    value : AstExpr
 
     @classmethod
     def parse(cls, stream):
-        stream.expect('sub')
-        name = stream.pop()
-        stream.expect('(') #)
-        
-        params = []
-        while stream.peek() != ')':
-            params.append(stream.pop())
-            if stream.peek() == ',':
-                stream.pop()
-
-        stream.expect(')')
+        stream.expect('return')
+        value = AstExpr.parse(stream)
         stream.expect(';')
-        return cls(name, params)
+        return cls(value)
 
-
-
+    def compile(self, emit, scope):
+        self.value.load(emit, scope)
+        emit('ret')
 
 @dc
 class AstBlock:
@@ -175,6 +191,7 @@ class AstBlock:
         match stream.peek():
             case 'put': return AstPut.parse(stream)
             case 'sub': return AstCall.parse(stream)
+            case 'return': return AstReturn.parse(stream)
             case x:
                 print(f"Error: Unknown node prefix: `{x}`")
                 sys.exit(1)
@@ -231,13 +248,30 @@ class AstFnDef:
         def __getitem__(self, name):
             return self.vars[name]
 
+        def save(self, emit):
+            for vaddr in range(self.allocer):
+                addr = vaddr * WORD_SIZE
+                emit(f'push qword [vars + {addr}]')
+
+        def restore(self, emit):
+            for neg_vaddr in range(self.allocer):
+                vaddr = (self.allocer - 1) - neg_vaddr 
+                addr = vaddr * WORD_SIZE
+                emit(f'pop qword [vars + {addr}]')
+
 
     def compile(self, emit):
         scope = self._LocalScope({})
-
-        #!TODO implement ABI
         emit(f"{self.name}:")
+
+        #allocate local parameter variables
+        regs = ABI[:len(self.params)]
+        for param, reg in zip(self.params, regs):
+            scope.alloc(param)
+            emit(f'mov [vars + {scope[param]}], {reg}')
+
         self.body.compile(emit, scope)
+        emit("xor rax, rax") # return null by default
         emit("ret")
 
 
