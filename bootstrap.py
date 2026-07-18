@@ -176,7 +176,7 @@ class AstLeaf:
 
 
 
-OPS = ('+', '-', '.', '==', '!=', '<', '>', '*', '/', '&', '|', '^', '<<', '>>')
+OPS = ('+', '-', '.', '==', '!=', '<', '>', '*', '/', '&', '|', '^', '<<', '>>', '%')
 
 @dc
 class AstExpr:
@@ -221,6 +221,10 @@ class AstExpr:
             case '/':
                 emit('xor rdx, rdx')
                 emit('div rbx')
+            case '%':
+                emit('xor rdx, rdx')
+                emit('div rbx')
+                emit('mov rax, rdx')
             case '&': emit('and rax, rbx')
             case '|': emit('or  rax, rbx')
             case '^': emit('xor rax, rbx')
