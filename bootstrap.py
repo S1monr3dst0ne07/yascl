@@ -39,6 +39,7 @@ def tokenize(path):
             case ']': return 'ac'
             case ';': return 'eos'
             case '"': return 'quote'
+            case "'": return 'single'
             case ' ' | '\t' | '\n': return 'format'
             case _: return 'symb'
 
@@ -86,7 +87,7 @@ ABI = ('rax', 'rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9')
 @dc
 class AstLeaf:
     value : Any
-    kind : Literal['lit', 'var', 'call', 'const', 'meta', 'string', 'array']
+    kind : Literal['lit', 'var', 'call', 'const', 'meta', 'string', 'array', 'char']
 
     @classmethod
     def parse(cls, stream):
@@ -102,6 +103,10 @@ class AstLeaf:
                     if stream.peek() == ',': stream.pop()
                 stream.expect(']')
                 return cls(elems, 'array')
+            case "'":
+                char = stream.pop()
+                stream.expect("'")
+                return cls(char, 'char')
 
             case name if stream.peek() == '(': #)
                 stream.pop()
@@ -123,13 +128,14 @@ class AstLeaf:
         elif self.value in scope:  self.kind = 'var'
         elif store: self.kind = 'var'
         else:
-            print(f"Error: Unable to resolve leaf: {self.value}")
+            print(f"Error: Unable to resolve leaf: `{self.value}`")
             sys.exit(1)
 
     def load(self, emit, scope): #load into rax
         self._resolve(scope)
         match self.kind:
             case 'lit':   emit(f'mov rax, {self.value}')
+            case 'char':  emit(f'mov rax, {ord(self.value)}')
             case 'const': emit(f'mov rax, {consts[self.value]}')
             case 'var':   emit(f'mov rax, [vars + {scope[self.value]}]')
             case 'call':
