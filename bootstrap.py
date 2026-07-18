@@ -176,7 +176,7 @@ class AstLeaf:
 
 
 
-OPS = ('+', '-', '.', '==', '!=', '<', '>', '*', '/', '&', '|', '^', '<<', '>>', '%')
+OPS = ('+', '-', '.', ':', '==', '!=', '<', '>', '*', '/', '&', '|', '^', '<<', '>>', '%')
 
 @dc
 class AstExpr:
@@ -208,6 +208,9 @@ class AstExpr:
                 emit(f"lea rbx, [rbx*{WORD_SIZE}]")
                 emit("add rax, rbx")
                 emit("mov rax, [rax]")
+            case ':':
+                emit(f"lea rbx, [rbx*{WORD_SIZE}]")
+                emit("add rax, rbx")
             case '==' | '!=' | '<' | '>':
                 emit('cmp rax, rbx')
                 match self.op:
