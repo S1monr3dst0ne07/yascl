@@ -540,7 +540,7 @@ def finalize(emit):
 
     #emit static buffers
     for label, words in statics.items():
-        emit(f"{label}: dq {words}")
+        emit(f"{label}: rq {words}")
 
 
 
