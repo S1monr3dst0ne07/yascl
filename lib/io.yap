@@ -46,5 +46,26 @@ fn IO::OutNumber(numb)
 }
 
 
+fn IO::OutBinary(numb)
+{
+    static 256 ~ buffer;
+
+    put i = 0;
+    lab buildLoop;
+        put buffer.i = (numb & 1) + ("0".0);
+        put numb = numb >> 1;
+        put i = i + 1;
+    jump buildLoop ~ numb;
+
+
+    lab printLoop;
+        put i = i - 1;
+        IO::OutChar(buffer.i);
+    jump printLoop ~ i > 0;
+
+    IO::OutChar("\n".0);
+}
+
+
 
 
