@@ -1,6 +1,6 @@
 
 
-use "lib/str.yap"
+use "lib/debug.yap"
 
 
 fn main()
@@ -8,10 +8,11 @@ fn main()
 
     static 256 ~ buffer;
 
+    put mode = "SILLY";
+
     put i = 0;
     lab loop;
-        Str::Format(buffer, "counting: %d\n", [i]);
-        IO::OutString(buffer);
+        print("counting: %d, mode: %s\n", [i, mode]);
         put i = i + 1;
     jump loop;
 

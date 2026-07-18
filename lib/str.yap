@@ -1,6 +1,5 @@
 
 
-use "lib/io.yap"
 use "lib/mem.yap"
 
 
