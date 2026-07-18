@@ -35,6 +35,8 @@ def tokenize(path):
             case '}': return 'bc'
             case '(': return 'po'
             case ')': return 'pc'
+            case '[': return 'ao'
+            case ']': return 'ac'
             case ';': return 'eos'
             case '"': return 'quote'
             case ' ' | '\t' | '\n': return 'format'
@@ -84,7 +86,7 @@ ABI = ('rax', 'rdi', 'rsi', 'rdx', 'r10', 'r8', 'r9')
 @dc
 class AstLeaf:
     value : Any
-    kind : Literal['lit', 'var', 'call', 'const', 'meta', 'string']
+    kind : Literal['lit', 'var', 'call', 'const', 'meta', 'string', 'array']
 
     @classmethod
     def parse(cls, stream):
@@ -93,6 +95,14 @@ class AstLeaf:
                 expr = AstExpr.parse(stream)
                 stream.expect(')')
                 return expr
+            case '[':
+                elems = []
+                while stream.peek() != ']':
+                    elems.append(AstExpr.parse(stream))
+                    if stream.peek() == ',': stream.pop()
+                stream.expect(']')
+                return cls(elems, 'array')
+
             case name if stream.peek() == '(': #)
                 stream.pop()
                 params = []
@@ -142,6 +152,16 @@ class AstLeaf:
                 label = next(fresh)
                 strings[label] = self.value
                 emit(f'mov rax, {label}')
+
+            case 'array':
+                name = next(fresh)
+                statics[name] = len(self.value)
+                for vaddr, expr in enumerate(self.value):
+                    addr = vaddr * WORD_SIZE
+                    expr.load(emit, scope)
+                    emit(f'mov [{name} + {addr}], rax')
+                emit(f'mov rax, {name}')
+
 
 
     def store(self, emit, scope): #store from rax
