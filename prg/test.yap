@@ -1,11 +1,19 @@
 
 
+use "lib/str.yap"
+
 
 fn main()
 {
 
+    static 256 ~ buffer;
 
-    put test = [1, 2, 3, 4];
+    put i = 0;
+    lab loop;
+        Str::Format(buffer, "counting: %d\n", [i]);
+        IO::OutString(buffer);
+        put i = i + 1;
+    jump loop;
 
 }
 

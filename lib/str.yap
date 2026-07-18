@@ -32,3 +32,46 @@ fn Str::FromIntBase(numb, base)
 }
 
 
+fn Str::Format(buffer, pattern, args)
+{
+    lab loop;
+        put char = pattern.0; put pattern = pattern : 1;
+
+        jump done    ~ char == 0;
+        jump special ~ char == '%';
+
+        put buffer.0 = char;
+        put buffer = buffer : 1;
+        jump loop;
+
+    lab special;
+        put char = pattern.0; put pattern = pattern : 1;
+
+        jump digits ~ char == 'd';
+        jump string ~ char == 's';
+        jump loop;
+
+    lab digits;
+        put subbuffer = Str::FromIntBase(args.0, 10);
+        put args = args : 1;
+        jump handle_subbuffer;
+
+    lab string;
+        put subbuffer = args.0;
+        put args = args : 1;
+        jump handle_subbuffer;
+
+
+    lab handle_subbuffer;
+        put len = Str::Len(subbuffer);
+        Mem::Cpy(buffer, subbuffer, len);
+        put buffer = buffer : len;
+
+        jump loop;
+
+
+    lab done;
+        put buffer.0 = 0;
+}
+
+
