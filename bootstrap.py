@@ -62,22 +62,28 @@ def tokenize(path):
     toks = []
     buffer = ''
     string = False
+    comment = False
     state = None
     for char in src:
         kind = get(char)
 
-        if state == 'quote':
-            string = not string
+        if buffer == '//'   : comment = True
+        if state  == 'quote': string = not string
 
-        if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string:
+        if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string and not comment:
             if state not in (None, 'format'):
                 toks.append(buffer)
             buffer = ''
+
+        if char == '\n': 
+            if comment: buffer = ''
+            comment = False
 
         buffer += char
         state = kind
 
     
+    print(toks)
     return Streamer(toks)
 
 # shares ABI with linux system calls
