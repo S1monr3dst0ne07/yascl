@@ -1,5 +1,5 @@
 
-
+TARGET=prg/test.yap
 
 .PHONY: bootstrap run build
 
@@ -11,4 +11,4 @@ build: bootstrap
 	chmod +x build
 
 bootstrap: 
-	./bootstrap.py prg/hello.yap
+	./bootstrap.py $(TARGET)
