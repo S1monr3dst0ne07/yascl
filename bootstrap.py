@@ -83,7 +83,6 @@ def tokenize(path):
         state = kind
 
     
-    print(toks)
     return Streamer(toks)
 
 # shares ABI with linux system calls
