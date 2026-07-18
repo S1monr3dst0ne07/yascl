@@ -156,7 +156,7 @@ class AstLeaf:
 
 
 
-OPS = ('+', '-', '.', '==', '!=', '<', '>', '*', '/')
+OPS = ('+', '-', '.', '==', '!=', '<', '>', '*', '/', '&', '|', '^', '<<', '>>')
 
 @dc
 class AstExpr:
@@ -201,6 +201,15 @@ class AstExpr:
             case '/':
                 emit('xor rdx, rdx')
                 emit('div rbx')
+            case '&': emit('and rax, rbx')
+            case '|': emit('or  rax, rbx')
+            case '^': emit('xor rax, rbx')
+            case '>>': 
+                emit('mov rcx, rbx')
+                emit('shr rax, cl')
+            case '<<': 
+                emit('mov rcx, rbx')
+                emit('shl rax, cl')
 
     def store(self, emit, scope):
         if self.op != '.':
