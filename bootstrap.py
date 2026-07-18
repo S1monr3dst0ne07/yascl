@@ -113,6 +113,9 @@ class AstLeaf:
                 stream.expect("'")
                 return cls(char, 'char')
 
+            case '__heap_base':
+                return cls(None, 'heap-base')
+
             case name if stream.peek() == '(': #)
                 stream.pop()
                 params = []
@@ -172,6 +175,9 @@ class AstLeaf:
                     expr.load(emit, scope)
                     emit(f'mov [{name} + {addr}], rax')
                 emit(f'mov rax, {name}')
+
+            case 'heap-base': #only hardcoded, global object
+                emit('mov rax, __heap_base')
 
 
 
@@ -509,9 +515,8 @@ class AstProg:
                 case 'use':
                     stream.expect('use')
                     path = stream.pop().strip('"')
-                    print(path)
-                    sub = AstProg.file(path)
-                    fns += sub.fns
+                    print(f'using: {path}')
+                    fns += AstProg.file(path).fns
                 case x: 
                     print(f"Error: Invalid toplevel prefix: {x}")
                     sys.exit(1)
@@ -555,6 +560,9 @@ def finalize(emit):
     #emit static buffers
     for label, words in statics.items():
         emit(f"{label}: rq {words}")
+
+    #heap base
+    emit("__heap_base: dq 1000000 dup(0)")
 
 
 
