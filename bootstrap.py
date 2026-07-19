@@ -487,6 +487,8 @@ class AstFnDef:
         emit("xor rax, rax") # return null by default
         emit("ret")
 
+# prevent redundant uses
+using = set()
 
 @dc
 class AstProg:
@@ -515,8 +517,11 @@ class AstProg:
                 case 'use':
                     stream.expect('use')
                     path = stream.pop().strip('"')
-                    print(f'using: {path}')
-                    fns += AstProg.file(path).fns
+
+                    if path not in using:
+                        print(f'using: {path}')
+                        fns += AstProg.file(path).fns
+                        using.add(path)
                 case x: 
                     print(f"Error: Invalid toplevel prefix: {x}")
                     sys.exit(1)
