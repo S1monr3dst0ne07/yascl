@@ -9,8 +9,18 @@ seq Chunk
     BUFFER,
 }
 
-// --- user heap ---
 
+fn Chunk::FromBuffer(ptr)
+{ 
+    return ptr - (0 : Chunk::BUFFER); 
+}
+fn Chunk::ToBuffer(ptr)
+{
+    return ptr : Chunk::BUFFER;
+}
+
+
+// --- user heap ---
 fn Chunk::New(words)
 {
     put needed = words + 1;
@@ -42,12 +52,12 @@ fn Chunk::New(words)
 
     put chunk = walker - (0 : needed);
     put chunk.Chunk::SIZE = needed;
-    return chunk : Chunk::BUFFER;
+    return Chunk::ToBuffer(chunk);
 }
 
 fn Chunk::Void(ptr)
 {
-    put chunk = ptr - (0 : Chunk::BUFFER);
+    put chunk = Chunk::FromBuffer(ptr);
     put size = chunk.Chunk::SIZE;
 
     Mem::Set(chunk, 0, size);
@@ -55,6 +65,19 @@ fn Chunk::Void(ptr)
 
 
 // --- regular chunk routines ---
+fn Chunk::Size(ptr)
+{
+    put chunk = Chunk::FromBuffer(ptr);
+    return (chunk.Chunk::SIZE) - 1;
+}
 
+fn Chunk::Copy(ptr)
+{
+    put chunk = Chunk::FromBuffer(ptr);
+    put size = chunk.Chunk::SIZE;
 
+    put prime = Chunk::New(size);
+    Mem::Cpy(prime, chunk, size);
 
+    return prime;
+}
