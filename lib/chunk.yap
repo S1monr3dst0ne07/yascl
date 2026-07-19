@@ -2,16 +2,16 @@
 
 use "lib/mem.yap"
 
-//TODO: implement properly linked chunks
 
-seq Heap::CHUNK
+seq Chunk
 {
     SIZE,
     BUFFER,
 }
 
+// --- user heap ---
 
-fn Heap::New(words)
+fn Chunk::New(words)
 {
     put needed = words + 1;
 
@@ -41,18 +41,20 @@ fn Heap::New(words)
     lab done;
 
     put chunk = walker - (0 : needed);
-    put chunk.Heap::CHUNK::SIZE = needed;
-    print("base: %d\n", [chunk]);
-    return chunk : Heap::CHUNK::BUFFER;
+    put chunk.Chunk::SIZE = needed;
+    return chunk : Chunk::BUFFER;
 }
 
-fn Heap::Void(ptr)
+fn Chunk::Void(ptr)
 {
-    put chunk = ptr - (0 : Heap::CHUNK::BUFFER);
-    put size = chunk.Heap::CHUNK::SIZE;
+    put chunk = ptr - (0 : Chunk::BUFFER);
+    put size = chunk.Chunk::SIZE;
 
     Mem::Set(chunk, 0, size);
 }
+
+
+// --- regular chunk routines ---
 
 
 
