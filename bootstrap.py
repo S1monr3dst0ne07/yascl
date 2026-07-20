@@ -504,6 +504,7 @@ class AstProg:
             consts[name + "::" + stream.pop()] = i
             i += 1
             if stream.peek() == ',': stream.pop()
+        consts[name] = i #length of sequence
         stream.expect('}')
 
 
