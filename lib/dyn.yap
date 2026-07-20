@@ -88,13 +88,32 @@ lab invalid;
 fn Dyn::Local::EnsureSize(list, size)
 {
     jump fine ~ list.Dyn::CAPACITY > (size - 1);
+        // can never error for obvious reasons 
         Dyn::Recap(
             list,
             list.Dyn::CAPACITY * 2,
-        );
+        ); 
     lab fine; 
 }
 
+fn Dyn::Insert(list, index, elem)
+{
+    Dyn::Local::EnsureSize(list, list.Dyn::SIZE+1);
+
+    jump out_of_bounds ~ index > (list.Dyn::SIZE);
+    put pos = list.Dyn::CONTAINER : index;
+
+    Mem::CpyB(
+        pos : 1, pos,
+        (list.Dyn::SIZE) - index,
+    );
+
+    put (list.Dyn::CONTAINER).index = elem;
+
+    return Bool::TRUE;
+lab out_of_bounds;
+    return Bool::FALSE;
+}
 
 
 
