@@ -1,5 +1,11 @@
 
 
+seq Mem 
+{
+    // null pointer contant.
+    // mostly semantic.
+    NULL 
+}
 
 
 fn Mem::Set(buf, value, count)
@@ -16,20 +22,20 @@ fn Mem::Set(buf, value, count)
 fn Mem::CpyF(dst, src, count)
 {
     put i = 0;
-    lab loop;
+    lab loop; jump done ~ i == count;
         put dst.i = src.i;
         put i = i + 1;
-    jump loop ~ i < count;
+    jump loop; lab done;
 }
 
 // copy backwards
 fn Mem::CpyB(dst, src, count)
 {
     put i = count;
-    lab loop;
+    lab loop; jump done ~ i == 0;
         put i = i - 1;
         put dst.i = src.i;
-    jump loop ~ i > 0;
+    jump loop; lab done;
 }
 
 // select copy direction
