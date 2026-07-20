@@ -1,6 +1,7 @@
 
 
 use "lib/chunk.yap"
+use "lib/bool.yap"
 
 
 seq Dyn
@@ -77,7 +78,10 @@ fn Dyn::Recap(list, cap)
     put list.Dyn::CAPACITY  = cap;
     put list.Dyn::CONTAINER = container;
 
-    lab invalid;
+    return Bool::TRUE;
+
+lab invalid;
+    return Bool::FALSE;
 }
 
 
