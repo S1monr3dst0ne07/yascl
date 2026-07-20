@@ -38,7 +38,11 @@ fn Dyn::CreateUseChunk(container)
 
 fn Dyn::Create()
 {
-    return Dyn::CreateUseChunk(Chunk::New(1));
+    return Dyn::CreatePopulate(
+        0,
+        0,
+        Mem::NULL,
+    );
 }
 
 
@@ -74,7 +78,11 @@ fn Dyn::Recap(list, cap)
         list.Dyn::CAPACITY,
     );
 
-    Chunk::Void(list.Dyn::CONTAINER);
+    // skip voiding if container is null pointer
+    jump skip_dealloc ~ (list.Dyn::CONTAINER) == Mem::NULL;
+        Chunk::Void(list.Dyn::CONTAINER);
+    lab skip_dealloc;
+
     put list.Dyn::CAPACITY  = cap;
     put list.Dyn::CONTAINER = container;
 
