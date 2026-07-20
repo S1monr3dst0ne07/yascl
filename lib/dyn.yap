@@ -61,7 +61,7 @@ fn Dyn::Delete(list)
 
 
 
-fn Dyn::Reserve(list, cap)
+fn Dyn::Recap(list, cap)
 {
     jump invalid ~ cap < list.Dyn::SIZE;
 
@@ -81,10 +81,10 @@ fn Dyn::Reserve(list, cap)
 }
 
 
-fn Dyn::Ensure(list, size)
+fn Dyn::Local::EnsureSize(list, size)
 {
     jump fine ~ list.Dyn::CAPACITY > (size - 1);
-        Dyn::Reserve(
+        Dyn::Recap(
             list,
             list.Dyn::CAPACITY * 2,
         );
