@@ -1,0 +1,6 @@
+
+seq Bool
+{
+    FALSE,
+    TRUE,
+}
