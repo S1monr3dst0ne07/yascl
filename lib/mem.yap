@@ -12,14 +12,37 @@ fn Mem::Set(buf, value, count)
 }
 
 
-
-fn Mem::Cpy(dst, src, count)
+// copy forwards
+fn Mem::CpyF(dst, src, count)
 {
     put i = 0;
     lab loop;
         put dst.i = src.i;
         put i = i + 1;
     jump loop ~ i < count;
+}
+
+// copy backwards
+fn Mem::CpyB(dst, src, count)
+{
+    put i = count;
+    lab loop;
+        put i = i - 1;
+        put dst.i = src.i;
+    jump loop ~ i > 0;
+}
+
+// select copy direction
+fn Mem::Cpy(dst, src, count)
+{
+    jump done ~ dst == src;
+    jump fore ~ dst < src;
+    jump back ~ dst > src;
+
+    lab fore; Mem::CpyF(dst, src, count); jump done;
+    lab back; Mem::CpyB(dst, src, count); jump done;
+
+    lab done; 
 }
 
 
