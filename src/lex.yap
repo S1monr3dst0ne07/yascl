@@ -89,7 +89,7 @@ seq Lex::Streamer
 
 
 
-fn Lex::Tokenzie(path)
+fn Lex::Tokenize(path)
 {
     put src = FS::Read(path);
     put tokens = Dyn::Create();
