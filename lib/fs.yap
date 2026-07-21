@@ -28,7 +28,7 @@ seq FS::ENUM::MODE // (fcntl.h)
     WRDR   = 2,
 }
 
-fn Fs::ConvertPath(qpath)
+fn FS::ConvertPath(qpath)
 {
     static 4096 ~ bpath;
     Str::ToBytes(bpath, qpath);
@@ -37,24 +37,13 @@ fn Fs::ConvertPath(qpath)
 
 
 
-fn FS::Sys::OpenRead(path)
+fn FS::Sys::Open(path, mode)
 {
     return Sys::TryCall(
-        "FS::Sys::OpenRead",
+        "FS::Sys::Open",
         SYSCALL::OPEN, 
-        Fs::ConvertPath(path),
-        FS::ENUM::MODE::RDONLY,
-        0  // irrelevent for open
-    );
-}
-
-fn FS::Sys::OpenWrite(path)
-{
-    return Sys::TryCall(
-        "FS::Sys::OpenWrite",
-        SYSCALL::OPEN, 
-        Fs::ConvertPath(path),
-        FS::ENUM::MODE::WRONLY,
+        FS::ConvertPath(path),
+        mode,
         0  // irrelevent for open
     );
 }
@@ -75,6 +64,28 @@ fn FS::Sys::Size(fd)
     return size;
 }
 
+
+fn FS::Read(path)
+{
+    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put size = FS::Sys::Size(fd) + 1;
+
+    put bfile = Chunk::New(size >> 3);
+    put qfile = Chunk::New(size);
+
+    Sys::TryCall(
+        "FS::Read",
+        SYSCALL::READ,
+        fd,
+        bfile,
+        size,
+    );
+
+    Mem::FromBytes(qfile, bfile, size);
+    Chunk::Void(bfile);
+    put qfile.(size - 1) = 0;
+    return qfile;
+}
 
 
 
