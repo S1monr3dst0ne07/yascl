@@ -65,7 +65,7 @@ fn Mem::FromBytes(dst, src, count)
 {
     put i = 0;
     lab loop;
-        put (dst.i) = (src+i).0;
+        put (dst.i) = ((src+i).0) & 255;
         put i = i + 1;
     jump loop ~ i < count;
 }
