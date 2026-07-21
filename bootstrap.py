@@ -243,10 +243,9 @@ class AstExpr:
                 match self.op:
                     case '==': emit('sete cl')
                     case '!=': emit('setne cl')
-                    case '>':  emit("setg cl")
-                    case '<':  emit("setl cl")
-                emit('xor rax, rax')
-                emit('mov al, cl')
+                    case '>':  emit("seta cl")
+                    case '<':  emit("setb cl")
+                emit('movzx rax, cl')
             case '*': emit('mul rbx')
             case '/':
                 emit('xor rdx, rdx')
