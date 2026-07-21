@@ -234,7 +234,10 @@ fn Lex::Tokenize(path)
     jump loop;
     lab done;
 
-    return tokens;
+    put stream = Chunk::New(Lex::Streamer);
+    put stream.Lex::Streamer::TOKENS = Dyn::Ptr(tokens);
+    put stream.Lex::Streamer::INDEX  = 0;
+    return stream;
 }
 
 
