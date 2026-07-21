@@ -541,9 +541,9 @@ class AstProg:
                     path = stream.pop().strip('"')
 
                     if path not in using:
+                        using.add(path)
                         print(f'using: {path}')
                         fns += AstProg.file(path).fns
-                        using.add(path)
                 case x: 
                     print(f"Error: Invalid toplevel prefix: {x}")
                     sys.exit(1)
