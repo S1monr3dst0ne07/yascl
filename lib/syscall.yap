@@ -13,6 +13,19 @@ seq SYSCALL
 
 
 
+fn Sys::TryCall(caller, code, a1, a2, a3, a4, a5)
+{
+    put retval = syscall(code, a1, a2, a3, a4, a5);
+
+    jump skip ~ Sys::Error(retval) ^ Bool::TRUE;
+        print("[%s] %s\n", [caller, Sys::ErrorMsg(retval)]);
+    lab skip;
+
+
+    return retval;
+}
+
+
 
 seq ERROR
 {
