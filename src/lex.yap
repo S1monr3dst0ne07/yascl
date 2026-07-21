@@ -87,6 +87,32 @@ seq Lex::Streamer
 }
 
 
+fn Lex::LookTok(stream, offset)
+{
+    return 
+        (stream.Lex::Streamer::TOKENS).
+        ((stream.Lex::Streamer::INDEX) + offset);
+}
+fn Lex::PeekTok(stream)
+{
+    return Lex::LookTok(stream, 0);
+}
+fn Lex::PopTok(stream)
+{
+    put tok = Lex::PeekTok(stream);
+    put (stream.Lex::Streamer::INDEX) = (stream.Lex::Streamer::INDEX) + 1;
+    return tok;
+}
+
+fn Lex::Peek(stream)
+{
+    return Lex::PeekTok(stream).Lex::Token::CONTENT;
+}
+fn Lex::Pop(stream)
+{
+    return Lex::PopTok(stream).Lex::Token::CONTENT;
+}
+
 
 
 
@@ -167,7 +193,6 @@ fn Lex::Tokenize(path)
     jump loop;
     lab done;
 
-    print("token count: %d\n", [tokens.Dyn::CAPACITY]);
 
     return tokens;
 }
