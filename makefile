@@ -1,14 +1,19 @@
 
 TARGET=prg/test.yap
 
-.PHONY: bootstrap run build
+.PHONY: build
 
-run: build
-	./build
+compiler: src/* lib/*
+	./bootstrap.py src/main.yap
+	fasm build.asm compiler
+	chmod +x compiler
 
-build: bootstrap
-	fasm build.asm
+
+build: compiler
+	./compiler $(TARGET)
+	fasm build.asm build
 	chmod +x build
 
-bootstrap: 
-	./bootstrap.py $(TARGET)
+
+
+
