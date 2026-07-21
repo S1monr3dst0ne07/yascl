@@ -10,6 +10,8 @@ seq SYSCALL
     CLOSE,
     STAT,
     FSTAT,
+
+    EXIT = 60,
 }
 
 
