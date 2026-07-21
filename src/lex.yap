@@ -115,8 +115,8 @@ fn Lex::Tokenize(path)
         lab skip_newline;
 
         put state_comment = state_comment | (Str::Diff(buffer, "//") == 0);
-        put state_string  = state_string  ^ (kind == Lex::Kind::DOUBLE_QUOTE);
-        put state_char    = state_char    ^ (kind == Lex::Kind::SINGLE_QUOTE);
+        put state_string  = state_string  ^ (last == Lex::Kind::DOUBLE_QUOTE);
+        put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
     
 
         // state transition. or must trigger on symbol.
@@ -136,8 +136,6 @@ fn Lex::Tokenize(path)
 
 
         jump skip_emit ~ Bool::TRUE ^ emit;
-            put iter.0 = '\0';
-            print("token: %s\n", [buffer]);
             jump skip_push ~ last == Lex::Kind::NONE;
             jump skip_push ~ last == Lex::Kind::FORMAT;
                 put token = Chunk::New(Lex::Token);
@@ -162,6 +160,7 @@ fn Lex::Tokenize(path)
 
         put iter.0 = char;
         put iter = iter : 1;
+        put iter.0 = '\0'; //make buffer valid string
         put last = kind;
     jump loop;
     lab done;
