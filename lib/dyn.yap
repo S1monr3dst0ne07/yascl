@@ -132,3 +132,25 @@ lab out_of_bounds;
 
 
 
+fn Dyn::Erase(list, index)
+    // returns success.
+    // only failure is bounds violation. 
+{
+    jump out_of_bounds ~ (list.Dyn::SIZE) == 0;
+    put new_size = (list.Dyn::SIZE) - 1;
+    put pos = (list.Dyn::CONTAINER) : index;
+
+    Mem::CpyF(
+        pos, pos : 1,
+        new_size - index,
+    );
+
+    put list.Dyn::SIZE = new_size;
+    
+    return Bool::TRUE;
+lab out_of_bounds;
+    return Bool::FALSE;
+}
+
+
+
