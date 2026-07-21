@@ -48,15 +48,17 @@ def tokenize(path):
         toks : list[str]
 
         def peek(self, offset=0):
-            return self.toks[offset]
-        def pop(self):
+            return self.toks[offset][0]
+        def _pop(self):
             return self.toks.pop(0)
+        def pop(self):
+            return self._pop()[0]
         def has(self):
             return len(self.toks) > 0
         def expect(self, should):
-            be = self.pop()
+            be, line = self._pop()
             if be != should:
-                print(f"Error: Expected `{should}` got `{be}`")
+                print(f"Error at line {line}: Expected `{should}` got `{be}`")
                 sys.exit(1)
 
     toks = []
@@ -64,15 +66,17 @@ def tokenize(path):
     string = False
     comment = False
     state = None
+    lineno = 1
     for char in src:
         kind = get(char)
+        if char == '\n': lineno += 1
 
         if buffer == '//'   : comment = True
         if state  == 'quote': string = not string
 
         if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string and not comment:
             if state not in (None, 'format'):
-                toks.append(buffer)
+                toks.append((buffer, lineno))
             buffer = ''
 
         if char == '\n': 
