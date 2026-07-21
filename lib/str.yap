@@ -12,6 +12,14 @@ fn Str::Len(str)
     return len;
 }
 
+fn Str::Copy(str)
+{
+    put len = Str::Len(str)+1;
+    put new = Chunk::New(len);
+    Mem::Cpy(new, str, len);
+    return new;
+}
+
 
 fn Str::FromIntBase(numb, base)
 {
