@@ -8,7 +8,7 @@ fn IO::OutChar(char)
     put buffer = " ";
     put buffer.0 = char;
 
-    syscall(SYSCALL::WRITE, 0, buffer, 1);
+    syscall(SYSCALL::WRITE, 1, buffer, 1);
 }
 
 fn IO::OutString(str)
