@@ -74,6 +74,7 @@ fn Lex::Get(char)
 seq Lex::Token
 {
     CONTENT, // Str
+    KIND,    // Lex::Kind
     LINENO,  // Int
     PATH,    // Str
 }
@@ -140,6 +141,7 @@ fn Lex::Tokenize(path)
             jump skip_push ~ last == Lex::Kind::FORMAT;
                 put token = Chunk::New(Lex::Token);
                 put token.Lex::Token::CONTENT = Str::Copy(buffer);
+                put token.Lex::Token::KIND    = last;
                 put token.Lex::Token::LINENO  = lineno;
                 put token.Lex::Token::PATH    = Str::Copy(path);
 
@@ -164,6 +166,8 @@ fn Lex::Tokenize(path)
         put last = kind;
     jump loop;
     lab done;
+
+    print("token count: %d\n", [tokens.Dyn::CAPACITY]);
 
     return tokens;
 }
