@@ -113,6 +113,10 @@ fn Lex::Pop(stream)
     return Lex::PopTok(stream).Lex::Token::CONTENT;
 }
 
+fn Lex::Has(stream)
+{
+    return (stream.Lex::Streamer::INDEX) < ((stream.Lex::Streamer::TOKENS).Dyn::SIZE);
+}
 
 
 
