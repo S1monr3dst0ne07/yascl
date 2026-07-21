@@ -111,7 +111,6 @@ class AstLeaf:
 
     @classmethod
     def parse(cls, stream):
-        print(stream.peek())
         match stream.pop():
             case '(': #)
                 expr = AstExpr.parse(stream)
