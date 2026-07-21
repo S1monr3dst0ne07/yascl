@@ -109,28 +109,35 @@ fn Lex::Tokenize(path)
         put src = src : 1;
         put kind = Lex::Get(char);
 
+
         jump skip_newline ~ char != '\n';
             put lineno = lineno + 1;
         lab skip_newline;
 
-        put state_comment = state_comment | (Str::Diff(buffer, "//") > 0);
+        put state_comment = state_comment | (Str::Diff(buffer, "//") == 0);
         put state_string  = state_string  ^ (kind == Lex::Kind::DOUBLE_QUOTE);
         put state_char    = state_char    ^ (kind == Lex::Kind::SINGLE_QUOTE);
     
 
-        jump skip_emit ~ Bool::TRUE ^ (
-            (
-                  (kind == last)
-                | (last == Lex::Kind::BLOCK_OPEN)
-                | (last == Lex::Kind::BLOCK_CLOSE)
-                | (last == Lex::Kind::PAREN_OPEN)
-                | (last == Lex::Kind::PAREN_CLOSE)
-            )
-            & (Bool::TRUE ^ state_comment)
-            & (Bool::TRUE ^ state_string)
-            & (Bool::TRUE ^ state_char)
-        );
+        // state transition. or must trigger on symbol.
+        put transition = (kind != last)
+                       | (last == Lex::Kind::BLOCK_OPEN)
+                       | (last == Lex::Kind::BLOCK_CLOSE)
+                       | (last == Lex::Kind::PAREN_OPEN)
+                       | (last == Lex::Kind::PAREN_CLOSE);
+
+        // can emit?
+        put unlocked = (Bool::TRUE ^ state_comment)
+                     & (Bool::TRUE ^ state_string)
+                     & (Bool::TRUE ^ state_char);
+
+        // can emit!
+        put emit = transition & unlocked;
+
+
+        jump skip_emit ~ Bool::TRUE ^ emit;
             put iter.0 = '\0';
+            print("token: %s\n", [buffer]);
             jump skip_push ~ last == Lex::Kind::NONE;
             jump skip_push ~ last == Lex::Kind::FORMAT;
                 put token = Chunk::New(Lex::Token);
