@@ -18,36 +18,48 @@ seq FS::STRUCT::__old_kernel_stat
     // time fields are to be implemented.
 }
 
+seq FS::ENUM::MODE // (fcntl.h)
+{
+    RDONLY,
+    WRONLY,
+    WRDR,
+}
+
+fn Fs::ConvertPath(qpath)
+{
+    static 4096 ~ bpath;
+    Str::ToBytes(bpath, qpath);
+    return bpath;
+}
+
 
 
 fn FS::Sys::OpenRead(path)
 {
-    return syscall(
+    return Sys::TryCall(
+        "FS::Sys::OpenRead",
         SYSCALL::OPEN, 
-        path,
-        0, // O_RDONLY (fcntl.h)
+        Fs::ConvertPath(path),
+        FS::ENUM::MODE::RDONLY,
         0  // irrelevent for open
     );
 }
 
 fn FS::Sys::OpenWrite(path)
 {
-    return syscall(
+    return Sys::TryCall(
+        "FS::Sys::OpenWrite",
         SYSCALL::OPEN, 
-        path,
-        1, // O_WRONLY (fcntl.h)
+        Fs::ConvertPath(path),
+        FS::ENUM::MODE::WRONLY,
         0  // irrelevent for open
     );
 }
 
-fn FS::Sys::Stat(path)
+fn FS::Sys::Stat(fd)
 {
     put stat = Chunk::New(FS::STRUCT::__old_kernel_stat);
-    put retval = syscall(SYSCALL::STAT, path, stat);
-
-    jump skip ~ Sys::Error(retval) ^ Bool::TRUE;
-        print("[FS::Sys::Stat] %s: `%s`\n", [Sys::ErrorMsg(retval), path]);
-    lab skip;
+    Sys::TryCall("FS::Sys::Stat", SYSCALL::FSTAT, fd, stat);
 
     return stat;
 }
