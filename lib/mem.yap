@@ -52,5 +52,12 @@ fn Mem::Cpy(dst, src, count)
 }
 
 
-
+fn Mem::ToBytes(dst, src, count)
+{
+    put i = 0;
+    lab loop;
+        put ((dst+i).0) = src.i;
+        put i = i + 1;
+    jump loop ~ i < count;
+}
 
