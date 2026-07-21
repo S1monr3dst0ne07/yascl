@@ -40,6 +40,22 @@ fn Str::ToBytes(bstr, qstr)
 }
 
 
+fn Str::Diff(alpha, omega)
+{
+    put i = 0;
+    lab loop;
+        jump done ~ (alpha.i) != (omega.i);
+        jump done ~ (alpha.i) == 0;
+
+        put i = i + 1;
+        jump loop;
+    lab done;
+
+    return ((alpha.i) - (omega.i));
+}
+
+
+
 fn Str::Format(buffer, pattern, args)
 {
     lab loop;
