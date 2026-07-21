@@ -104,7 +104,8 @@ fn Dyn::Local::EnsureSize(list, size)
 
 fn Dyn::Insert(list, index, elem)
 {
-    Dyn::Local::EnsureSize(list, list.Dyn::SIZE+1);
+    put new_size = (list.Dyn::SIZE) + 1;
+    Dyn::Local::EnsureSize(list,new_size);
 
     jump out_of_bounds ~ index > (list.Dyn::SIZE);
     put pos = list.Dyn::CONTAINER : index;
@@ -115,6 +116,7 @@ fn Dyn::Insert(list, index, elem)
     );
 
     put (list.Dyn::CONTAINER).index = elem;
+    put list.Dyn::SIZE = new_size;
 
     return Bool::TRUE;
 lab out_of_bounds;
