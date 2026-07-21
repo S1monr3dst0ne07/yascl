@@ -510,7 +510,11 @@ class AstProg:
         stream.expect('{') #}
         i = 0
         while stream.peek() != '}':
-            consts[name + "::" + stream.pop()] = i
+            field = stream.pop()
+            if stream.peek() == '=':
+                stream.expect('=')
+                i = int(stream.pop())
+            consts[name + "::" + field] = i
             i += 1
             if stream.peek() == ',': stream.pop()
         consts[name] = i #length of sequence
