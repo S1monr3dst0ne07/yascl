@@ -149,6 +149,16 @@ fn Lex::PopCheck(stream, kind)
             Lex::DecodeKind(token.Lex::Token::KIND),
         ]);
 }
+fn Lex::Expect(stream, content)
+{
+    put token = Lex::PopTok(stream);
+    jump good ~ Str::Diff(token.Lex::Token::CONTENT, content) == 0;
+        Error::TokenError(token, "Expected `%s` got `%s`", [
+            content,
+            token.Lex::Token::CONTENT,
+        ]);
+    lab good;
+}
 
 
 
