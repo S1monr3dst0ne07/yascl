@@ -4,6 +4,8 @@ use "lib/fs.yap"
 use "lib/dyn.yap"
 use "lib/bool.yap"
 
+use "src/error.yap"
+
 
 seq Lex::Kind
 {
@@ -116,6 +118,18 @@ fn Lex::Pop(stream)
 fn Lex::Has(stream)
 {
     return (stream.Lex::Streamer::INDEX) < ((stream.Lex::Streamer::TOKENS).Dyn::SIZE);
+}
+
+fn Lex::PopCheck(stream, kind)
+{
+    put token = Lex::PopTok(stream);
+    jump error ~ (token.Lex::Token::KIND) != kind;
+        return token;
+    lab error;
+        Error::TokError(token, "Expected kind `%s` got `%s`", [
+            Lex::DecodeKind(kind),
+            Lex::DecodeKind(token.Lex::Token::KIND),
+        ]);
 }
 
 
