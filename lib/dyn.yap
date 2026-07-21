@@ -153,4 +153,27 @@ lab out_of_bounds;
 }
 
 
+fn Dyn::Push(list, elem)
+    // push to end of list.
+{
+    return Dyn::Insert(
+        list,
+        list.Dyn::SIZE,
+        elem,
+    );
+}
+
+fn Dyn::Pop(list)
+    // pop from end of list.
+{
+    jump empty ~ (list.Dyn::SIZE) == 0;
+
+    put new_size = (list.Dyn::SIZE) - 1;
+    put elem = Dyn::Ptr(list).new_size;
+    put list.Dyn::SIZE = new_size;
+    return elem;
+
+lab empty;
+    return Mem::NULL;
+}
 

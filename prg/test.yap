@@ -8,16 +8,22 @@ fn main()
 {
     put list = Dyn::Create();
 
-    Dyn::Insert(list, 0, "test");
-    Dyn::Insert(list, 0, "another test");
-    Dyn::Insert(list, 2, "test end");
+    Dyn::Push(list, "this");
+    Dyn::Push(list, "should");
+    Dyn::Push(list, "now");
+    Dyn::Push(list, "work");
+    Dyn::Push(list, "like");
+    Dyn::Push(list, "a");
+    Dyn::Push(list, "stack");
 
-    put i = 0;
     lab loop;
-        print("%d : %s\n", [i, Dyn::Ptr(list).i]);
+        put elem = Dyn::Pop(list);
+        jump done ~ elem == Mem::NULL;
+
+        print("%s\n", [elem]);
     
-        put i = i + 1;
-    jump loop ~ i < (list.Dyn::SIZE);
+        jump loop;
+    lab done;
         
 
 
