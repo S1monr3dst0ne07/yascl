@@ -47,11 +47,17 @@ fn Str::Format(buffer, pattern, args)
         put char = pattern.0; put pattern = pattern : 1;
 
         jump digits ~ char == 'd';
+        jump binary ~ char == 'b';
         jump string ~ char == 's';
         jump loop;
 
     lab digits;
         put subbuffer = Str::FromIntBase(args.0, 10);
+        put args = args : 1;
+        jump handle_subbuffer;
+
+    lab binary;
+        put subbuffer = Str::FromIntBase(args.0, 2);
         put args = args : 1;
         jump handle_subbuffer;
 
