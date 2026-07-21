@@ -93,11 +93,11 @@ lab invalid;
 
 fn Dyn::Local::EnsureSize(list, size)
 {
-    jump fine ~ list.Dyn::CAPACITY > (size - 1);
+    jump fine ~ (list.Dyn::CAPACITY) > (size - 1);
         // can never error for obvious reasons 
         Dyn::Recap(
-            list,
-            list.Dyn::CAPACITY * 2,
+             list,
+            (list.Dyn::CAPACITY) * 2,
         ); 
     lab fine; 
 }
