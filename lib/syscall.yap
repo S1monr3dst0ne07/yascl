@@ -1,4 +1,5 @@
 
+use "lib/bool.yap"
 
 
 seq SYSCALL
