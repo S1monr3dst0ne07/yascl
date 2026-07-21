@@ -15,6 +15,11 @@ fn Dyn::Size(list)
 {
     return list.Dyn::SIZE;
 }
+fn Dyn::Ptr(list)
+    // shorthand for get/set access.
+{
+    return list.Dyn::CONTAINER;
+}
 
 
 fn Dyn::CreatePopulate(size, capacity, container)
