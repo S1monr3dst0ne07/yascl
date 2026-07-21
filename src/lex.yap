@@ -1,8 +1,13 @@
 
 
+use "lib/fs.yap"
+use "lib/dyn.yap"
+use "lib/bool.yap"
+
 
 seq Lex::Kind
 {
+    NONE, // initial fsm state
     IDEN,
     BLOCK_OPEN,
     BLOCK_CLOSE,
@@ -19,7 +24,7 @@ seq Lex::Kind
 
 
 
-seq Lex::Get(char)
+fn Lex::Get(char)
 {
     // isalphanum(char)
     jump iden ~ (('a' - 1) < char) & (('z' + 1) > char);
@@ -39,12 +44,12 @@ seq Lex::Get(char)
     jump array_close ~ char == ']';
 
     jump end_of_statement ~ char == ';';
-    jump double_quote     ~ char == '"';
+    jump double_quote     ~ char == 34; // double quote
     jump single_quote     ~ char == 39; // single quote
 
-    jump format ~ char == ' ';
-    jump format ~ char == 10;
-    jump format ~ char ==  9;
+    jump format ~ char == 32;
+    jump format ~ char == '\n';
+    jump format ~ char == '\t';
 
     jump symbol;
     
@@ -63,6 +68,101 @@ seq Lex::Get(char)
     lab symbol;             return Lex::Kind::SYMBOL;
     
 }
+
+
+
+seq Lex::Token
+{
+    CONTENT, // Str
+    LINENO,  // Int
+    PATH,    // Str
+}
+
+
+seq Lex::Streamer
+{
+    TOKENS, // Dyn<Lex::Token>
+    INDEX,  // int
+}
+
+
+
+
+
+fn Lex::Tokenzie(path)
+{
+    put src = FS::Read(path);
+    put tokens = Dyn::Create();
+
+    put state_comment = Bool::FALSE;
+    put state_string  = Bool::FALSE;
+    put state_char    = Bool::FALSE;
+    put lineno = 1;
+    put last = Lex::Kind::NONE;
+
+    static 4096 ~ buffer;
+    put iter = buffer;
+    
+    lab loop;
+        put char = src.0;
+        jump done ~ char == '\0';
+        put src = src : 1;
+        put kind = Lex::Get(char);
+
+        jump skip_newline ~ char != '\n';
+            put lineno = lineno + 1;
+        lab skip_newline;
+
+        put state_comment = state_comment | (Str::Diff(buffer, "//") > 0);
+        put state_string  = state_string  ^ (kind == Lex::Kind::DOUBLE_QUOTE);
+        put state_char    = state_char    ^ (kind == Lex::Kind::SINGLE_QUOTE);
+    
+
+        jump skip_emit ~ Bool::TRUE ^ (
+            (
+                  (kind == last)
+                | (last == Lex::Kind::BLOCK_OPEN)
+                | (last == Lex::Kind::BLOCK_CLOSE)
+                | (last == Lex::Kind::PAREN_OPEN)
+                | (last == Lex::Kind::PAREN_CLOSE)
+            )
+            & (Bool::TRUE ^ state_comment)
+            & (Bool::TRUE ^ state_string)
+            & (Bool::TRUE ^ state_char)
+        );
+            put iter.0 = '\0';
+            jump skip_push ~ last == Lex::Kind::NONE;
+            jump skip_push ~ last == Lex::Kind::FORMAT;
+                put token = Chunk::New(Lex::Token);
+                put token.Lex::Token::CONTENT = Str::Copy(buffer);
+                put token.Lex::Token::LINENO  = lineno;
+                put token.Lex::Token::PATH    = Str::Copy(path);
+
+                Dyn::Push(tokens, token);
+            lab skip_push;
+            put iter = buffer;
+        lab skip_emit;
+
+
+        jump skip_comment_end ~ char != '\n';
+        jump skip_comment_end ~ (state_comment ^ Bool::TRUE);
+            put iter = buffer;
+            put state_comment = Bool::FALSE;
+            put state_string  = Bool::FALSE;
+            put state_char    = Bool::FALSE;
+        lab skip_comment_end;
+
+
+        put iter.0 = char;
+        put iter = iter : 1;
+        put last = kind;
+    jump loop;
+    lab done;
+
+    return tokens;
+}
+
+
 
 
 
