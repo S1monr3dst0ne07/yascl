@@ -1,30 +1,16 @@
 
 
-use "lib/dyn.yap"
+use "lib/fs.yap"
 use "lib/debug.yap"
 
 
 fn main()
 {
-    put list = Dyn::Create();
+    put src = FS::Read("hello.txt");
 
-    Dyn::Push(list, "this");
-    Dyn::Push(list, "should");
-    Dyn::Push(list, "now");
-    Dyn::Push(list, "work");
-    Dyn::Push(list, "like");
-    Dyn::Push(list, "a");
-    Dyn::Push(list, "stack");
+    print("file: `%s`\n", [src]);
 
-    lab loop;
-        put elem = Dyn::Pop(list);
-        jump done ~ elem == Mem::NULL;
 
-        print("%s\n", [elem]);
-    
-        jump loop;
-    lab done;
-        
 
 
 }
