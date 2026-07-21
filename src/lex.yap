@@ -190,9 +190,14 @@ fn Lex::Tokenize(path)
         lab skip_comment_end;
 
 
-        put iter.0 = char;
-        put iter = iter : 1;
-        put iter.0 = '\0'; //make buffer valid string
+        // do not buffer/emit quotes. (annoying to filter out later)
+        jump skip_write ~ kind == Lex::Kind::SINGLE_QUOTE;
+        jump skip_write ~ kind == Lex::Kind::DOUBLE_QUOTE;
+            put iter.0 = char;
+            put iter = iter : 1;
+            put iter.0 = '\0'; //make buffer valid string
+        lab skip_write;
+
         put last = kind;
     jump loop;
     lab done;
