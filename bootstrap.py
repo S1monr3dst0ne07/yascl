@@ -30,7 +30,7 @@ def tokenize(path):
             case x if x.isalpha(): return 'iden'
             case '_': return 'iden'
             case ':': return 'iden'
-            case x if x.isdigit(): return 'numb'
+            case x if x.isdigit(): return 'iden'
             case '{': return 'bo'
             case '}': return 'bc'
             case '(': return 'po'
@@ -44,21 +44,27 @@ def tokenize(path):
             case _: return 'symb'
 
     @dc
+    class Token:
+        content : str
+        lineno : int
+        path : str
+
+    @dc
     class Streamer:
         toks : list[str]
 
         def peek(self, offset=0):
-            return self.toks[offset][0]
+            return self.toks[offset].content
         def _pop(self):
             return self.toks.pop(0)
         def pop(self):
-            return self._pop()[0]
+            return self._pop().content
         def has(self):
             return len(self.toks) > 0
         def expect(self, should):
-            be, line = self._pop()
-            if be != should:
-                print(f"Error at line {line}: Expected `{should}` got `{be}`")
+            be = self._pop()
+            if be.content != should:
+                print(f"Error in `{be.path}` at line {be.lineno}: Expected `{should}` got `{be.content}`")
                 sys.exit(1)
 
     toks = []
@@ -76,7 +82,7 @@ def tokenize(path):
 
         if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string and not comment:
             if state not in (None, 'format'):
-                toks.append((buffer, lineno))
+                toks.append(Token(buffer, lineno, path))
             buffer = ''
 
         if char == '\n': 
