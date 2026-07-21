@@ -128,6 +128,7 @@ class AstLeaf:
                 match char:
                     case '\\n': char = '\n'
                     case '\\t': char = '\t'
+                    case '\\0': char = '\0'
                 return cls(char, 'char')
 
             case '__heap_base':
