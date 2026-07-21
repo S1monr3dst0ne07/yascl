@@ -30,6 +30,15 @@ fn Str::FromIntBase(numb, base)
     return buffer : i;
 }
 
+fn Str::ToBytes(bstr, qstr)
+{
+    Mem::ToBytes(
+        bstr, 
+        qstr,
+        Str::Len(qstr),
+    );
+}
+
 
 fn Str::Format(buffer, pattern, args)
 {
