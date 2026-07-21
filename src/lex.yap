@@ -24,6 +24,24 @@ seq Lex::Kind
     SYMBOL,
 }
 
+fn Lex::DecodeKind(kind)
+{
+	jump skip_NONE 	        	~ kind != Lex::Kind::NONE;              return "<NONE>"; lab skip_NONE ;
+	jump skip_IDEN	        	~ kind != Lex::Kind::IDEN;              return "identifier"; lab skip_IDEN;
+	jump skip_BLOCK_OPEN		~ kind != Lex::Kind::BLOCK_OPEN;        return "{"; lab skip_BLOCK_OPEN;
+	jump skip_BLOCK_CLOSE		~ kind != Lex::Kind::BLOCK_CLOSE;       return "}"; lab skip_BLOCK_CLOSE;
+	jump skip_PAREN_OPEN		~ kind != Lex::Kind::PAREN_OPEN;        return "("; lab skip_PAREN_OPEN;
+	jump skip_PAREN_CLOSE		~ kind != Lex::Kind::PAREN_CLOSE;       return ")"; lab skip_PAREN_CLOSE;
+	jump skip_ARRAY_OPEN		~ kind != Lex::Kind::ARRAY_OPEN;        return "["; lab skip_ARRAY_OPEN;
+	jump skip_ARRAY_CLOSE		~ kind != Lex::Kind::ARRAY_CLOSE;       return "]"; lab skip_ARRAY_CLOSE;
+	jump skip_END_OF_STATEMENT	~ kind != Lex::Kind::END_OF_STATEMENT;  return ";"; lab skip_END_OF_STATEMENT;
+	jump skip_DOUBLE_QUOTE	    ~ kind != Lex::Kind::DOUBLE_QUOTE;      return "string"; lab skip_DOUBLE_QUOTE;
+	jump skip_SINGLE_QUOTE	    ~ kind != Lex::Kind::SINGLE_QUOTE;      return "character literal"; lab skip_SINGLE_QUOTE;
+	jump skip_FORMAT	        ~ kind != Lex::Kind::FORMAT;            return "formatting"; lab skip_FORMAT;
+	jump skip_SYMBOL	        ~ kind != Lex::Kind::SYMBOL;            return "symbol"; lab skip_SYMBOL;
+}
+
+
 
 
 fn Lex::Get(char)
@@ -91,7 +109,7 @@ seq Lex::Streamer
 
 fn Lex::LookTok(stream, offset)
 {
-    return 
+    return
         (stream.Lex::Streamer::TOKENS).
         ((stream.Lex::Streamer::INDEX) + offset);
 }
@@ -215,7 +233,6 @@ fn Lex::Tokenize(path)
         put last = kind;
     jump loop;
     lab done;
-
 
     return tokens;
 }
