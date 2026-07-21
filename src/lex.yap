@@ -126,7 +126,7 @@ fn Lex::PopCheck(stream, kind)
     jump error ~ (token.Lex::Token::KIND) != kind;
         return token;
     lab error;
-        Error::TokError(token, "Expected kind `%s` got `%s`", [
+        Error::TokenError(token, "Expected kind `%s` got `%s`", [
             Lex::DecodeKind(kind),
             Lex::DecodeKind(token.Lex::Token::KIND),
         ]);
