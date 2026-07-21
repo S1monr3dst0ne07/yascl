@@ -6,23 +6,26 @@ use "lib/bool.yap"
 
 seq FS::STRUCT::__old_kernel_stat
 {
-    dev::low,  dev::high,  //short
-    ino::low,  ino::high,  //short
-    mode::low, mode::high, //short
-    uid::low,  uid::high,  //short
-    gid::low,  gid::high,  //short
-    rdev::low, rdev::high, //short
-
-    size::low, size::lowmid, size::highmid, size::high, //long
-
-    // time fields are to be implemented.
+    dev     = 0,
+    ino     = 8,
+    mode    = 24,
+    nlink   = 16,
+    uid     = 28,
+    gid     = 32,
+    rdev    = 40,
+    size    = 48,
+    blksize = 56,
+    blocks  = 64,
+    atim    = 72,
+    mtim    = 88,
+    ctim    = 104,
 }
 
 seq FS::ENUM::MODE // (fcntl.h)
 {
-    RDONLY,
-    WRONLY,
-    WRDR,
+    RDONLY = 0,
+    WRONLY = 1,
+    WRDR   = 2,
 }
 
 fn Fs::ConvertPath(qpath)
@@ -64,10 +67,10 @@ fn FS::Sys::Stat(fd)
     return stat;
 }
 
-fn FS::Sys::Size(path)
+fn FS::Sys::Size(fd)
 {
-    put stat = FS::Sys::Stat(path);
-    put size = (stat + FS::STRUCT::__old_kernel_stat::size::low).0;
+    put stat = FS::Sys::Stat(fd);
+    put size = (stat + FS::STRUCT::__old_kernel_stat::size).0;
     Chunk::Void(stat);
     return size;
 }
