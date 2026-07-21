@@ -69,25 +69,30 @@ def tokenize(path):
 
     toks = []
     buffer = ''
-    string = False
+    string  = False
     comment = False
+    literal = False
     state = None
     lineno = 1
     for char in src:
         kind = get(char)
         if char == '\n': lineno += 1
 
+
         if buffer == '//'   : comment = True
         if state  == 'quote': string = not string
+        if state  == 'single': literal = not literal
 
-        if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string and not comment:
+        if (state != kind or state in ('bo', 'bc', 'po', 'pc')) and not string and not comment and not literal:
             if state not in (None, 'format'):
                 toks.append(Token(buffer, lineno, path))
             buffer = ''
 
-        if char == '\n': 
-            if comment: buffer = ''
+        if char == '\n' and comment: 
+            buffer = ''
             comment = False
+            literal = False
+            string  = False
 
         buffer += char
         state = kind
@@ -106,6 +111,7 @@ class AstLeaf:
 
     @classmethod
     def parse(cls, stream):
+        print(stream.peek())
         match stream.pop():
             case '(': #)
                 expr = AstExpr.parse(stream)
@@ -118,9 +124,11 @@ class AstLeaf:
                     if stream.peek() == ',': stream.pop()
                 stream.expect(']')
                 return cls(elems, 'array')
-            case "'":
-                char = stream.pop()
-                stream.expect("'")
+            case x if x.startswith("'"):
+                char = x.strip("'")
+                match char:
+                    case '\\n': char = '\n'
+                    case '\\t': char = '\t'
                 return cls(char, 'char')
 
             case '__heap_base':
