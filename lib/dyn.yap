@@ -108,12 +108,14 @@ fn Dyn::Local::EnsureSize(list, size)
 }
 
 fn Dyn::Insert(list, index, elem)
+    // returns success.
+    // only failure is bounds violation. 
 {
     put new_size = (list.Dyn::SIZE) + 1;
     Dyn::Local::EnsureSize(list,new_size);
 
     jump out_of_bounds ~ index > (list.Dyn::SIZE);
-    put pos = list.Dyn::CONTAINER : index;
+    put pos = (list.Dyn::CONTAINER) : index;
 
     Mem::CpyB(
         pos : 1, pos,
@@ -127,7 +129,6 @@ fn Dyn::Insert(list, index, elem)
 lab out_of_bounds;
     return Bool::FALSE;
 }
-
 
 
 
