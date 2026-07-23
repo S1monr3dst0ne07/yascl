@@ -68,6 +68,22 @@ fn Str::IsDigit(char)
     return (('0' - 1) < char) & (('9' + 1) > char);
 }
 
+fn Str::IsNumber(str)
+{
+    put i = 0;
+    put flag = Bool::TRUE;
+
+    lab loop;
+        put char = str.i;
+        jump done ~ char == '\0';
+        put flag = flag & Str::IsDigit(char);
+        put i = i + 1;
+        jump loop;
+    lab done;
+
+    return flag;
+}
+
 
 
 fn Str::Format(buffer, pattern, args)

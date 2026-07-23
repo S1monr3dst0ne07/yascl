@@ -53,7 +53,7 @@ fn Ast::Leaf::Parse(stream, ctx)
     jump string    ~ tok_kind == Lex::Kind::DOUBLE_QUOTE;
     jump heap_base ~ Str::Diff(content, "__heap_base");
     jump call      ~ Str::Diff(next, "(");
-    jump number    ~ Str::IsDigit(content);
+    jump number    ~ Str::IsNumber(content);
     jump meta;
 
 lab sub_expr;
