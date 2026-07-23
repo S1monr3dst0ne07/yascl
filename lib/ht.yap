@@ -179,7 +179,7 @@ fn HT::Expand(ht)
         jump done ~ index == (ht.HT::CAPACITY);
 
         put entry = (ht.HT::ENTRIES) : (index * HT::Entry);
-        jump loop ~ (entry.HT::Entry::KEY) == Mem::NULL;
+        jump skip_set ~ (entry.HT::Entry::KEY) == Mem::NULL;
 
         // copy into new entry chunk
         HT::Local::Set(
@@ -190,6 +190,7 @@ fn HT::Expand(ht)
             Mem::NULL,
         );
 
+        lab skip_set;
         put index = index + 1;
     jump loop;
     lab done;
