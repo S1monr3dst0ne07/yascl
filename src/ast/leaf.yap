@@ -58,7 +58,7 @@ fn Ast::Leaf::Parse(stream, ctx)
 
 lab sub_expr;
     put expr = Ast::Expr::Parse(stream, ctx);
-    Lex::Expect(")");
+    Lex::Expect(stream, ")");
     return expr;
 
 lab array;
@@ -68,10 +68,10 @@ lab array;
         jump done ~ (Lex::Peek(stream).0) == ']';
         Dyn::Push(elems, Ast::Expr::Parse(stream, ctx));
         jump loop ~ (Lex::Peek(stream).0) != ',';
-        Lex::Expect(",");
+        Lex::Expect(stream, ",");
         jump loop;
     lab done;
-    Lex::Expect("]");
+    Lex::Expect(stream, "]");
 
     return Ast::Leaf::Local::MakeLeaf(
         elems, Ast::Leaf::Kind::ARRAY,
@@ -97,7 +97,7 @@ lab heap_base;
     );
 
 lab call;
-    Lex::Expect("(");
+    Lex::Expect(stream, "(");
     put params = Dyn::Create();
     
     lab call_loop;
@@ -105,11 +105,11 @@ lab call;
         Dyn::Push(params, Ast::Expr::Parse(stream, ctx));
         
         jump call_loop ~ (Lex::Peek(stream).0) != ',';
-        Lex::Expect(",");
+        Lex::Expect(stream, ",");
         jump call_loop;
     lab call_done;
 
-    Lex::Expect(")");
+    Lex::Expect(stream, ")");
     put subnode = Chunk::New(Ast::Leaf::Call);
     put subnode.Ast::Leaf::Call::NAME = content;
     put subnode.Ast::Leaf::Call::PARAMS = params;
