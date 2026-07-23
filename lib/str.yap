@@ -187,7 +187,7 @@ fn Str::Format(buffer, pattern, args)
 
     lab handle_subbuffer;
         put len = Str::Len(subbuffer);
-        Mem::Cpy(buffer, subbuffer, len);
+        Mem::CpyF(buffer, subbuffer, len);
         put buffer = buffer : len;
 
         jump loop;
