@@ -11,9 +11,9 @@ seq Ast::Return
 fn Ast::Return::Parse(stream, ctx)
 {
     put node = Chunk::New(Ast::Return);
-    Lex::Expect("return");
+    Lex::Expect(stream, "return");
     put node.Ast::Return::VALUE = Ast::Expr::Parse(stream, ctx);
-    Lex::Expect(";");
+    Lex::Expect(stream, ";");
     return node;
 }
 
