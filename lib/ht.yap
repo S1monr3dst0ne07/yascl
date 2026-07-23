@@ -1,5 +1,6 @@
 
 
+use "lib/chunk.yap"
 
 // string hash table implementation.
 // https://benhoyt.com/writings/hash-table-in-c/
@@ -74,7 +75,7 @@ fn HT::HashKey(key)
 {
     put hash = HT::FNV::OFFSET;
     lab loop;
-        put char = key;
+        put char = key.0;
         jump done ~ char == '\0';
         put key = key : 1;
 
@@ -94,6 +95,7 @@ fn HT::Get(ht, key)
     // hence (capacity-1) is a mask into the container.
     put hash = HT::HashKey(key);
     put index = hash & ((ht.HT::CAPACITY) - 1);
+
 
     lab loop;
         put entry = (ht.HT::ENTRIES) : (index * HT::Entry);
