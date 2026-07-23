@@ -73,11 +73,10 @@ fn Chunk::Size(ptr)
 
 fn Chunk::Copy(ptr)
 {
-    put chunk = Chunk::FromBuffer(ptr);
-    put size = chunk.Chunk::SIZE;
+    put size = Chunk::Size(ptr);
 
-    put prime = Chunk::New(size);
-    Mem::Cpy(prime, chunk, size);
+    put new = Chunk::New(size);
+    Mem::Cpy(new, ptr, size);
 
-    return prime;
+    return new;
 }
