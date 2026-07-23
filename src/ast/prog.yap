@@ -60,7 +60,9 @@ fn Ast::Prog::Parse(stream, ctx)
         
     lab done;  
 
-
+    put meta = Chunk::New(Ast::Prog);
+    put meta.Ast::Prog::FNS = fns;
+    return meta;
 }
 
 
