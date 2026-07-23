@@ -65,13 +65,13 @@ lab sub_expr;
 lab array;
     put elems = Dyn::Create();
     
-    lab loop;
-        jump done ~ (Lex::Peek(stream).0) == ']';
+    lab array_loop;
+        jump array_done ~ (Lex::Peek(stream).0) == ']';
         Dyn::Push(elems, Ast::Expr::Parse(stream, ctx));
-        jump loop ~ (Lex::Peek(stream).0) != ',';
+        jump array_loop ~ (Lex::Peek(stream).0) != ',';
         Lex::Expect(stream, ",");
-        jump loop;
-    lab done;
+        jump array_loop;
+    lab array_done;
     Lex::Expect(stream, "]");
 
     return Ast::Leaf::Local::MakeLeaf(
@@ -98,12 +98,11 @@ lab heap_base;
     );
 
 lab call;
-    print("CALL\n");
     Lex::Expect(stream, "(");
     put params = Dyn::Create();
     
     lab call_loop;
-        jump done ~ (Lex::Peek(stream).0) == ')';
+        jump call_done ~ (Lex::Peek(stream).0) == ')';
         Dyn::Push(params, Ast::Expr::Parse(stream, ctx));
         
         jump call_loop ~ (Lex::Peek(stream).0) != ',';
