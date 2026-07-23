@@ -121,7 +121,7 @@ lab call;
 
 lab number;
     return Ast::Leaf::Local::MakeLeaf(
-        content, Ast::Leaf::Kind::NUMBER,
+        Str::ToInt(content), Ast::Leaf::Kind::NUMBER,
     );
 
 lab meta;
@@ -131,5 +131,7 @@ lab meta;
     
 
 }
+
+
 
 

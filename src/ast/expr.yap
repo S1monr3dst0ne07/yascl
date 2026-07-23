@@ -4,7 +4,7 @@ use "src/ast/leaf.yap"
 
 seq Ast::Expr::Op
 {
-    INVALID,
+    NONE,
     ADD,
     SUB,
     DOT,
@@ -51,21 +51,20 @@ fn Ast::Expr::OpDecode(op)
 	jump skip_SHIFT_LEFT 	~ Str::Diff(op, "<<"); return Ast::Expr::Op::SHIFT_LEFT;    lab skip_SHIFT_LEFT;
 	jump skip_MODULO 	    ~ Str::Diff(op, "%");  return Ast::Expr::Op::MODULO;        lab skip_MODULO;
 
-    return Ast::Expr::Op::INVALID;
+    return Ast::Expr::Op::NONE;
 }
 
 
 fn Ast::Expr::Parse(stream, ctx)
 {
     put left = Ast::Leaf::Parse(stream, ctx);
-    
+    put right = Mem::NULL;
     put op = Ast::Expr::OpDecode(Lex::Peek(stream));
-    jump operator_present ~ op != Ast::Expr::Op::INVALID;
-        return left;
-    lab operator_present;
 
-    Lex::Pop(stream);
-    put right = Ast::Expr::Parse(stream, ctx);
+    jump skip_right ~ op == Ast::Expr::Op::NONE;
+        Lex::Pop(stream);
+        put right = Ast::Expr::Parse(stream, ctx);
+    lab skip_right;
 
     put node = Chunk::New(Ast::Expr);
     put node.Ast::Expr::LEFT  = left;
