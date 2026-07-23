@@ -2,6 +2,8 @@
 
 use "lib/dyn.yap"
 
+use "src/utils.yap"
+
 
 
 seq Ast::FnDef
