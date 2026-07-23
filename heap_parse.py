@@ -4,17 +4,18 @@ from dataclasses import dataclass as dc
 
 
 out = sys.stdin.read()
-_, src = out.split("--- heap dump start ---")
-heap_base = 0
+preamble, src = out.split("--- heap dump start ---")
+print(preamble)
+
 dump = {}
+
 
 for line in src.split('\n'):
     if not line.strip('\x00 '): continue
     key, value = line.strip('\x00').split('=')
-    if key == "__heap_base":
-        heap_base = int(value)
-    else:
-        dump[int(key) + heap_base] = int(value)
+    dump[int(key)] = int(value)
+
+heap_base = min(dump.keys())
 
 
 
@@ -26,17 +27,23 @@ class Chunk:
 
 chunks = []
 
-index = heap_base
-while index in dump:
-    base = index
-    len = dump[index]
+magic = 100000000
 
-    if len == 0:
-        index += 1
-        continue
+addr = heap_base
+while addr in dump:
+    base = addr
+    len = dump[addr]
+    addr += 8
 
-    content = [dump[index + i + 1] for i in range(len-1)]
-    index += len
+    if len > magic:
+        len -= magic
+
+    print(len)
+
+    content = []
+    for _ in range(len-1):
+        content.append(dump[addr])
+        addr += 8
 
     chunks.append(Chunk(base, len, content))
     

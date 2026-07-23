@@ -19,11 +19,11 @@ fn print(pattern, args)
 fn dump(limit)
 {
     print("--- heap dump start ---");
-    print("__heap_base=%d\n", [__heap_base]);
 
     put i = 0;
     lab loop;
-        print("%d=%d\n", [i, __heap_base.i]);
+        put addr = __heap_base : i;
+        print("%d=%d\n", [addr, addr.0]);
 
         put i = i + 1;
     jump loop ~ i < limit;
