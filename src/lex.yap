@@ -191,7 +191,7 @@ fn Lex::Tokenize(path)
             put lineno = lineno + 1;
         lab skip_newline;
 
-        put state_comment = state_comment | (Str::Diff(buffer, "//") == 0);
+        put state_comment = state_comment | ((Str::Diff(buffer, "//") == 0) & (Bool::TRUE ^ state_string));
         put state_string  = state_string  ^ (last == Lex::Kind::DOUBLE_QUOTE);
         put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
     
@@ -215,6 +215,7 @@ fn Lex::Tokenize(path)
         jump skip_emit ~ Bool::TRUE ^ emit;
             jump skip_push ~ last == Lex::Kind::NONE;
             jump skip_push ~ last == Lex::Kind::FORMAT;
+
                 put token = Chunk::New(Lex::Token);
                 put token.Lex::Token::CONTENT = Str::Copy(buffer);
                 put token.Lex::Token::KIND    = last;
