@@ -2,7 +2,9 @@
 
 use "lib/chunk.yap"
 use "lib/bool.yap"
+
 use "src/lex.yap"
+use "src/ast/fndef.yap"
 
 
 seq Ast::Prog
