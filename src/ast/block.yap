@@ -7,6 +7,7 @@ use "src/ast/put.yap"
 use "src/ast/return.yap"
 use "src/ast/lab.yap"
 use "src/ast/jump.yap"
+use "src/ast/static.yap"
 
 seq Ast::Block
 {
