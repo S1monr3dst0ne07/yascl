@@ -73,7 +73,27 @@ fn Ast::Prog::File(path, ctx)
 
 fn Ast::Prog::ParseSeq(stream, ctx)
 {
-    print("!!! TODO !!! implement Ast::Prog::ParseSeq\n");
+    Lex::Expect(stream, "seq");
+    put name = Lex::PopCheck(stream, Lex::Kind::IDEN);
+    Lex::Expect(stream, "{");
+
+    lab loop;
+        jump done ~ (Lex::Peek(stream).0) == '}';
+        put field = Lex::PopCheck(stream, Lex::Kind::IDEN);
+
+        jump skip_assign ~ (Lex::Peek(stream).0) != '=';
+            Lex::Expect(stream, "=");
+            put i = Str::ToInt(Lex::Pop(stream));
+        lab skip_assign;
+
+        
+        jump loop ~ (Lex::Peek(stream).0) != ',';
+        Lex::Expect(stream, ",");
+        jump loop;
+    lab done;
+
+
+    Lex::Expect(stream, "}");
 }
 
 
