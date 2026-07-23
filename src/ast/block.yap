@@ -8,6 +8,7 @@ use "src/ast/return.yap"
 use "src/ast/lab.yap"
 use "src/ast/jump.yap"
 use "src/ast/static.yap"
+use "src/ast/inplace.yap"
 
 seq Ast::Block
 {
