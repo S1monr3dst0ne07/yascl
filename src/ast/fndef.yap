@@ -3,6 +3,7 @@
 use "lib/dyn.yap"
 
 use "src/utils.yap"
+use "src/ast/block.yap"
 
 
 
