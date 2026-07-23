@@ -48,10 +48,10 @@ fn Ast::Leaf::Parse(stream, ctx)
     put next = Lex::Peek(stream);
 
 
-    jump sub_expr  ~ Str::Diff(content, "(") == 0;
-    jump array     ~ Str::Diff(content, "[") == 0;
     jump char_lit  ~ tok_kind == Lex::Kind::SINGLE_QUOTE;
     jump string    ~ tok_kind == Lex::Kind::DOUBLE_QUOTE;
+    jump sub_expr  ~ Str::Diff(content, "(") == 0;
+    jump array     ~ Str::Diff(content, "[") == 0;
     jump heap_base ~ Str::Diff(content, "__heap_base") == 0;
     jump call      ~ Str::Diff(next, "(") == 0;
     jump number    ~ Str::IsNumber(content);
