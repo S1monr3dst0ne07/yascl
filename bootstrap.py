@@ -408,16 +408,12 @@ class AstBlock:
     def node(stream):
         match stream.peek():
             case 'put': return AstPut.parse(stream)
-            case 'sub': return AstCall.parse(stream)
             case 'return': return AstReturn.parse(stream)
             case 'lab': return AstLabel.parse(stream)
             case 'jump': return AstJump.parse(stream)
             case 'static': return AstStatic.parse(stream)
-            case name if stream.peek(1):
-                return AstInplace.parse(stream)
-            case x:
-                print(f"Error: Unknown node prefix: `{x}`")
-                sys.exit(1)
+
+        return AstInplace.parse(stream)
 
     @classmethod
     def parse(cls, stream):
