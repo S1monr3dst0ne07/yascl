@@ -3,6 +3,8 @@
 use "lib/chunk.yap"
 use "lib/dyn.yap"
 
+use "src/ast/put.yap"
+
 seq Ast::Block
 {
     NODES, // Dyn<Ast::Block::Node>
