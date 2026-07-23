@@ -103,7 +103,8 @@ seq Lex::Token
 seq Lex::Streamer
 {
     TOKENS, // Dyn<Lex::Token>
-    INDEX,  // int
+    LIMIT,  // Int
+    INDEX,  // Int
 }
 
 
@@ -133,9 +134,12 @@ fn Lex::Pop(stream)
     return Lex::PopTok(stream).Lex::Token::CONTENT;
 }
 
-fn Lex::Has(stream)
+fn Lex::Done(stream)
 {
-    return (stream.Lex::Streamer::INDEX) < ((stream.Lex::Streamer::TOKENS).Dyn::SIZE);
+    put index = stream.Lex::Streamer::INDEX;
+    put limit = stream.Lex::Streamer::LIMIT;
+
+    return index == limit;
 }
 
 fn Lex::PopCheck(stream, kind)
@@ -246,6 +250,7 @@ fn Lex::Tokenize(path)
 
     put stream = Chunk::New(Lex::Streamer);
     put stream.Lex::Streamer::TOKENS = Dyn::Ptr(tokens);
+    put stream.Lex::Streamer::LIMIT  = Dyn::Size(tokens);
     put stream.Lex::Streamer::INDEX  = 0;
     return stream;
 }
