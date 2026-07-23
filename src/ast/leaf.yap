@@ -62,29 +62,52 @@ lab sub_expr;
     return expr;
 
 lab array;
-    print("!!! TODO !!! implement array literal parser.");
+    put elems = Dyn::Create();
+    
+    lab loop;
+        jump done ~ (Lex::Peek(stream).0) == ']';
+        Dyn::Push(elems, Ast::Expr::Parse(stream, ctx));
+        jump loop ~ (Lex::Peek(stream).0) != ',';
+        Lex::Expect(",");
+        jump loop;
+    lab done;
+    Lex::Expect("]");
+
+    return Ast::Leaf::Local::MakeLeaf(
+        elems, Ast::Leaf::Kind::ARRAY,
+    );
+
 
 lab char_lit;
-    print("!!! TODO !!! implement char  literal parser.");
+    return Ast::Leaf::Local::MakeLeaf(
+        Str::Unescape(content).0, 
+        Ast::Leaf::Kind::CHAR,
+    );
+
 
 lab string;
-    print("!!! TODO !!! implement string literal parser.");
+    return Ast::Leaf::Local::MakeLeaf(
+        Str::Unescape(content),
+        Ast::Leaf::Kind::STRING,
+    );
 
 lab heap_base;
-    print("!!! TODO !!! implement heap base.");
+    return Ast::Leaf::Local::MakeLeaf(
+        Mem::NULL, Ast::Leaf::Kind::HEAP_BASE,
+    );
 
 lab call;
     Lex::Expect("(");
     put params = Dyn::Create();
     
-    lab loop;
+    lab call_loop;
         jump done ~ (Lex::Peek(stream).0) == ')';
         Dyn::Push(params, Ast::Expr::Parse(stream, ctx));
         
-        jump loop ~ (Lex::Peek(stream).0) != ',';
+        jump call_loop ~ (Lex::Peek(stream).0) != ',';
         Lex::Expect(",");
-        jump loop;
-    lab done;
+        jump call_loop;
+    lab call_done;
 
     Lex::Expect(")");
     put subnode = Chunk::New(Ast::Leaf::Call);
