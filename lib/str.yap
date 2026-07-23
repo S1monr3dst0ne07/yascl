@@ -38,6 +38,23 @@ fn Str::FromIntBase(numb, base)
     return buffer : i;
 }
 
+fn Str::ToInt(str)
+{
+    put numb = 0;
+    put i = 0;
+
+    lab loop;
+        put char = str.i;
+        jump done ~ char == '\0';
+        put i = i + 1;
+
+        put numb = (numb * 10) + (char - '0');
+        jump loop;
+    lab done;
+
+    return numb;
+}
+
 fn Str::ToBytes(bstr, qstr)
 {
     Mem::ToBytes(
