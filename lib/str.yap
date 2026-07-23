@@ -63,6 +63,12 @@ fn Str::Diff(alpha, omega)
 }
 
 
+fn Str::IsDigit(char)
+{
+    return (('0' - 1) < char) & (('9' + 1) > char);
+}
+
+
 
 fn Str::Format(buffer, pattern, args)
 {

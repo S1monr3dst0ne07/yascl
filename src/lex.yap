@@ -49,7 +49,7 @@ fn Lex::Get(char)
     // isalphanum(char)
     jump iden ~ (('a' - 1) < char) & (('z' + 1) > char);
     jump iden ~ (('A' - 1) < char) & (('Z' + 1) > char);
-    jump iden ~ (('0' - 1) < char) & (('9' + 1) > char);
+    jump iden ~ Str::IsDigit(char);
 
     jump iden ~ char == '_';
     jump iden ~ char == ':';
