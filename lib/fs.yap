@@ -70,7 +70,8 @@ fn FS::Read(path)
     put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
     put size = FS::Sys::Size(fd) + 1;
 
-    put bfile = Chunk::New(size >> 3);
+        // 8 times too big. doesn't matter, will get deallocated anyways.
+    put bfile = Chunk::New(size); 
     put qfile = Chunk::New(size);
 
     Sys::TryCall(
