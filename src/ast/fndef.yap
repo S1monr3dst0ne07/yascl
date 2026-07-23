@@ -32,13 +32,11 @@ fn Ast::FnDef::Parse(stream, ctx)
 
     put params = Dyn::Create();
     lab loop;
-        jump done ~ Lex::Peek(stream) == ')';
+        jump done ~ (Lex::Peek(stream).0) == ')';
         Dyn::Push(params, Lex::PopCheck(stream, Lex::Kind::IDEN));
 
-        jump comma ~ Lex::Peek(stream) == ',';
-        jump loop;
+        jump loop ~ (Lex::Peek(stream).0) != ',';
 
-    lab comma;
         Lex::Pop(stream);
         jump loop;
 
