@@ -17,15 +17,17 @@ seq Ast::Prog
 
 fn Ast::Prog::Parse(stream, ctx)
 {
-    put fns = Chunk::New(Ast::Prog);
+    put fns = Dyn::Create();
 
     lab loop;
-        jump done ~ (Lex::Has(stream) ^ Bool::TRUE);
+        jump done ~ Lex::Done(stream);
         put content = Lex::Peek(stream);
 
         jump fn  ~ Str::Diff(content, "fn")  == 0;
         jump seq ~ Str::Diff(content, "seq") == 0;
         jump use ~ Str::Diff(content, "use") == 0;
+
+        Error::Error("Invalid toplevel prefix: %s\n", [content]);
 
     
     lab fn;
@@ -57,6 +59,7 @@ fn Ast::Prog::Parse(stream, ctx)
         jump loop;
         
     lab done;  
+
 
 }
 
