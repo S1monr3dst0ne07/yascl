@@ -1,7 +1,6 @@
 
 use "lib/io.yap"
 use "lib/syscall.yap"
-use "src/lex.yap"
 
 fn Error::Error(msg)
 {
