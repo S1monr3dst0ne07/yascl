@@ -170,8 +170,12 @@ class AstLeaf:
                 scope.save(emit)
                 regs = ABI[:len(params)]
 
-                for reg, param in zip(regs[::-1], params[::-1]):
+                for param in params:
                     param.load(emit, scope)
+                    emit('push rax')
+
+                for reg in regs[::-1]:
+                    emit('pop rax')
                     emit(f'mov {reg}, rax')
 
                 if name == 'syscall':
