@@ -4,6 +4,7 @@ use "lib/chunk.yap"
 use "lib/dyn.yap"
 
 use "src/ast/put.yap"
+use "src/ast/return.yap"
 
 seq Ast::Block
 {
