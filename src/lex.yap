@@ -142,7 +142,7 @@ fn Lex::PopCheck(stream, kind)
 {
     put token = Lex::PopTok(stream);
     jump error ~ (token.Lex::Token::KIND) != kind;
-        return token;
+        return token.Lex::Token::CONTENT;
     lab error;
         Error::TokenError(token, "Expected kind `%s` got `%s`", [
             Lex::DecodeKind(kind),
