@@ -5,6 +5,7 @@ use "lib/dyn.yap"
 
 use "src/ast/put.yap"
 use "src/ast/return.yap"
+use "src/ast/lab.yap"
 
 seq Ast::Block
 {
