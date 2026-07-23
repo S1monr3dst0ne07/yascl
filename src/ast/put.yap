@@ -16,11 +16,11 @@ seq Ast::Put
 fn Ast::Put::Parse(stream, ctx)
 {
     put node = Chunk::New(Ast::Put);
-    Lex::Expect("put");
+    Lex::Expect(stream, "put");
     put node.Ast::Put::DST = Ast::Expr::Parse(stream, ctx);
-    Lex::Expect("=");
+    Lex::Expect(stream, "=");
     put node.Ast::Put::SRC = Ast::Expr::Parse(stream, ctx);
-    Lex::Expect(";");
+    Lex::Expect(stream, ";");
     return node;
 }
 
