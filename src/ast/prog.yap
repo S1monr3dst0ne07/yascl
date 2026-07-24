@@ -31,7 +31,7 @@ fn Ast::Prog::Parse(stream, ctx)
 
     
     lab fn;
-        put node = Ast::FnDef::Parse(stream, ctx);
+        put node = Ast::FnDef::Parse(stream);
         Dyn::Push(fns, node);
         jump loop;
 

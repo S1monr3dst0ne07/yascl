@@ -8,10 +8,10 @@ seq Ast::Inplace
 }
 
 
-fn Ast::Inplace::Parse(stream, ctx)
+fn Ast::Inplace::Parse(stream)
 {
     put node = Chunk::New(Ast::Inplace);
-    put node.Ast::Inplace::EXPR = Ast::Expr::Parse(stream, ctx);
+    put node.Ast::Inplace::EXPR = Ast::Expr::Parse(stream);
     Lex::Expect(stream, ";");
     return node;
 }

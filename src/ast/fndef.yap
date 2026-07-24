@@ -19,7 +19,7 @@ seq Ast::FnDef
 
 
 
-fn Ast::FnDef::Parse(stream, ctx)
+fn Ast::FnDef::Parse(stream)
 {
     put node = Chunk::New(Ast::FnDef);
     
@@ -45,7 +45,7 @@ fn Ast::FnDef::Parse(stream, ctx)
         
     
     Lex::Expect(stream, ")");
-    put node.Ast::FnDef::BODY = Ast::Block::Parse(stream, ctx);
+    put node.Ast::FnDef::BODY = Ast::Block::Parse(stream);
 
     return node;
 }

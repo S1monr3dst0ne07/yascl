@@ -11,7 +11,7 @@ seq Ast::Jump
 }
 
 
-fn Ast::Jump::Parse(stream, ctx)
+fn Ast::Jump::Parse(stream)
 {
     put node = Chunk::New(Ast::Jump);
     Lex::Expect(stream, "jump");
@@ -20,7 +20,7 @@ fn Ast::Jump::Parse(stream, ctx)
 
     jump skip_cond ~ (Lex::Peek(stream).0) != '~';
         Lex::Expect(stream, "~");
-        put node.Ast::Jump::COND = Ast::Expr::Parse(stream, ctx);
+        put node.Ast::Jump::COND = Ast::Expr::Parse(stream);
     lab skip_cond;
 
     Lex::Expect(stream, ";");

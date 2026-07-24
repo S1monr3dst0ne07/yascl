@@ -40,7 +40,7 @@ fn Ast::Block::Local::MakeNode(mesa, kind)
 }
 
 
-fn Ast::Block::ParseNode(stream, ctx)
+fn Ast::Block::ParseNode(stream)
 {
     put token_prefix = Lex::PeekTok(stream);
     put prefix = token_prefix.Lex::Token::CONTENT;
@@ -54,39 +54,39 @@ fn Ast::Block::ParseNode(stream, ctx)
 
 
     lab kind_put; return Ast::Block::Local::MakeNode(
-        Ast::Put::Parse(stream, ctx), 
+        Ast::Put::Parse(stream), 
         Ast::Block::Kind::PUT
     );
 
     lab kind_return; return Ast::Block::Local::MakeNode(
-        Ast::Return::Parse(stream, ctx), 
+        Ast::Return::Parse(stream), 
         Ast::Block::Kind::RETURN
     );
 
     lab kind_lab; return Ast::Block::Local::MakeNode(
-        Ast::Lab::Parse(stream, ctx), 
+        Ast::Lab::Parse(stream), 
         Ast::Block::Kind::LAB
     );
 
     lab kind_jump; return Ast::Block::Local::MakeNode(
-        Ast::Jump::Parse(stream, ctx), 
+        Ast::Jump::Parse(stream), 
         Ast::Block::Kind::JUMP
     );
 
     lab kind_static; return Ast::Block::Local::MakeNode(
-        Ast::Static::Parse(stream, ctx), 
+        Ast::Static::Parse(stream), 
         Ast::Block::Kind::STATIC
     );
 
     lab kind_inplace; return Ast::Block::Local::MakeNode(
-        Ast::Inplace::Parse(stream, ctx), 
+        Ast::Inplace::Parse(stream), 
         Ast::Block::Kind::INPLACE
     );
 
 }
 
 
-fn Ast::Block::Parse(stream, ctx)
+fn Ast::Block::Parse(stream)
 {
     Lex::Expect(stream, "{");
 
@@ -94,7 +94,7 @@ fn Ast::Block::Parse(stream, ctx)
     lab loop;
         jump done ~ (Lex::Peek(stream).0) == '}';
 
-        Dyn::Push(nodes, Ast::Block::ParseNode(stream, ctx));
+        Dyn::Push(nodes, Ast::Block::ParseNode(stream));
 
         jump loop;
     lab done;

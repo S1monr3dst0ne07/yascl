@@ -39,7 +39,7 @@ fn Ast::Leaf::Local::MakeLeaf(value, kind)
 
 
 
-fn Ast::Leaf::Parse(stream, ctx)
+fn Ast::Leaf::Parse(stream)
 {
     put token = Lex::PopTok(stream);
     put tok_kind = token.Lex::Token::KIND;
@@ -58,7 +58,7 @@ fn Ast::Leaf::Parse(stream, ctx)
     jump meta;
 
 lab sub_expr;
-    put expr = Ast::Expr::Parse(stream, ctx);
+    put expr = Ast::Expr::Parse(stream);
     Lex::Expect(stream, ")");
     return expr;
 
@@ -67,7 +67,7 @@ lab array;
     
     lab array_loop;
         jump array_done ~ (Lex::Peek(stream).0) == ']';
-        Dyn::Push(elems, Ast::Expr::Parse(stream, ctx));
+        Dyn::Push(elems, Ast::Expr::Parse(stream));
         jump array_loop ~ (Lex::Peek(stream).0) != ',';
         Lex::Expect(stream, ",");
         jump array_loop;
@@ -104,7 +104,7 @@ lab call;
     lab call_loop;
         put tok = Lex::PeekTok(stream);
         jump call_done ~ (tok.Lex::Token::KIND) == Lex::Kind::PAREN_CLOSE;
-        Dyn::Push(params, Ast::Expr::Parse(stream, ctx));
+        Dyn::Push(params, Ast::Expr::Parse(stream));
         
         jump call_loop ~ (Lex::Peek(stream).0) != ',';
         Lex::Expect(stream, ",");

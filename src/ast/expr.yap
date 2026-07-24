@@ -55,15 +55,15 @@ fn Ast::Expr::OpDecode(op)
 }
 
 
-fn Ast::Expr::Parse(stream, ctx)
+fn Ast::Expr::Parse(stream)
 {
-    put left = Ast::Leaf::Parse(stream, ctx);
+    put left = Ast::Leaf::Parse(stream);
     put right = Mem::NULL;
     put op = Ast::Expr::OpDecode(Lex::Peek(stream));
 
     jump skip_right ~ op == Ast::Expr::Op::NONE;
         Lex::Pop(stream);
-        put right = Ast::Expr::Parse(stream, ctx);
+        put right = Ast::Expr::Parse(stream);
     lab skip_right;
 
     put node = Chunk::New(Ast::Expr);

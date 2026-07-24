@@ -10,7 +10,7 @@ seq Ast::Lab
 }
 
 
-fn Ast::Lab::Parse(stream, ctx)
+fn Ast::Lab::Parse(stream)
 {
     put node = Chunk::New(Ast::Lab);
     Lex::Expect(stream, "lab");

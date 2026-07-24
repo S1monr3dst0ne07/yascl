@@ -13,13 +13,13 @@ seq Ast::Put
 }
 
 
-fn Ast::Put::Parse(stream, ctx)
+fn Ast::Put::Parse(stream)
 {
     put node = Chunk::New(Ast::Put);
     Lex::Expect(stream, "put");
-    put node.Ast::Put::DST = Ast::Expr::Parse(stream, ctx);
+    put node.Ast::Put::DST = Ast::Expr::Parse(stream);
     Lex::Expect(stream, "=");
-    put node.Ast::Put::SRC = Ast::Expr::Parse(stream, ctx);
+    put node.Ast::Put::SRC = Ast::Expr::Parse(stream);
     Lex::Expect(stream, ";");
     return node;
 }
