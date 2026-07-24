@@ -23,19 +23,4 @@ fn IO::OutString(str)
 
 
 
-fn IO::OutNumber(numb)
-{
-    IO::OutString(Str::FromIntBase(numb, 10));
-    IO::OutChar("\n".0);
-}
-
-
-fn IO::OutBinary(numb)
-{
-    IO::OutString(Str::FromIntBase(numb, 2));
-    IO::OutChar("\n".0);
-}
-
-
-
 
