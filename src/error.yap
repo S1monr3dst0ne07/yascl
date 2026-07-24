@@ -11,6 +11,17 @@ fn Error::Error(msg)
     );
 }
 
+
+fn Error::PrintError(pattern, args)
+{
+    static 16384 ~ buffer1;
+    static 16384 ~ buffer2;
+    Str::Format(buffer1, pattern, args);
+    Str::Format(buffer2, "Error: %s\n", [buffer1]);
+
+    Error::Error(buffer2);
+}
+
 fn Error::TokenError(token, pattern, args)
 {
     static 16384 ~ buffer1;

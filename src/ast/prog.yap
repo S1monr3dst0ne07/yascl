@@ -27,7 +27,7 @@ fn Ast::Prog::Parse(stream, ctx)
         jump seq ~ Str::Diff(content, "seq") == 0;
         jump use ~ Str::Diff(content, "use") == 0;
 
-        Error::Error("Invalid toplevel prefix: %s\n", [content]);
+        Error::PrintError("Invalid toplevel prefix: %s\n", [content]);
 
     
     lab fn;
@@ -51,7 +51,7 @@ fn Ast::Prog::Parse(stream, ctx)
         print("using: %s\n", [path]);
 
         HT::Set(path_pool, path, Bool::TRUE);
-        //put subprog = Ast::Prog::File(path, ctx);
+        put subprog = Ast::Prog::File(path, ctx);
         //Dyn::Merge(fns, subprog.Ast::Prog::FNS);
 
         // functions are taken by self.
