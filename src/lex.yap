@@ -171,6 +171,7 @@ fn Lex::Tokenize(path)
     put src = FS::Read(path);
     put tokens = Dyn::Create();
 
+
     put state_comment = Bool::FALSE;
     put state_string  = Bool::FALSE;
     put state_char    = Bool::FALSE;
@@ -180,10 +181,11 @@ fn Lex::Tokenize(path)
     static 4096 ~ buffer;
     put iter = buffer;
     
+    put i = 0;
     lab loop;
-        put char = src.0;
+        put char = src.i;
         jump done ~ char == '\0';
-        put src = src : 1;
+        put i = i + 1;
         put kind = Lex::Get(char);
 
 
@@ -249,10 +251,14 @@ fn Lex::Tokenize(path)
     jump loop;
     lab done;
 
+    Chunk::Void(src);
+
     put stream = Chunk::New(Lex::Streamer);
     put stream.Lex::Streamer::TOKENS = Dyn::Ptr(tokens);
     put stream.Lex::Streamer::LIMIT  = Dyn::Size(tokens);
     put stream.Lex::Streamer::INDEX  = 0;
+
+    Chunk::Void(tokens);
     return stream;
 }
 
