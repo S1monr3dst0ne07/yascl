@@ -102,7 +102,8 @@ lab call;
     put params = Dyn::Create();
     
     lab call_loop;
-        jump call_done ~ (Lex::Peek(stream).0) == ')';
+        put tok = Lex::PeekTok(stream);
+        jump call_done ~ (tok.Lex::Token::KIND) == Lex::Kind::PAREN_CLOSE;
         Dyn::Push(params, Ast::Expr::Parse(stream, ctx));
         
         jump call_loop ~ (Lex::Peek(stream).0) != ',';
