@@ -19,9 +19,9 @@ fn main()
     put ctx = Chunk::New(GlobalCtx);
     put ctx.GlobalCtx::PATHS = HT::Create();
 
+    put path = "src/main.yap";
 
-    put root = Ast::Prog::File("prg/hello.yap", ctx);
-
+    put root = Ast::Prog::File(path, ctx);
 
 
 
