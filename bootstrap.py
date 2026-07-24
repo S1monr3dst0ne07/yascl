@@ -299,7 +299,7 @@ class AstExpr:
             message = str(self.debug_src_token) + '\n'
             strings[msg] = message
 
-            emit('cmp rax, {SPY_ADDR}')
+            emit(f'cmp rax, {SPY_ADDR}')
             emit(f'jne {skip}')
             emit("push rax")
 
