@@ -106,8 +106,11 @@ fn Ast::Prog::ParseSeq(stream, ctx)
         jump loop;
     lab done;
 
+    // length of sequence
+    HT::Set(ctx.Ctx::Global::CONSTS, name, i);
 
     Lex::Expect(stream, "}");
 }
+
 
 
