@@ -216,3 +216,54 @@ fn HT::Set(ht, key, value)
 }
 
 
+
+
+seq HT::Iter
+{
+    KEY,
+    VALUE,
+    _TABLE,
+    _INDEX,
+    _COUNT,
+}
+
+
+fn HT::MakeIter(ht)
+{
+    return [
+        Mem::NULL,
+        Mem::NULL,
+        ht,
+        0,
+        ht.HT::LENGTH,
+    ];
+}
+
+fn HT::Next(it)
+{
+    put ht = it.HT::Iter::_TABLE;
+
+    put count = it.HT::Iter::_COUNT;
+    jump empty ~ count == 0;
+    put it.HT::Iter::_COUNT = count - 1;
+
+    lab loop;
+        put i = it.HT::Iter::_INDEX;
+        put it.HT::Iter::_INDEX = i + 1;
+
+        put entry = (ht.HT::ENTRIES):(i * HT::Entry);
+        jump again ~ (entry.HT::Entry::KEY) == Mem::NULL;
+
+        put it.HT::Iter::KEY   = entry.HT::Entry::KEY;
+        put it.HT::Iter::VALUE = entry.HT::Entry::VALUE;
+        return Bool::TRUE;
+
+        lab again;
+    jump loop ~ (it.HT::Iter::_INDEX) < (ht.HT::CAPACITY);
+
+lab empty;
+    return Bool::FALSE;
+}
+
+
+
