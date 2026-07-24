@@ -247,12 +247,9 @@ class AstExpr:
             case '+': emit('add rax, rbx')
             case '-': emit('sub rax, rbx')
             case '.':
-                emit(f"lea rbx, [rbx*{WORD_SIZE}]")
-                emit("add rax, rbx")
-                emit("mov rax, [rax]")
+                emit(f"mov rax, [rax + rbx*{WORD_SIZE}]")
             case ':':
-                emit(f"lea rbx, [rbx*{WORD_SIZE}]")
-                emit("add rax, rbx")
+                emit(f"lea rax, [rax + rbx*{WORD_SIZE}]")
             case '==' | '!=' | '<' | '>':
                 emit('cmp rax, rbx')
                 match self.op:
@@ -599,7 +596,6 @@ def finalize(emit):
     VAR_COUNT = 100 # concurrent local variables
     emit("segment writeable readable")
     emit(f'vars: \n\trq {VAR_COUNT}')
-    emit(f"buf: \n\trb 4096 \n\tdb 10")
 
     #emit strings
     for label, string in strings.items():
