@@ -2,6 +2,7 @@
 
 use "lib/chunk.yap"
 use "lib/bool.yap"
+use "lib/ht.yap"
 
 use "src/lex.yap"
 use "src/ast/fndef.yap"
@@ -44,7 +45,7 @@ fn Ast::Prog::Parse(stream, ctx)
         put path = Lex::PopCheck(stream, Lex::Kind::DOUBLE_QUOTE);
 
         
-        put path_pool = ctx.GlobalCtx::PATHS;
+        put path_pool = ctx.Ctx::Global::PATHS;
         put present = HT::Get(path_pool, path);
         jump loop ~ present;
 
@@ -84,6 +85,9 @@ fn Ast::Prog::ParseSeq(stream, ctx)
     put name = Lex::PopCheck(stream, Lex::Kind::IDEN);
     Lex::Expect(stream, "{");
 
+    static 4096 ~ iden;
+
+    put i = 0;
     lab loop;
         jump done ~ (Lex::Peek(stream).0) == '}';
         put field = Lex::PopCheck(stream, Lex::Kind::IDEN);
@@ -93,6 +97,9 @@ fn Ast::Prog::ParseSeq(stream, ctx)
             put i = Str::ToInt(Lex::Pop(stream));
         lab skip_assign;
 
+        Str::Format(iden, "%s::%s", [name, field]);
+        HT::Set(ctx.Ctx::Global::CONSTS, iden, i);
+        put i = i + 1;
         
         jump loop ~ (Lex::Peek(stream).0) != ',';
         Lex::Expect(stream, ",");
