@@ -1,12 +1,10 @@
 
 TARGET=prg/test.yap
 
-.PHONY: build
+.PHONY: build run compiler
 
-compiler: src/* lib/*
-	./bootstrap.py src/main.yap
-	fasm build.asm compiler
-	chmod +x compiler
+run: compiler
+	./compiler
 
 
 build: compiler
@@ -14,6 +12,9 @@ build: compiler
 	fasm build.asm build
 	chmod +x build
 
-
+compiler: src/** lib/*
+	./bootstrap.py src/main.yap
+	fasm build.asm compiler
+	chmod +x compiler
 
 
