@@ -3,92 +3,128 @@
 use "lib/mem.yap"
 
 
-seq Chunk
-{
-    HEADER,
-    BUFFER,
-}
-
-
-fn Chunk::FromBuffer(ptr)
-{ 
-    return ptr - (0 : Chunk::BUFFER); 
-}
-fn Chunk::ToBuffer(ptr)
-{
-    return ptr : Chunk::BUFFER;
-}
-
 seq Chunk::Config
 {
-    MAGIC = 4294967296, // (1 << 32)
+    MAGIC = 123456789,
 }
-
-fn Chunk::LH2S(chunk) // local header to size
+seq Chunk
 {
-    put header = chunk.Chunk::HEADER;
-    jump corrupt ~ (header & Chunk::Config::MAGIC) == 0;
-    put size = header ^ Chunk::Config::MAGIC;
-    return size;
+    MAGIC_LOW,  // must be Chunk::Config::MAGIC
+    MAGIC_HIGH, // must also be Chunk::Config::MAGIC
+        // chunk is not present if both are zero.
 
-lab corrupt;
-    print("Heap corruption! at %d, magic not present\n", [chunk]);
-    syscall(SYSCALL::EXIT, 1);
+    SIZE,  // 
+    NEXT,  // Mem::NULL for last  chunk
+    PREV,  // Mem::NULL for first chunk
+    BASE,  // base address of chunk
 }
 
 
+fn Chunk::FromBase(ptr)
+{ 
+    return ptr - (0 : Chunk::BASE); 
+}
+fn Chunk::ToBase(ptr)
+{
+    return ptr + (0 : Chunk::BASE);
+}
+
+fn Chunk::Local::VerifyMagic(chunk)
+{
+    jump corr ~ (chunk.Chunk::MAGIC_LOW)  != Chunk::Config::MAGIC;
+    jump corr ~ (chunk.Chunk::MAGIC_HIGH) != Chunk::Config::MAGIC;
+    jump good;
+
+    lab corr;
+        print("!!! Heap corrupted at %d, magic not present\n", [chunk]);
+        syscall(SYSCALL::EXIT, 1);
+    lab good;
+}
+
+
+fn Chunk::Local::Init()
+{
+    jump done ~ __heap_base.0;
+        put primordial = __heap_base;
+        put primordial.Chunk::MAGIC_LOW  = Chunk::Config::MAGIC;
+        put primordial.Chunk::MAGIC_HIGH = Chunk::Config::MAGIC;
+        put primordial.Chunk::SIZE       = Chunk::BASE; // base size
+        put primordial.Chunk::NEXT       = Mem::NULL;
+        put primordial.Chunk::PREV       = Mem::NULL;
+    lab done;
+}
 
 // --- user heap ---
 fn Chunk::New(words)
 {
-    put needed = words + 1;
+    Chunk::Local::Init(); // make sure heap is initialized.
+    put needed = words + Chunk::BASE;
 
     // *collars and leashes you* let's go for walkies~
     put walker = __heap_base;
 
-    put trail = needed;
+
     lab loop;
-        jump done ~ trail == 0;
+        Chunk::Local::VerifyMagic(walker);
+        jump last_chunk ~ (walker.Chunk::NEXT) == Mem::NULL;
 
-        jump restart ~ walker.0;
-            // advance trail
-            put walker = walker : 1;
-            put trail  = trail  - 1;
+        put interval = (walker.Chunk::NEXT) - walker;
+        put space = (interval >> 3) - (walker.Chunk::SIZE);
+        jump enough_space ~ space >  needed;
+        jump enough_space ~ space == needed;
 
-            jump loop;
+        // WALKIES !!!!!!
+        put walker = walker.Chunk::NEXT;
+        jump loop;
 
-        lab restart;
-            // skip block
-            put walker = walker : Chunk::LH2S(walker);
+lab last_chunk;
+lab enough_space;
+    // last chunk or enough space after chunk.
+    // allocate new chunk after this one. 
+    put prev = walker;
+    put next = walker.Chunk::NEXT;
 
-            //restart trail
-            put trail = needed;
+    put new = walker : (walker.Chunk::SIZE);
+    put new.Chunk::MAGIC_LOW  = Chunk::Config::MAGIC;
+    put new.Chunk::MAGIC_HIGH = Chunk::Config::MAGIC;
+    put new.Chunk::SIZE       = needed;
+    put new.Chunk::NEXT       = next;
+    put new.Chunk::PREV       = prev;
 
-            jump loop;
-    lab done;
+    put prev.Chunk::NEXT = new;
+    jump skip_next ~ next == Mem::NULL;
+        put next.Chunk::PREV = new;
+    lab skip_next;
 
-
-    put chunk = walker - (0 : needed);
-    put chunk.Chunk::HEADER = needed | Chunk::Config::MAGIC;
-
-    return Chunk::ToBuffer(chunk);
+    return Chunk::ToBase(new);
 }
 
 
 fn Chunk::Void(ptr)
 {
-    put chunk = Chunk::FromBuffer(ptr);
-    put size = Chunk::LH2S(chunk);
+    // grab chunk data
+    put chunk = Chunk::FromBase(ptr);
+    put size = chunk.Chunk::SIZE;
 
+    Chunk::Local::VerifyMagic(chunk);
+
+    // unlink chunk
+    put prev = chunk.Chunk::PREV;
+    put next = chunk.Chunk::NEXT;
+
+    put prev.Chunk::NEXT = next;
+    jump skip_next ~ next == Mem::NULL;
+        put next.Chunk::PREV = prev;
+    lab skip_next;
+
+    // zero chunk
     Mem::Set(chunk, 0, size);
 }
 
-
-// --- regular chunk routines ---
 fn Chunk::Size(ptr)
 {
-    put chunk = Chunk::FromBuffer(ptr);
-    return Chunk::LH2S(chunk) - 1;
+    put chunk = Chunk::FromBase(ptr);
+    return (chunk.Chunk::SIZE) - Chunk::BASE;
 }
 
 fn Chunk::Copy(ptr)
