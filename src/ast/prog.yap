@@ -71,7 +71,10 @@ fn Ast::Prog::File(path, ctx)
     print("\ttokenizing...\n");
     put stream = Lex::Tokenize(path);
     print("\tparsing...\n");
-    return Ast::Prog::Parse(stream, ctx);
+    put root = Ast::Prog::Parse(stream, ctx);
+
+    Lex::VoidStream(stream);
+    return root;
 }
 
 

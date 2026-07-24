@@ -222,7 +222,7 @@ fn Lex::Tokenize(path)
                 put token.Lex::Token::CONTENT = Str::Copy(buffer);
                 put token.Lex::Token::KIND    = last;
                 put token.Lex::Token::LINENO  = lineno;
-                put token.Lex::Token::PATH    = Str::Copy(path);
+                put token.Lex::Token::PATH    = path;
 
                 Dyn::Push(tokens, token);
             lab skip_push;
@@ -264,6 +264,25 @@ fn Lex::Tokenize(path)
 
 
 
+fn Lex::VoidStream(stream)
+{
+    put toks  = stream.Lex::Streamer::TOKENS;
+    put limit = stream.Lex::Streamer::LIMIT;
+
+    put i = 0;
+    lab loop;
+        Lex::VoidToken(toks.i);
+        put i = i + 1;
+    jump loop ~ i < limit;
+
+    Chunk::Void(stream);
+}
+
+fn Lex::VoidToken(token)
+{
+    Chunk::Void(token.Lex::Token::CONTENT);
+    Chunk::Void(token);
+}
 
 
 
