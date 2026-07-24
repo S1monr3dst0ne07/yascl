@@ -177,3 +177,27 @@ lab empty;
     return Mem::NULL;
 }
 
+
+
+fn Dyn::Merge(list, other)
+{
+    put list_size  = Dyn::Size(list);
+    put other_size = Dyn::Size(other);
+    jump skip ~ other_size == 0; // nothing to merge.
+
+    put new_size = list_size + other_size;
+    Dyn::Recap(list, new_size);
+
+    put other_container = Dyn::Ptr(other);
+
+    put i = 0;
+    lab loop;
+        put elem = other_container.i;
+        Dyn::Push(list, elem);
+        put i = i + 1;
+    jump loop ~ i < other_size;
+
+lab skip;
+}
+
+

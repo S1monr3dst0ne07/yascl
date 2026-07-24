@@ -52,10 +52,10 @@ fn Ast::Prog::Parse(stream, ctx)
 
         HT::Set(path_pool, path, Bool::TRUE);
         put subprog = Ast::Prog::File(path, ctx);
-        //Dyn::Merge(fns, subprog.Ast::Prog::FNS);
+        Dyn::Merge(fns, subprog.Ast::Prog::FNS);
 
         // functions are taken by self.
-        //Chunk::Void(subprog);
+        Chunk::Void(subprog);
         jump loop;
         
     lab done;  
