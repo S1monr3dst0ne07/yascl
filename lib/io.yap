@@ -16,9 +16,13 @@ fn IO::OutString(str)
     put i = 0;
     lab loop;
         put char = str.i;
+        jump done ~ char == '\0';
+
         put i = i + 1;
         IO::OutChar(char);
-    jump loop ~ char;
+
+        jump loop;
+    lab done;
 }
 
 
