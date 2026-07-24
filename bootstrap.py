@@ -8,6 +8,7 @@ from typing import Literal, Any
 # 64-bit compiler
 WORD_SIZE = 8
 
+SPY_ADDR = None
 
 def fresh_gen():
     i = 0
@@ -175,8 +176,7 @@ class AstLeaf:
                     emit('push rax')
 
                 for reg in regs[::-1]:
-                    emit('pop rax')
-                    emit(f'mov {reg}, rax')
+                    emit(f"pop {reg}")
 
                 if name == 'syscall':
                     emit('syscall')
@@ -224,6 +224,8 @@ class AstExpr:
     right : "AstExpr | AstLeaf"
     op    : str
 
+    debug_src_token : ""
+
     @classmethod
     def parse(cls, stream):
         left = AstLeaf.parse(stream)
@@ -231,9 +233,9 @@ class AstExpr:
         if stream.peek() not in OPS:
             return left
 
-        op = stream.pop()
+        op = stream._pop()
         right = AstExpr.parse(stream)
-        return cls(left, right, op)
+        return cls(left, right, op.content, op)
 
     def load(self, emit, scope):
         self.right.load(emit, scope)
@@ -289,8 +291,30 @@ class AstExpr:
         emit('pop rbx')
         emit(f"lea rbx, [rbx*{WORD_SIZE}]")
         emit("add rax, rbx")
+
+
+        if SPY_ADDR:
+            skip = next(fresh)
+            msg  = next(fresh)
+            message = str(self.debug_src_token) + '\n'
+            strings[msg] = message
+
+            emit('cmp rax, {SPY_ADDR}')
+            emit(f'jne {skip}')
+            emit("push rax")
+
+            emit(f"mov rax, 1")
+            emit(f"mov rsi, {msg}")
+            emit(f"mov rdi, 1")
+            emit(f"mov rdx, {len(message)*8}")
+            emit("syscall")
+
+            emit("pop rax")
+            emit(f'{skip}:')
+
         emit('pop rbx')
         emit("mov [rax], rbx")
+
 
 
 
