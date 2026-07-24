@@ -5,7 +5,7 @@ use "lib/mem.yap"
 
 seq Chunk
 {
-    SIZE,
+    HEADER,
     BUFFER,
 }
 
@@ -18,6 +18,24 @@ fn Chunk::ToBuffer(ptr)
 {
     return ptr : Chunk::BUFFER;
 }
+
+seq Chunk::Config
+{
+    MAGIC = 4294967296, // (1 << 32)
+}
+
+fn Chunk::LH2S(chunk) // local header to size
+{
+    put header = chunk.Chunk::HEADER;
+    jump corrupt ~ (header & Chunk::Config::MAGIC) == 0;
+    put size = header ^ Chunk::Config::MAGIC;
+    return size;
+
+lab corrupt;
+    print("Heap corruption! at %d, magic not present\n", [chunk]);
+    syscall(SYSCALL::EXIT, 1);
+}
+
 
 
 // --- user heap ---
@@ -32,8 +50,7 @@ fn Chunk::New(words)
     lab loop;
         jump done ~ trail == 0;
 
-        put must_restart = walker.0;
-        jump restart ~ must_restart;
+        jump restart ~ walker.0;
             // advance trail
             put walker = walker : 1;
             put trail  = trail  - 1;
@@ -42,7 +59,7 @@ fn Chunk::New(words)
 
         lab restart;
             // skip block
-            put walker = walker : (walker.0);
+            put walker = walker : Chunk::LH2S(walker);
 
             //restart trail
             put trail = needed;
@@ -50,15 +67,18 @@ fn Chunk::New(words)
             jump loop;
     lab done;
 
+
     put chunk = walker - (0 : needed);
-    put chunk.Chunk::SIZE = needed;
+    put chunk.Chunk::HEADER = needed | Chunk::Config::MAGIC;
+
     return Chunk::ToBuffer(chunk);
 }
+
 
 fn Chunk::Void(ptr)
 {
     put chunk = Chunk::FromBuffer(ptr);
-    put size = chunk.Chunk::SIZE;
+    put size = Chunk::LH2S(chunk);
 
     Mem::Set(chunk, 0, size);
 }
@@ -68,7 +88,7 @@ fn Chunk::Void(ptr)
 fn Chunk::Size(ptr)
 {
     put chunk = Chunk::FromBuffer(ptr);
-    return (chunk.Chunk::SIZE) - 1;
+    return Chunk::LH2S(chunk) - 1;
 }
 
 fn Chunk::Copy(ptr)
