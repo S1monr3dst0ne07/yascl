@@ -46,8 +46,7 @@ fn Ast::Prog::Parse(stream, ctx)
 
         
         put path_pool = ctx.Ctx::Global::PATHS;
-        put present = HT::Get(path_pool, path);
-        jump loop ~ present;
+        jump loop ~ HT::Has(path_pool, path);
 
         print("using: %s\n", [path]);
 
@@ -111,6 +110,4 @@ fn Ast::Prog::ParseSeq(stream, ctx)
 
     Lex::Expect(stream, "}");
 }
-
-
 

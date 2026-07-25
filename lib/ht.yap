@@ -87,6 +87,31 @@ fn HT::HashKey(key)
     return hash;
 }
 
+fn HT::Has(ht, key)
+{
+    // capacity is always a power of two,
+    // hence (capacity-1) is a mask into the container.
+    put hash = HT::HashKey(key);
+    put index = hash & ((ht.HT::CAPACITY) - 1);
+
+
+    lab loop;
+        put entry = (ht.HT::ENTRIES) : (index * HT::Entry);
+        put entry_key = entry.HT::Entry::KEY;
+
+        jump absent  ~ entry_key == Mem::NULL;
+        jump present ~ Str::Diff(key, entry_key) == 0;
+
+        put index = index + 1;
+        jump wrap_around ~ index == (ht.HT::CAPACITY);
+        jump loop;
+    lab wrap_around;
+        put index = 0;
+        jump loop;
+
+lab present; return Bool::TRUE;
+lab absent;  return Bool::FALSE;
+}
 
 
 fn HT::Get(ht, key)
