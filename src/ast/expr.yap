@@ -74,4 +74,12 @@ fn Ast::Expr::Parse(stream)
 }
 
 
+fn Ast::Expr::Resolve(node, ctx)
+{
+    Ast::Leaf::Resolve(node.Ast::Expr::LEFT, ctx);
+    
+    jump skip_right ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+        Ast::Expr::Resolve(node.Ast::Expr::RIGHT, ctx);
+    lab skip_right;
+}
 

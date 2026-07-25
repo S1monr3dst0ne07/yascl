@@ -1,6 +1,7 @@
 
 
-
+use "lib/ht.yap"
+use "src/ctx.yap"
 
 
 seq Ast::Leaf
@@ -81,14 +82,14 @@ lab array;
 
 lab char_lit;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Unescape(content).0, 
+        Str::Unescape(Str::Copy(content)).0, 
         Ast::Leaf::Kind::CHAR,
     );
 
 
 lab string;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Unescape(content),
+        Str::Unescape(Str::Copy(content)),
         Ast::Leaf::Kind::STRING,
     );
 
@@ -113,7 +114,7 @@ lab call;
 
     Lex::Expect(stream, ")");
     put subnode = Chunk::New(Ast::Leaf::Call);
-    put subnode.Ast::Leaf::Call::NAME = content;
+    put subnode.Ast::Leaf::Call::NAME = Str::Copy(content);
     put subnode.Ast::Leaf::Call::PARAMS = params;
 
     return Ast::Leaf::Local::MakeLeaf(
@@ -127,12 +128,30 @@ lab number;
 
 lab meta;
     return Ast::Leaf::Local::MakeLeaf(
-        Mem::NULL, Ast::Leaf::Kind::META,
+        Str::Copy(content), Ast::Leaf::Kind::META,
     );
     
 
 }
 
+
+fn Ast::Leaf::Resolve(node, ctx)
+{
+    jump done ~ (node.Ast::Leaf::KIND) != Ast::Leaf::Kind::META;
+    put value = node.Ast::Leaf::VALUE;
+
+    jump const ~ HT::Has(ctx.Ctx::Global::CONSTS, value);
+    jump var;
+    
+    lab const;
+        put node.Ast::Leaf::KIND = Ast::Leaf::Kind::CONST;
+        jump done;
+    lab var;
+        put node.Ast::Leaf::KIND = Ast::Leaf::Kind::VAR;
+        jump done;
+
+    lab done;
+}
 
 
 

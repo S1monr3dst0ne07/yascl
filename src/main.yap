@@ -14,16 +14,11 @@ fn main()
     put ctx = Ctx::MakeGlobal();
     put path = "src/main.yap";
 
+    print("--- parsing ---\n");
     put root = Ast::Prog::File(path, ctx);
+    print("--- resolving ---\n");
+    Ast::Prog::Resolve(root, ctx);
     
-    put it = HT::MakeIter(ctx.Ctx::Global::CONSTS);
-    lab loop;
-        jump done ~ 1 ^ HT::Next(it);
-
-        print("%s : %d\n", [it.HT::Iter::KEY, it.HT::Iter::VALUE]);
-        jump loop;
-    lab done;
-
 
 
 }

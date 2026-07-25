@@ -111,3 +111,17 @@ fn Ast::Prog::ParseSeq(stream, ctx)
     Lex::Expect(stream, "}");
 }
 
+
+fn Ast::Prog::Resolve(node, ctx)
+{
+    put fns = node.Ast::Prog::FNS;
+
+    put i = 0;
+    lab loop;
+        put func = Dyn::Ptr(fns).i;
+        Ast::FnDef::Resolve(func, ctx);
+        put i = i + 1;
+    jump loop ~ i < Dyn::Size(fns);
+}
+
+

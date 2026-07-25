@@ -26,7 +26,11 @@ fn Ast::Put::Parse(stream)
 
 
 
-
+fn Ast::Put::Resolve(node, ctx)
+{
+    Ast::Expr::Resolve(node.Ast::Put::DST, ctx);
+    Ast::Expr::Resolve(node.Ast::Put::SRC, ctx);
+}
 
 
 

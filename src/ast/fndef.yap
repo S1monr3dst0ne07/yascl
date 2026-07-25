@@ -51,7 +51,13 @@ fn Ast::FnDef::Parse(stream)
 }
 
 
-
+fn Ast::FnDef::Resolve(node, ctx)
+{
+    Ast::Block::Resolve(
+        node . Ast::FnDef::BODY,
+        ctx,
+    );
+}
 
 
 

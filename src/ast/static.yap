@@ -21,3 +21,8 @@ fn Ast::Static::Parse(stream)
     return node;
 }
 
+
+fn Ast::Static::Resolve(node, ctx)
+{
+    Ast::Expr::Resolve(node.Ast::Static::EXPR, ctx);
+}

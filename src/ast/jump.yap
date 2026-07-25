@@ -7,7 +7,7 @@ use "lib/mem.yap"
 seq Ast::Jump
 {
     TARGET, // Str
-    COND,   // AstExpr | NULL
+    COND,   // AstExpr | Mem::NULL
 }
 
 
@@ -27,3 +27,11 @@ fn Ast::Jump::Parse(stream)
     return node; 
 }
 
+
+fn Ast::Jump::Resolve(node, ctx)
+{
+    put cond = node.Ast::Jump::COND;
+    jump done ~ cond == Mem::NULL;
+        Ast::Expr::Resolve(cond, ctx);
+    lab done;
+}

@@ -17,4 +17,8 @@ fn Ast::Inplace::Parse(stream)
 }
 
 
+fn Ast::Inplace::Resolve(node, ctx)
+{
+    Ast::Expr::Resolve(node.Ast::Inplace::EXPR, ctx);
+}
 

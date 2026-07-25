@@ -18,4 +18,8 @@ fn Ast::Return::Parse(stream)
 }
 
 
+fn Ast::Return::Resolve(node, ctx)
+{
+    Ast::Expr::Resolve(node.Ast::Return::VALUE, ctx);
+}
 
