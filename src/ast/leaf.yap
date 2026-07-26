@@ -27,6 +27,7 @@ seq Ast::Leaf::Kind
     ARRAY,
     CHAR,
     HEAP_BASE,
+    SUBEXPR,
 }
 
 
@@ -61,7 +62,10 @@ fn Ast::Leaf::Parse(stream)
 lab sub_expr;
     put expr = Ast::Expr::Parse(stream);
     Lex::Expect(stream, ")");
-    return expr;
+
+    return Ast::Leaf::Local::MakeLeaf(
+        expr, Ast::Leaf::Kind::SUBEXPR,
+    );
 
 lab array;
     put elems = Dyn::Create();
@@ -82,7 +86,7 @@ lab array;
 
 lab char_lit;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Unescape(Str::Copy(content)).0, 
+        Str::Unescape(content).0, 
         Ast::Leaf::Kind::CHAR,
     );
 
@@ -157,14 +161,57 @@ fn Ast::Leaf::Resolve(node, ctx)
 fn Ast::Leaf::Load(node, ctx)
 {
     put kind = node.Ast::Leaf::KIND;
+    put value = node.Ast::Leaf::VALUE;
 
-    jump load_number ~ kind == Ast::Leaf::Kind::NUMBER;
+    jump load_number    ~ kind == Ast::Leaf::Kind::NUMBER;
+    jump load_var       ~ kind == Ast::Leaf::Kind::VAR;
+    //jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
+    jump load_const     ~ kind == Ast::Leaf::Kind::CONST;
+    //jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
+    //jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
+    jump load_char      ~ kind == Ast::Leaf::Kind::CHAR;
+    //jump load_heap_base ~ kind == Ast::Leaf::Kind::HEAP_BASE;
     jump done;
 
-
+lab load_char;   
 lab load_number;
-    Ctx::Emit(ctx, "mov rax, %d", [node.Ast::Leaf::VALUE]);
+    Ctx::Emit(ctx, "mov rax, %d", [value]);
+    jump done;
+lab load_const;
+    put const = HT::Get(ctx.Ctx::Global::CONSTS, value);
+    Ctx::Emit(ctx, "mov rax, %d", [const]);
+    jump done;
+lab load_var;
+    jump var_not_exist ~ Bool::TRUE ^ Ctx::VarExists(ctx, value);
+    put addr = Ctx::VarLookup(ctx, value);
+    Ctx::Emit(ctx, "mov rax, [vars + %d]", [addr]);
+    jump done;
 
+    
+
+lab var_not_exist;
+    print("Variable `%s` has not been defined\n", [value]);
+    //Error::PrintError("Variable `%s` has not been defined", [value]);
+
+lab done;
+}
+
+fn Ast::Leaf::Store(node, ctx)
+{
+    put kind = node.Ast::Leaf::KIND;
+    put value = node.Ast::Leaf::VALUE;
+    jump subexpr ~ kind == Ast::Leaf::Kind::SUBEXPR;
+    jump not_var ~ kind != Ast::Leaf::Kind::VAR;
+
+    Ctx::VarAlloc(ctx, value);
+    put addr = Ctx::VarLookup(ctx, value);
+    Ctx::Emit(ctx, "mov [vars + %d], rax", [addr]);
+
+    jump done;
+lab not_var;
+    Error::PrintError("Trying to store into non-variable value");
+lab subexpr;
+    Ast::Expr::Store(value, ctx);
 lab done;
 }
 

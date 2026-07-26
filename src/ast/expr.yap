@@ -172,3 +172,24 @@ lab done;
 }
 
 
+fn Ast::Expr::Store(node, ctx)
+{
+    jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+
+    Ctx::Emit(ctx, "push rax");
+    Ast::Expr::Load(node.Ast::Expr::RIGHT, ctx);
+    Ctx::Emit(ctx, "push rax");
+    Ast::Leaf::Load(node.Ast::Expr::LEFT,  ctx);
+    Ctx::Emit(ctx, "pop rbx");
+    Ctx::Emit(ctx, "lea rbx, [rbx*%d]", [Config::WORD_SIZE]);
+    Ctx::Emit(ctx, "add rax, rbx");
+
+    Ctx::Emit(ctx, "pop rbx");
+    Ctx::Emit(ctx, "mov [rax], rbx");
+
+    jump done;
+lab only_leaf;
+    Ast::Leaf::Store(node.Ast::Expr::LEFT, ctx);
+lab done;
+}
+
