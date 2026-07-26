@@ -26,6 +26,8 @@ seq FS::ENUM::MODE // (fcntl.h)
     RDONLY = 0,
     WRONLY = 1,
     WRDR   = 2,
+    CREATE = 64,
+    TRUNC  = 512,
 }
 
 fn FS::ConvertPath(qpath)
@@ -64,6 +66,15 @@ fn FS::Sys::Size(fd)
     return size;
 }
 
+fn FS::Sys::Close(fd)
+{
+    return Sys::TryCall(
+        "FS::Sys::Close",
+        SYSCALL::CLOSE, 
+        fd,
+    );
+}
+
 
 fn FS::Read(path)
 {
@@ -84,8 +95,35 @@ fn FS::Read(path)
 
     Mem::FromBytes(qfile, bfile, size);
     Chunk::Void(bfile);
+    FS::Sys::Close(fd);
     put qfile.(size - 1) = 0;
     return qfile;
+}
+
+
+fn FS::Write(path, qfile)
+{
+    put fd = FS::Sys::Open(path, 
+        FS::ENUM::MODE::WRONLY |
+        FS::ENUM::MODE::CREATE |
+        FS::ENUM::MODE::TRUNC
+    );
+
+    put size = Str::Len(qfile);
+    put bfile = Chunk::New(size);
+
+    Mem::ToBytes(bfile, qfile, size);
+
+    put retval = Sys::TryCall(
+        "FS::Write",
+        SYSCALL::WRITE,
+        fd,
+        bfile,
+        size,
+    );
+
+    Chunk::Void(bfile);
+    FS::Sys::Close(fd);
 }
 
 
