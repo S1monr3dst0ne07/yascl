@@ -204,10 +204,10 @@ fn Ast::Leaf::Load(node, ctx)
     jump load_var       ~ kind == Ast::Leaf::Kind::VAR;
     jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
     jump load_const     ~ kind == Ast::Leaf::Kind::CONST;
-    //jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
-    //jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
+    jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
+    jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
     jump load_char      ~ kind == Ast::Leaf::Kind::CHAR;
-    //jump load_heap_base ~ kind == Ast::Leaf::Kind::HEAP_BASE;
+    jump load_heap_base ~ kind == Ast::Leaf::Kind::HEAP_BASE;
     jump done;
 
 lab load_char;   
@@ -262,7 +262,49 @@ lab load_call;
     lab call_done;
     Ctx::LocalRestore(ctx);
     jump done;
+
+lab load_string;
+    put label = Ctx::Fresh(ctx);
+
+    HT::Set(
+        ctx.Ctx::Global::STRINGS, 
+        label, 
+        value,
+    );
+    Ctx::Emit(ctx, "mov rax, %s\n", [label]);
+
+    Chunk::Void(label);
+    jump done;
+
+lab load_array;
+    put label = Ctx::Fresh(ctx);
+
+    HT::Set(
+        ctx.Ctx::Global::STATICS, 
+        label, 
+        Dyn::Size(value),
+    );
+
+    put vaddr = 0;
+    lab array_loop;
+        jump array_done ~ vaddr == Dyn::Size(value);
+        put addr = vaddr * Config::WORD_SIZE;
+
+        put elem = Dyn::Ptr(value).vaddr;
+        Ast::Expr::Load(elem, ctx);
+        Ctx::Emit(ctx, "mov [%s + %d], rax", [label, addr]);
+
+        put vaddr = vaddr + 1;
+        jump array_loop;
+    lab array_done;
+
+    Chunk::Void(label);
+    jump done;
     
+lab load_heap_base;
+    // then only hardcoded global object
+    Ctx::Emit(ctx, "mov rax, __heap_base");
+    jump done;
 
 lab var_not_exist;
     print("Variable `%s` has not been defined\n", [value]);
