@@ -70,9 +70,12 @@ fn Ctx::VarAlloc(ctx, name)
 
     jump already_allocated ~ HT::Has(vars, name);
 
+    // compute address and increment allocation counter
     put allocer = local.Ctx::Local::ALLOCER;
-    HT::Set(vars, name, allocer);
-    put local.Ctx::Local::ALLOCER = allocer + Config::WORD_SIZE;
+    put addr = allocer * Config::WORD_SIZE;
+    put local.Ctx::Local::ALLOCER = allocer + 1;
+
+    HT::Set(vars, name, addr);
 
 lab already_allocated;
 }
@@ -96,6 +99,38 @@ fn Ctx::VoidLocal(local_ctx)
 {
     HT::Void(local_ctx.Ctx::Local::VARS);
     Chunk::Void(local_ctx);
+}
+
+
+fn Ctx::LocalSave(ctx)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+
+    put vaddr = 0;
+    lab loop;
+        jump done ~ vaddr == local.Ctx::Local::ALLOCER;
+        put addr = vaddr * Config::WORD_SIZE;
+        put vaddr = vaddr + 1;
+
+        Ctx::Emit(ctx, "push qword [vars + %d]", [addr]);
+        jump loop;
+    lab done;
+}
+
+fn Ctx::LocalRestore(ctx)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+
+    put neg_vaddr = 0;
+    lab loop;
+        jump done ~ neg_vaddr == local.Ctx::Local::ALLOCER;
+        put vaddr = ((local.Ctx::Local::ALLOCER) - 1) - neg_vaddr;
+        put addr = vaddr * Config::WORD_SIZE;
+        put neg_vaddr = neg_vaddr + 1;
+
+        Ctx::Emit(ctx, "pop qword [vars + %d]", [addr]);
+        jump loop;
+    lab done;
 }
 
 
