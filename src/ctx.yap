@@ -2,6 +2,7 @@
 
 use "lib/ht.yap"
 use "lib/dyn.yap"
+use "lib/fs.yap"
 
 
 seq Ctx::Global
@@ -35,7 +36,12 @@ fn Ctx::Emit(ctx, pattern, args)
     );
 }
 
-
+fn Ctx::Write(ctx, path)
+{
+    put output = Dyn::Join(ctx.Ctx::Global::OUTPUT, "\n");
+    FS::Write(path, output);
+    Chunk::Void(output);
+}
 
 
 
