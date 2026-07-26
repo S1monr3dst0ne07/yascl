@@ -139,11 +139,35 @@ lab meta;
 }
 
 
-fn Ast::Leaf::Resolve(node, ctx)
+fn Ast::Leaf::ResolveContainer(container, ctx)
+    // assume container : Dyn<Ast::Expr>
 {
-    jump done ~ (node.Ast::Leaf::KIND) != Ast::Leaf::Kind::META;
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(container);
+        Ast::Expr::Resolve(Dyn::Ptr(container).i, ctx);
+        put i = i + 1;
+        jump loop;
+    lab done;
+}
+
+
+fn Ast::Leaf::Resolve(node, ctx)
+    // this is complicated, because a leaf can both be ...
+    //  ... the base case for recursive resolution.
+    //  ... another container objects whos fields need to be resolved.
+{
+    put kind  = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
 
+    // recursive resolve
+    jump subexpr ~ kind == Ast::Leaf::Kind::SUBEXPR;
+    jump call    ~ kind == Ast::Leaf::Kind::CALL;
+    jump array   ~ kind == Ast::Leaf::Kind::ARRAY;
+
+    jump done    ~ kind != Ast::Leaf::Kind::META;
+
+    // base resolve
     jump const ~ HT::Has(ctx.Ctx::Global::CONSTS, value);
     jump var;
     
@@ -152,6 +176,19 @@ fn Ast::Leaf::Resolve(node, ctx)
         jump done;
     lab var;
         put node.Ast::Leaf::KIND = Ast::Leaf::Kind::VAR;
+        jump done;
+
+    lab subexpr;
+        Ast::Expr::Resolve(value, ctx);
+        jump done;
+
+    lab call;
+        put container = value.Ast::Leaf::Call::PARAMS;
+        Ast::Leaf::ResolveContainer(container, ctx);
+        jump done;
+
+    lab array;
+        Ast::Leaf::ResolveContainer(value, ctx);
         jump done;
 
     lab done;
@@ -163,9 +200,12 @@ fn Ast::Leaf::Load(node, ctx)
     put kind = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
 
+    print("kind:  %d\n", [kind]);
+    print("value: %d\n", [value]);
+
     jump load_number    ~ kind == Ast::Leaf::Kind::NUMBER;
     jump load_var       ~ kind == Ast::Leaf::Kind::VAR;
-    //jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
+    jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
     jump load_const     ~ kind == Ast::Leaf::Kind::CONST;
     //jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
     //jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
@@ -187,6 +227,40 @@ lab load_var;
     Ctx::Emit(ctx, "mov rax, [vars + %d]", [addr]);
     jump done;
 
+lab load_call;
+    put name   = value.Ast::Leaf::Call::NAME;
+    put params = value.Ast::Leaf::Call::PARAMS;
+    Ctx::LocalSave(ctx);
+    put abi = Config::ABI();
+
+    // push call results
+    put i = 0;
+    lab push_loop;
+        jump push_done ~ i == Dyn::Size(params);
+        put param = Dyn::Ptr(params).i;
+        put i = i + 1;
+
+        print("param expr: %d\n", [param]);
+        print("IMPORTANT START\n");
+        Ast::Expr::Load(param, ctx);
+        print("IMPORTANT END\n");
+        Ctx::Emit(ctx, "push rax");
+        jump push_loop;
+    lab push_done;
+
+    // pop into passing regs
+    lab pop_loop;
+        jump pop_done ~ i == 0;
+        put i = i - 1;
+        Ctx::Emit(ctx, "pop %s", [abi.i]);
+        jump pop_loop;
+    lab pop_done;
+    
+    //actual call
+    Ctx::Emit(ctx, "call %s", [Utils::TranslateFuncName(name)]);
+
+    Ctx::LocalRestore(ctx);
+    jump done;
     
 
 lab var_not_exist;
