@@ -84,10 +84,18 @@ fn Ctx::VarLookup(ctx, name)
     return HT::Get(vars, name);
 }
 
+fn Ctx::VarExists(ctx, name)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+    put vars = local.Ctx::Local::VARS;
+    return HT::Has(vars, name);
+}
+
 
 fn Ctx::VoidLocal(local_ctx)
 {
     HT::Void(local_ctx.Ctx::Local::VARS);
     Chunk::Void(local_ctx);
 }
+
 
