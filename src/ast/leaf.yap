@@ -200,6 +200,7 @@ fn Ast::Leaf::Load(node, ctx)
     put kind = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
 
+    jump load_subexpr   ~ kind == Ast::Leaf::Kind::SUBEXPR;
     jump load_number    ~ kind == Ast::Leaf::Kind::NUMBER;
     jump load_var       ~ kind == Ast::Leaf::Kind::VAR;
     jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
@@ -208,6 +209,8 @@ fn Ast::Leaf::Load(node, ctx)
     jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
     jump load_char      ~ kind == Ast::Leaf::Kind::CHAR;
     jump load_heap_base ~ kind == Ast::Leaf::Kind::HEAP_BASE;
+    //Error::PrintError("internal error: meta kind while Ast::Leaf::Load (!FUCK!)");
+    print("internal error: meta kind while Ast::Leaf::Load (!FUCK!)\n");
     jump done;
 
 lab load_char;   
@@ -222,6 +225,10 @@ lab load_var;
     jump var_not_exist ~ Bool::TRUE ^ Ctx::VarExists(ctx, value);
     put addr = Ctx::VarLookup(ctx, value);
     Ctx::Emit(ctx, "mov rax, [vars + %d]", [addr]);
+    jump done;
+
+lab load_subexpr;
+    Ast::Expr::Load(value, ctx);
     jump done;
 
 lab load_call;
