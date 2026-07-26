@@ -85,3 +85,9 @@ fn Ctx::VarLookup(ctx, name)
 }
 
 
+fn Ctx::VoidLocal(local_ctx)
+{
+    HT::Void(local_ctx.Ctx::Local::VARS);
+    Chunk::Void(local_ctx);
+}
+
