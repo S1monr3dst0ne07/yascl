@@ -87,11 +87,88 @@ fn Ast::Expr::Resolve(node, ctx)
 
 fn Ast::Expr::Load(node, ctx)
 {
-    Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
     jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+
+    Ast::Expr::Load(node.Ast::Expr::RIGHT, ctx);
+    Ctx::Emit(ctx, "push rax");
+    Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
+    Ctx::Emit(ctx, "pop rbx");
+
+    put op = node.Ast::Expr::OP;
+    jump compile_add         ~ op == Ast::Expr::Op::ADD;
+    jump compile_sub         ~ op == Ast::Expr::Op::SUB;
+    jump compile_dot         ~ op == Ast::Expr::Op::DOT;
+    jump compile_double_dot  ~ op == Ast::Expr::Op::DOUBLE_DOT;
+    jump compile_equal       ~ op == Ast::Expr::Op::EQUAL;
+    jump compile_not_equal   ~ op == Ast::Expr::Op::NOT_EQUAL;
+    jump compile_lesser      ~ op == Ast::Expr::Op::LESSER;
+    jump compile_greater     ~ op == Ast::Expr::Op::GREATER;
+    jump compile_mul         ~ op == Ast::Expr::Op::MUL;
+    jump compile_div         ~ op == Ast::Expr::Op::DIV;
+    jump compile_and         ~ op == Ast::Expr::Op::AND;
+    jump compile_or          ~ op == Ast::Expr::Op::OR;
+    jump compile_xor         ~ op == Ast::Expr::Op::XOR;
+    jump compile_shift_right ~ op == Ast::Expr::Op::SHIFT_RIGHT;
+    jump compile_shift_left  ~ op == Ast::Expr::Op::SHIFT_LEFT;
+    jump compile_modulo      ~ op == Ast::Expr::Op::MODULO;
+
+
+    lab compile_add; Ctx::Emit(ctx, "add rax, rbx"); jump done;
+    lab compile_sub; Ctx::Emit(ctx, "sub rax, rbx"); jump done;
+    lab compile_dot; Ctx::Emit(ctx, "mov rax, [rax + rbx*%d]", [Config::WORD_SIZE]); jump done;
+    lab compile_double_dot;
+        Ctx::Emit(ctx, "lea rax, [rax + rbx*%d]", [Config::WORD_SIZE]); 
+        jump done;
+    lab compile_equal;
+        Ctx::Emit(ctx, "cmp rax, rbx");
+        Ctx::Emit(ctx, "sete cl");
+        Ctx::Emit(ctx, "movzx rax, cl");
+        jump done;
+    lab compile_not_equal;
+        Ctx::Emit(ctx, "cmp rax, rbx");
+        Ctx::Emit(ctx, "setne cl");
+        Ctx::Emit(ctx, "movzx rax, cl");
+        jump done;
+    lab compile_lesser;
+        Ctx::Emit(ctx, "cmp rax, rbx");
+        Ctx::Emit(ctx, "setb cl"); //below
+        Ctx::Emit(ctx, "movzx rax, cl");
+        jump done;
+    lab compile_greater;
+        Ctx::Emit(ctx, "cmp rax, rbx");
+        Ctx::Emit(ctx, "seta cl"); //above
+        Ctx::Emit(ctx, "movzx rax, cl");
+        jump done;
+
+
+    lab compile_mul;
+        Ctx::Emit(ctx, "mul rbx"); 
+        jump done;
+    lab compile_div;
+        Ctx::Emit(ctx, "xor rdx, rdx"); 
+        Ctx::Emit(ctx, "div rbx"); 
+        jump done;
+    lab compile_modulo;
+        Ctx::Emit(ctx, "xor rdx, rdx"); 
+        Ctx::Emit(ctx, "div rbx"); 
+        Ctx::Emit(ctx, "mov rax, rdx"); 
+        jump done;
+    lab compile_and; Ctx::Emit(ctx, "and rax, rbx"); jump done;
+    lab compile_or;  Ctx::Emit(ctx, "or  rax, rbx"); jump done;
+    lab compile_xor; Ctx::Emit(ctx, "xor rax, rbx"); jump done;
+    lab compile_shift_right;
+        Ctx::Emit(ctx, "mov rcx, rbx");
+        Ctx::Emit(ctx, "shr rax, cl");
+        jump done;
+    lab compile_shift_left;
+        Ctx::Emit(ctx, "mov rcx, rbx");
+        Ctx::Emit(ctx, "shl rax, cl");
+        jump done;
 
 
 lab only_leaf;
+    Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
+lab done;
 }
 
 
