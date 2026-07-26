@@ -134,3 +134,20 @@ fn Ctx::LocalRestore(ctx)
 }
 
 
+fn Ctx::RenderLabel(ctx, lab_name)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+    put fn_name = local.Ctx::Local::FN_NAME;
+
+    // __local_{fn_name}_{lab_name}\0
+    // 12345678         9          10
+    put len = 10 + Str::Len(fn_name) + Str::Len(lab_name);
+
+    put final = Chunk::New(len);
+    Str::Format(final, "__local_%s_%s", [fn_name, lab_name]);
+
+    put final.(len-1) = '\0';
+    return final;
+}
+
+
