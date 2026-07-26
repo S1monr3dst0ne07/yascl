@@ -154,4 +154,19 @@ fn Ast::Leaf::Resolve(node, ctx)
 }
 
 
+fn Ast::Leaf::Load(node, ctx)
+{
+    put kind = node.Ast::Leaf::KIND;
+
+    jump load_number ~ kind == Ast::Leaf::Kind::NUMBER;
+    jump done;
+
+
+lab load_number;
+    Ctx::Emit(ctx, "mov rax, %d", [node.Ast::Leaf::VALUE]);
+
+lab done;
+}
+
+
 

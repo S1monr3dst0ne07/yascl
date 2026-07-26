@@ -33,4 +33,9 @@ fn Ast::Put::Resolve(node, ctx)
 }
 
 
+fn Ast::Put::Compile(node, ctx)
+{
+    Ast::Expr::Load (node.Ast::Put::SRC, ctx);
+    //Ast::Expr::Store(node.Ast::Put::DST, ctx);
+}
 

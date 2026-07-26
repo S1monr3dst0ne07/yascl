@@ -118,6 +118,7 @@ fn Ast::Block::Resolve(meta, ctx)
 
         put node = Dyn::Ptr(nodes).i;
         put i = i + 1;
+
         Ast::Block::ResolveNode(node, ctx);
 
         jump loop;
@@ -141,6 +142,45 @@ fn Ast::Block::ResolveNode(node, ctx)
     lab kind_jump;    Ast::Jump::Resolve(subnode, ctx);    jump done;
     lab kind_static;  Ast::Static::Resolve(subnode, ctx);  jump done;
     lab kind_inplace; Ast::Inplace::Resolve(subnode, ctx); jump done;
+    
+    lab done;
+}
+
+
+fn Ast::Block::Compile(meta, ctx)
+{
+    put nodes = meta.Ast::Block::NODES;
+
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(nodes);
+
+        put node = Dyn::Ptr(nodes).i;
+        put i = i + 1;
+
+        Ast::Block::CompileNode(node, ctx);
+
+        jump loop;
+    lab done;
+}
+
+fn Ast::Block::CompileNode(node, ctx)
+{
+    put kind    = node.Ast::Block::Node::KIND;
+    put subnode = node.Ast::Block::Node::MESA;
+
+    jump kind_put     ~ kind == Ast::Block::Kind::PUT;
+    //jump kind_return  ~ kind == Ast::Block::Kind::RETURN;
+    //jump kind_jump    ~ kind == Ast::Block::Kind::JUMP;
+    //jump kind_static  ~ kind == Ast::Block::Kind::STATIC;
+    //jump kind_inplace ~ kind == Ast::Block::Kind::INPLACE;
+    jump done;
+    
+    lab kind_put;     Ast::Put::Compile(subnode, ctx);     jump done;
+    //lab kind_return;  Ast::Return::Resolve(subnode, ctx);  jump done;
+    //lab kind_jump;    Ast::Jump::Resolve(subnode, ctx);    jump done;
+    //lab kind_static;  Ast::Static::Resolve(subnode, ctx);  jump done;
+    //lab kind_inplace; Ast::Inplace::Resolve(subnode, ctx); jump done;
     
     lab done;
 }

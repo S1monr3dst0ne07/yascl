@@ -83,3 +83,15 @@ fn Ast::Expr::Resolve(node, ctx)
     lab skip_right;
 }
 
+
+
+fn Ast::Expr::Load(node, ctx)
+{
+    Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
+    jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+
+
+lab only_leaf;
+}
+
+
