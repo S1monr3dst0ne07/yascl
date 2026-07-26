@@ -68,9 +68,7 @@ fn Ast::Prog::Parse(stream, ctx)
 
 fn Ast::Prog::File(path, ctx)
 {
-    print("\ttokenizing...\n");
     put stream = Lex::Tokenize(path);
-    print("\tparsing...\n");
     put root = Ast::Prog::Parse(stream, ctx);
 
     Lex::VoidStream(stream);
@@ -123,5 +121,19 @@ fn Ast::Prog::Resolve(node, ctx)
         put i = i + 1;
     jump loop ~ i < Dyn::Size(fns);
 }
+
+
+fn Ast::Prog::Compile(node, ctx)
+{
+    put fns = node.Ast::Prog::FNS;
+
+    put i = 0;
+    lab loop;
+        put func = Dyn::Ptr(fns).i;
+        Ast::FnDef::Compile(func, ctx);
+        put i = i + 1;
+    jump loop ~ i < Dyn::Size(fns);
+}
+
 
 

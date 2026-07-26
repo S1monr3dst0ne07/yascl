@@ -59,5 +59,13 @@ fn Ast::FnDef::Resolve(node, ctx)
     );
 }
 
+fn Ast::FnDef::Compile(node, ctx)
+{
+    put local_super_ctx = ctx.Ctx::Global::LOCAL;
+    put local_ctx = Ctx::MakeLocal(node.Ast::FnDef::NAME);
+
+    Ctx::Emit(ctx, "%s:", [node.Ast::FnDef::NAME]);
+}
+
 
 
