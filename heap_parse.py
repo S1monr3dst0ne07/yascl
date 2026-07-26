@@ -22,30 +22,22 @@ heap_base = min(dump.keys())
 @dc
 class Chunk:
     base : int
-    len : int
     content : list[int]
 
 chunks = []
 
-magic = 100000000
-
 addr = heap_base
 while addr in dump:
-    base = addr
-    len = dump[addr]
-    addr += 8
-
-    if len > magic:
-        len -= magic
-
-    print(len)
+    size = dump[addr+(8*2)]
+    next = dump[addr+(8*3)]
+    base = addr+(8*5)
+    addr = next
 
     content = []
-    for _ in range(len-1):
-        content.append(dump[addr])
-        addr += 8
+    for i in range(size - 5):
+        content.append(dump[base + (8*i)])
 
-    chunks.append(Chunk(base, len, content))
+    chunks.append(Chunk(base, content))
     
 
 for chunk in chunks:
