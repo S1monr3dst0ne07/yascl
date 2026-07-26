@@ -307,8 +307,7 @@ lab load_heap_base;
     jump done;
 
 lab var_not_exist;
-    print("Variable `%s` has not been defined\n", [value]);
-    //Error::PrintError("Variable `%s` has not been defined", [value]);
+    Error::PrintError("Variable `%s` has not been defined", [value]);
 
 lab done;
 }

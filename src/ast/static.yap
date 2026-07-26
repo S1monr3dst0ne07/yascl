@@ -1,5 +1,6 @@
 
 use "lib/chunk.yap"
+use "lib/ht.yap"
 
 
 seq Ast::Static
@@ -25,4 +26,18 @@ fn Ast::Static::Parse(stream)
 fn Ast::Static::Resolve(node, ctx)
 {
     Ast::Expr::Resolve(node.Ast::Static::EXPR, ctx);
+}
+
+
+fn Ast::Static::Compile(node, ctx)
+{
+    put label = Ctx::Fresh(ctx);
+    HT::Set(
+        ctx.Ctx::Global::STATICS,
+        label,
+        node.Ast::Static::WORDS,
+    );
+
+    Ctx::Emit(ctx, "mov rax, %s\n", [label]);
+    Ast::Expr::Store(node.Ast::Static::EXPR, ctx);
 }
