@@ -63,4 +63,25 @@ fn Ctx::Write(ctx, path)
 }
 
 
+fn Ctx::VarAlloc(ctx, name)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+    put vars = local.Ctx::Local::VARS;
+
+    jump already_allocated ~ HT::Has(vars, name);
+
+    put allocer = local.Ctx::Local::ALLOCER;
+    HT::Set(vars, name, allocer);
+    put local.Ctx::Local::ALLOCER = allocer + Config::WORD_SIZE;
+
+lab already_allocated;
+}
+
+fn Ctx::VarLookup(ctx, name)
+{
+    put local = ctx.Ctx::Global::LOCAL;
+    put vars = local.Ctx::Local::VARS;
+    return HT::Get(vars, name);
+}
+
 
