@@ -25,7 +25,7 @@ fn Ast::FnDef::Parse(stream)
     
     Lex::Expect(stream, "fn");
     put node.Ast::FnDef::NAME = Utils::TranslateFuncName(
-        Lex::PopCheck(stream, Lex::Kind::IDEN),
+        Str::Copy(Lex::PopCheck(stream, Lex::Kind::IDEN)),
     );
     Lex::Expect(stream, "(");
 
@@ -58,7 +58,6 @@ fn Ast::FnDef::Resolve(node, ctx)
         ctx,
     );
 }
-
 
 
 
