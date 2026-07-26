@@ -23,3 +23,9 @@ fn Ast::Return::Resolve(node, ctx)
     Ast::Expr::Resolve(node.Ast::Return::VALUE, ctx);
 }
 
+
+fn Ast::Return::Compile(node, ctx)
+{
+    Ast::Expr::Load(node.Ast::Return::VALUE, ctx);
+    Ctx::Emit(ctx, "ret");
+}

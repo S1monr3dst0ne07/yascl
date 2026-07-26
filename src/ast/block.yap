@@ -170,17 +170,19 @@ fn Ast::Block::CompileNode(node, ctx)
     put subnode = node.Ast::Block::Node::MESA;
 
     jump kind_put     ~ kind == Ast::Block::Kind::PUT;
-    //jump kind_return  ~ kind == Ast::Block::Kind::RETURN;
-    //jump kind_jump    ~ kind == Ast::Block::Kind::JUMP;
+    jump kind_return  ~ kind == Ast::Block::Kind::RETURN;
+    jump kind_jump    ~ kind == Ast::Block::Kind::JUMP;
+    jump kind_lab     ~ kind == Ast::Block::Kind::LAB;
     //jump kind_static  ~ kind == Ast::Block::Kind::STATIC;
-    //jump kind_inplace ~ kind == Ast::Block::Kind::INPLACE;
+    jump kind_inplace ~ kind == Ast::Block::Kind::INPLACE;
     jump done;
     
     lab kind_put;     Ast::Put::Compile(subnode, ctx);     jump done;
-    //lab kind_return;  Ast::Return::Resolve(subnode, ctx);  jump done;
-    //lab kind_jump;    Ast::Jump::Resolve(subnode, ctx);    jump done;
-    //lab kind_static;  Ast::Static::Resolve(subnode, ctx);  jump done;
-    //lab kind_inplace; Ast::Inplace::Resolve(subnode, ctx); jump done;
+    lab kind_return;  Ast::Return::Compile(subnode, ctx);  jump done;
+    lab kind_jump;    Ast::Jump::Compile(subnode, ctx);    jump done;
+    lab kind_lab;     Ast::Lab::Compile(subnode, ctx);     jump done;
+    //lab kind_static;  Ast::Static::Compile(subnode, ctx);  jump done;
+    lab kind_inplace; Ast::Inplace::Compile(subnode, ctx); jump done;
     
     lab done;
 }

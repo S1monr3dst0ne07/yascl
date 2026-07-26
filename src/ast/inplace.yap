@@ -22,3 +22,9 @@ fn Ast::Inplace::Resolve(node, ctx)
     Ast::Expr::Resolve(node.Ast::Inplace::EXPR, ctx);
 }
 
+
+fn Ast::Inplace::Compile(node, ctx)
+{
+    Ast::Expr::Load(node.Ast::Inplace::EXPR, ctx);
+}
+
