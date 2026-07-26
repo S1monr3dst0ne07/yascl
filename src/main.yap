@@ -23,6 +23,7 @@ fn main()
     
     Tmpl::Header(ctx);
     Ast::Prog::Compile(root, ctx);
+    Tmpl::Finalize(ctx);
     
     Ctx::Write(ctx, "subbuild.asm");
 

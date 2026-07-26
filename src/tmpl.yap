@@ -15,4 +15,13 @@ fn Tmpl::Header(ctx)
 }
 
 
+fn Tmpl::Finalize(ctx)
+{
+    // concurrent local variables
+    put VAR_COUNT = 100;
 
+    Ctx::Emit(ctx, "segment writeable readable");
+    Ctx::Emit(ctx, "vars: \n\trq %d", [VAR_COUNT]);
+
+
+}
