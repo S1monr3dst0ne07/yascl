@@ -271,7 +271,7 @@ lab load_string;
         label, 
         value,
     );
-    Ctx::Emit(ctx, "mov rax, %s\n", [label]);
+    Ctx::Emit(ctx, "mov rax, %s", [label]);
 
     Chunk::Void(label);
     jump done;
