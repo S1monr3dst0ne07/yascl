@@ -54,8 +54,11 @@ fn HT::Void(ht)
     // first void Str::Copy'd keys.
     put i = 0;
     lab loop;
-        put entry = (ht.HT::ENTRIES).i;
-        Chunk::Void(entry.HT::Entry::KEY);
+        put entry = (ht.HT::ENTRIES) : (i * HT::Entry);
+        put key = entry.HT::Entry::KEY;
+        jump skip_empty ~ key == Mem::NULL;
+            Chunk::Void(key);
+        lab skip_empty;
         put i = i + 1;
     jump loop ~ i < (ht.HT::CAPACITY);
 
