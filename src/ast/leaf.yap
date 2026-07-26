@@ -200,9 +200,6 @@ fn Ast::Leaf::Load(node, ctx)
     put kind = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
 
-    print("kind:  %d\n", [kind]);
-    print("value: %d\n", [value]);
-
     jump load_number    ~ kind == Ast::Leaf::Kind::NUMBER;
     jump load_var       ~ kind == Ast::Leaf::Kind::VAR;
     jump load_call      ~ kind == Ast::Leaf::Kind::CALL;
@@ -240,10 +237,7 @@ lab load_call;
         put param = Dyn::Ptr(params).i;
         put i = i + 1;
 
-        print("param expr: %d\n", [param]);
-        print("IMPORTANT START\n");
         Ast::Expr::Load(param, ctx);
-        print("IMPORTANT END\n");
         Ctx::Emit(ctx, "push rax");
         jump push_loop;
     lab push_done;
@@ -257,8 +251,15 @@ lab load_call;
     lab pop_done;
     
     //actual call
+    jump syscall ~ Str::Diff(name, "syscall") == 0;
     Ctx::Emit(ctx, "call %s", [Utils::TranslateFuncName(name)]);
+    jump call_done;
 
+    lab syscall;
+    Ctx::Emit(ctx, "syscall");
+    jump call_done;
+
+    lab call_done;
     Ctx::LocalRestore(ctx);
     jump done;
     
