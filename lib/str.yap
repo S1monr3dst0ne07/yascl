@@ -86,26 +86,22 @@ fn Str::Unescape(content)
     put i = 0;
     put offset = 0;
 
-    put flag = Bool::FALSE;
     lab loop;
         put char = content.i;
 
-        jump done ~ char == '\0';
-        jump control ~ flag;
+        jump done    ~ char == '\0';
+        jump control ~ char == '\\';
 
         put content.(i-offset) = char;
-
         put i = i + 1;
-        put flag = (char == '\\');
         jump loop;
 
     lab control;
-        put i = i + 1;
-        put subchar = content.i;
+        put subchar = content.(i+1);
 
-        jump newline    ~ subchar == '\n';
-        jump tabulate   ~ subchar == '\t';
-        jump terminator ~ subchar == '\0';
+        jump newline    ~ subchar == 'n';
+        jump tabulate   ~ subchar == 't';
+        jump terminator ~ subchar == '0';
         jump mesa       ~ subchar == '\\';
             //unknown control sequence.
             //ignore backslash.
@@ -118,7 +114,7 @@ fn Str::Unescape(content)
 
     lab control_done;
         put offset = offset + 1;
-        put flag = Bool::FALSE;
+        put i = i + 2;
         jump loop;
 
     lab done;
