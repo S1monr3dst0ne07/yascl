@@ -292,6 +292,7 @@ lab load_array;
         Dyn::Size(value),
     );
 
+    // load elements of array
     put vaddr = 0;
     lab array_loop;
         jump array_done ~ vaddr == Dyn::Size(value);
@@ -304,6 +305,9 @@ lab load_array;
         put vaddr = vaddr + 1;
         jump array_loop;
     lab array_done;
+
+    // load reference
+    Ctx::Emit(ctx, "mov rax, %s", [label]);
 
     Chunk::Void(label);
     jump done;
