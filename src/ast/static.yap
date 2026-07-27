@@ -38,6 +38,6 @@ fn Ast::Static::Compile(node, ctx)
         node.Ast::Static::WORDS,
     );
 
-    Ctx::Emit(ctx, "mov rax, %s\n", [label]);
+    Ctx::Emit(ctx, "mov rax, %s", [label]);
     Ast::Expr::Store(node.Ast::Static::EXPR, ctx);
 }
