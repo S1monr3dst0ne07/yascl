@@ -610,7 +610,7 @@ def finalize(emit):
         emit(f"{label}: rq {words}")
 
     #heap base
-    emit("__heap_base: dq 1000000 dup(0)")
+    emit("__heap_base: dq 10000000 dup(0)")
 
 
 
