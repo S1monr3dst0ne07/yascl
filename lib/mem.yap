@@ -70,3 +70,20 @@ fn Mem::FromBytes(dst, src, count)
     jump loop ~ i < count;
 }
 
+
+
+fn Mem::SmartBreak(inc)
+{
+    static 1 ~ curr;
+
+    jump inited ~ curr.0;
+        put curr.0 = syscall(SYSCALL::BRK, 0);
+    lab inited;
+
+    put old = curr.0;
+    put curr.0 = (curr.0) : inc;
+    syscall(SYSCALL::BRK, curr.0);
+    return old;
+}
+
+
