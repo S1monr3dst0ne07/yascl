@@ -103,3 +103,22 @@ fn Net::Connect(addr, port)
 
 
 
+fn Net::Write(socket, buffer, count)
+{
+    // syscall is slow anyways.
+    // so the heap action can't hurt much.
+    put bytes = Chunk::New(count);
+    Mem::ToBytes(bytes, buffer, count);
+
+    Sys::TryCall(
+        "Net::Write",
+        SYSCALL::WRITE,
+        socket,
+        bytes,
+        count,
+    );
+
+    Chunk::Void(bytes);
+}
+
+
