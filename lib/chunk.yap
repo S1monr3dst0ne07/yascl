@@ -91,8 +91,6 @@ lab done;
     put curr.Chunk::FB::SIZE = words; // update metadata
     put base = curr : Chunk::FB;
 
-    Mem::Set(base, 0, words);
-
     return base;
 }
 
