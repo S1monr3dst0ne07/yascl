@@ -576,11 +576,23 @@ class AstProg:
 
 
 def runtime(emit):
+    # headers
     emit('format ELF64 executable')
     emit('entry start')
     emit('segment readable executable')
+
     emit("start:")
+
+    # process parameters 
+    # system V abi, section 3.4 process init
+    # (https://web.archive.org/web/20160706074221/http://www.x86-64.org/documentation/abi.pdf)
+    emit("mov rdi, [rsp]")
+    emit("lea rsi, [rsp+8]")
+
+    # call into main
     emit("call main")
+
+    # exit(0)
     emit("mov rdi, rax")
     emit("mov rax, 60")
     emit("syscall")
