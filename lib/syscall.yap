@@ -22,7 +22,7 @@ fn Sys::TryCall(caller, code, a1, a2, a3, a4, a5)
 {
     put retval = syscall(code, a1, a2, a3, a4, a5);
 
-    jump skip ~ Sys::Error(retval) ^ Bool::TRUE;
+    jump skip ~ Bool::Not(Sys::Error(retval));
         print("[%s] %s\n", [caller, Sys::ErrorMsg(retval)]);
     lab skip;
 

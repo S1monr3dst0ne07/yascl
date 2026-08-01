@@ -129,7 +129,7 @@ fn Chunk::Void(ptr)
         jump found ~ (neigh < head) & (head < (neigh.Chunk::FB::NEXT));
 
         // special check for physical free list memory wrap around.
-        put last = (neigh < (neigh.Chunk::FB::NEXT)) ^ Bool::TRUE;
+        put last = Bool::Not(neigh < (neigh.Chunk::FB::NEXT));
         put semibound = (neigh < head) | (head < (neigh.Chunk::FB::NEXT));
         jump found ~ last & semibound;
 

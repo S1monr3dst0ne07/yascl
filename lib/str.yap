@@ -1,6 +1,7 @@
 
 
 use "lib/mem.yap"
+use "lib/chunk.yap"
 
 
 fn Str::Len(str)

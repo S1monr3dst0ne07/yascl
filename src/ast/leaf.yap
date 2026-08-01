@@ -214,7 +214,7 @@ lab load_const;
     Ctx::Emit(ctx, "mov rax, %d", [const]);
     jump done;
 lab load_var;
-    jump var_not_exist ~ Bool::TRUE ^ Ctx::VarExists(ctx, value);
+    jump var_not_exist ~ Bool::Not(Ctx::VarExists(ctx, value));
     put addr = Ctx::VarLookup(ctx, value);
     Ctx::Emit(ctx, "mov rax, [vars + %d]", [addr]);
     jump done;

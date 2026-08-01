@@ -193,7 +193,7 @@ fn Lex::Tokenize(path)
             put lineno = lineno + 1;
         lab skip_newline;
 
-        put state_comment = state_comment | ((Str::Diff(buffer, "//") == 0) & (Bool::TRUE ^ state_string));
+        put state_comment = state_comment | ((Str::Diff(buffer, "//") == 0) & Bool::Not(state_string));
         put state_string  = state_string  ^ (last == Lex::Kind::DOUBLE_QUOTE);
         put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
     
@@ -206,15 +206,15 @@ fn Lex::Tokenize(path)
                        | (last == Lex::Kind::PAREN_CLOSE);
 
         // can emit?
-        put unlocked = (Bool::TRUE ^ state_comment)
-                     & (Bool::TRUE ^ state_string)
-                     & (Bool::TRUE ^ state_char);
+        put unlocked = Bool::Not(state_comment)
+                     & Bool::Not(state_string)
+                     & Bool::Not(state_char);
 
         // can emit!
         put emit = transition & unlocked;
 
 
-        jump skip_emit ~ Bool::TRUE ^ emit;
+        jump skip_emit ~ Bool::Not(emit);
             jump skip_push ~ last == Lex::Kind::NONE;
             jump skip_push ~ last == Lex::Kind::FORMAT;
 
@@ -231,7 +231,7 @@ fn Lex::Tokenize(path)
 
 
         jump skip_comment_end ~ char != '\n';
-        jump skip_comment_end ~ (state_comment ^ Bool::TRUE);
+        jump skip_comment_end ~ Bool::Not(state_comment);
             put iter = buffer;
             put state_comment = Bool::FALSE;
             put state_string  = Bool::FALSE;

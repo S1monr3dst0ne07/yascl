@@ -14,7 +14,6 @@ use "src/ast/prog.yap"
 
 fn main(argc, argv)
 {
-    print("argc: %d\n", [argc]);
     jump path_good ~ argc > 1;
         Error::Error("Not source path provided.\n");
     lab path_good;

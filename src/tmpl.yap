@@ -39,7 +39,7 @@ fn Tmpl::Finalize(ctx)
     // emit strings
     put it = HT::MakeIter(ctx.Ctx::Global::STRINGS);
     lab string_loop;
-        jump string_done ~ Bool::TRUE ^ HT::Next(it);
+        jump string_done ~ Bool::Not(HT::Next(it));
         put label = it.HT::Iter::KEY;
         put string = it.HT::Iter::VALUE;
 
@@ -63,7 +63,7 @@ fn Tmpl::Finalize(ctx)
     // emit static buffers
     put it = HT::MakeIter(ctx.Ctx::Global::STATICS);
     lab static_loop;
-        jump static_done ~ Bool::TRUE ^ HT::Next(it);
+        jump static_done ~ Bool::Not(HT::Next(it));
         put label = it.HT::Iter::KEY;
         put words = it.HT::Iter::VALUE;
 
