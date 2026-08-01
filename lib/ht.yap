@@ -201,6 +201,7 @@ fn HT::Expand(ht)
     put new_capacity = (ht.HT::CAPACITY) * 2;
     put new_size = HT::Entry * new_capacity;
     put new_entires = Chunk::New(new_size);
+    Mem::Set(new_entires, 0, new_size);
 
     put index = 0;
     lab loop;
