@@ -1,18 +1,13 @@
 
-TARGET=prg/test.yap
 
-.PHONY: build run compiler
-
-
-build: compiler
-	./compiler $(TARGET)
-	fasm subbuild.asm build
+do:
+	./compiler prg/test.yap
+	fasm build.asm build
 	chmod +x build
+	./build
 
-compiler: src/** lib/*
-	./bootstrap.py src/main.yap
-	fasm build.asm compiler
-	chmod +x compiler
-	@echo "\n\n\n"
+
+proxy:
+	socat TCP-LISTEN:6000,fork UNIX-CONNECT:/tmp/.X11-unix/X1
 
 

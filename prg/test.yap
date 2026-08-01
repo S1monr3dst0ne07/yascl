@@ -1,21 +1,12 @@
 
 
-use "lib/ht.yap"
+use "lib/x11.yap"
 use "lib/debug.yap"
 
 
 fn main()
 {
-    put ht = HT::Create();
-
-    HT::Set(ht, "test_key", "test_value");
-    HT::Set(ht, "normal_key", "normal_value");
-
-    put out = HT::Get(ht, "normal_key");
-
-    print("%s\n", [out]);
-
-
+    put state = X11::OpenDisplay("/tmp/.X11-unix/X1");
 
 }
 
