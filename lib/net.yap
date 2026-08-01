@@ -140,7 +140,7 @@ fn Net::Write(socket, buffer, count)
     put bytes = Chunk::New(count);
     Mem::ToBytes(bytes, buffer, count);
 
-    Sys::TryCall(
+    put nbytes = Sys::TryCall(
         "Net::Write",
         SYSCALL::WRITE,
         socket,
@@ -149,6 +149,25 @@ fn Net::Write(socket, buffer, count)
     );
 
     Chunk::Void(bytes);
+    return nbytes;
+}
+
+
+fn Net::Read(socket, buffer, count)
+{
+    put bytes = Chunk::New(count);
+
+    put nbytes = Sys::TryCall(
+        "Net::Read",
+        SYSCALL::READ,
+        socket,
+        bytes,
+        count,
+    );
+
+    Mem::FromBytes(buffer, bytes, count);
+    //Chunk::Void(bytes);
+    return nbytes;
 }
 
 
