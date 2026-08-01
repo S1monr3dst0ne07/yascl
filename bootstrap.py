@@ -133,9 +133,6 @@ class AstLeaf:
                     case '\\\\': char = '\\'
                 return cls(char, 'char')
 
-            case '__heap_base':
-                return cls(None, 'heap-base')
-
             case name if stream.peek() == '(': #)
                 stream.pop()
                 params = []
@@ -198,9 +195,6 @@ class AstLeaf:
                     expr.load(emit, scope)
                     emit(f'mov [{name} + {addr}], rax')
                 emit(f'mov rax, {name}')
-
-            case 'heap-base': #only hardcoded, global object
-                emit('mov rax, __heap_base')
 
 
 
@@ -608,10 +602,6 @@ def finalize(emit):
     #emit static buffers
     for label, words in statics.items():
         emit(f"{label}: rq {words}")
-
-    #heap base
-    emit("__heap_base: dq 10000000 dup(0)")
-
 
 
 def main():
