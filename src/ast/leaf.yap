@@ -26,7 +26,6 @@ seq Ast::Leaf::Kind
     STRING,
     ARRAY,
     CHAR,
-    HEAP_BASE,
     SUBEXPR,
 }
 
@@ -54,7 +53,6 @@ fn Ast::Leaf::Parse(stream)
     jump string    ~ tok_kind == Lex::Kind::DOUBLE_QUOTE;
     jump sub_expr  ~ Str::Diff(content, "(") == 0;
     jump array     ~ Str::Diff(content, "[") == 0;
-    jump heap_base ~ Str::Diff(content, "__heap_base") == 0;
     jump call      ~ Str::Diff(next, "(") == 0;
     jump number    ~ Str::IsNumber(content);
     jump meta;
@@ -97,10 +95,6 @@ lab string;
         Ast::Leaf::Kind::STRING,
     );
 
-lab heap_base;
-    return Ast::Leaf::Local::MakeLeaf(
-        Mem::NULL, Ast::Leaf::Kind::HEAP_BASE,
-    );
 
 lab call;
     Lex::Expect(stream, "(");
@@ -208,9 +202,7 @@ fn Ast::Leaf::Load(node, ctx)
     jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
     jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
     jump load_char      ~ kind == Ast::Leaf::Kind::CHAR;
-    jump load_heap_base ~ kind == Ast::Leaf::Kind::HEAP_BASE;
-    //Error::PrintError("internal error: meta kind while Ast::Leaf::Load (!FUCK!)");
-    print("internal error: meta kind while Ast::Leaf::Load (!FUCK!)\n");
+    Error::PrintError("internal error: meta node while Ast::Leaf::Load");
     jump done;
 
 lab load_char;   
@@ -310,11 +302,6 @@ lab load_array;
     Ctx::Emit(ctx, "mov rax, %s", [label]);
 
     Chunk::Void(label);
-    jump done;
-    
-lab load_heap_base;
-    // then only hardcoded global object
-    Ctx::Emit(ctx, "mov rax, __heap_base");
     jump done;
 
 lab var_not_exist;

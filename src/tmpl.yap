@@ -57,8 +57,4 @@ fn Tmpl::Finalize(ctx)
         Ctx::Emit(ctx, "%s: rq %d", [label, words]);
         jump static_loop;
     lab static_done;
-
-    // heap base
-    Ctx::Emit(ctx, "__heap_base: dq 10000000 dup(0)");
-
 }
