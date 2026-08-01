@@ -108,7 +108,7 @@ fn Chunk::MoreCore(units)
     put head.Chunk::FB::UNITS = units;
 
     put base = head : Chunk::FB;
-    Chunk::VoidOFF(base); //merge into free list
+    Chunk::Void(base); //merge into free list
 
     return Chunk::FreePtr().0;
 }
@@ -139,40 +139,14 @@ fn Chunk::Void(ptr)
         jump find_neighbor_loop;
     lab found;
 
-    put next = neigh.Chunk::FB::NEXT;
-    put head.Chunk::FB::NEXT = next;
-    put neigh.Chunk::FB::NEXT = head;
-
-    put Chunk::FreePtr().0 = neigh;
-}
-fn Chunk::VoidOFF(ptr)
-{
-    put head = ptr : (0 - Chunk::FB);
-    put neigh = Chunk::FreePtr().0;
-
-    lab find_neighbor_loop;
-        // block has been found on bounds enter.
-        jump found ~ (neigh < head) & (head < (neigh.Chunk::FB::NEXT));
-
-        // special check for physical free list memory wrap around.
-        put last = (neigh < (neigh.Chunk::FB::NEXT)) ^ Bool::TRUE;
-        put semibound = (neigh < head) | (head < (neigh.Chunk::FB::NEXT));
-        jump found ~ last & semibound;
-
-        put neigh = neigh.Chunk::FB::NEXT;
-        jump find_neighbor_loop;
-    lab found;
-
 
     put next = neigh.Chunk::FB::NEXT;
-    jump no_forward_coalesce;
     jump no_forward_coalesce ~ Chunk::Local::After(head) != (neigh.Chunk::FB::NEXT);
         put head.Chunk::FB::UNITS = (head.Chunk::FB::UNITS) + (next.Chunk::FB::UNITS);
         put next = next.Chunk::FB::NEXT;
     lab no_forward_coalesce;
     put head.Chunk::FB::NEXT = next;
 
-    jump no_backward_coalesce;
     jump no_backward_coalesce ~ Chunk::Local::After(neigh) != head;
         put neigh.Chunk::FB::UNITS = (neigh.Chunk::FB::UNITS) + (head.Chunk::FB::UNITS);
         put head = head.Chunk::FB::NEXT;
