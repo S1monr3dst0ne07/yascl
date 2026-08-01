@@ -11,6 +11,8 @@ seq SYSCALL
     STAT,
     FSTAT,
 
+    BRK = 12,
+
     EXIT = 60,
 }
 
