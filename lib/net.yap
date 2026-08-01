@@ -1,4 +1,5 @@
 
+use "lib/chunk.yap"
 
 
 seq Net::AF
@@ -70,11 +71,11 @@ seq Net::STRUCT::sockaddr_in
 
 
 
-fn Net::Connect(addr, port)
+fn Net::IN::Connect(addr, port)
 {
     // create socket
     put socket = Sys::TryCall(
-        "Net::Connect::sys_socket",
+        "Net::IN::Connect::sys_socket",
         SYSCALL::SOCKET, 
         Net::AF::INET,     // address family: internet
         Net::SOCK::STREAM, // socket type: stream (meaning: make sure all data get there it's supposed to.)
@@ -91,7 +92,7 @@ fn Net::Connect(addr, port)
         (addr          << Net::STRUCT::sockaddr_in::sin_addr)   ;
 
     Sys::TryCall(
-        "Net::Connect::sys_connect",
+        "Net::IN::Connect::sys_connect",
         SYSCALL::CONNECT,
         socket, // socket fd
         obj,    // address object
@@ -100,6 +101,35 @@ fn Net::Connect(addr, port)
 
     return socket;
 }
+
+
+fn Net::UN::Connect(path)
+{
+    put path_len = Str::Len(path);
+    put obj_size = path_len + 2;
+    put obj = Chunk::New(obj_size);
+    put obj.0 = Net::AF::UNIX;
+    Mem::ToBytes(obj + 2, path, path_len);
+
+    put socket = Sys::TryCall(
+        "Net::UN::Connect::sys_socket",
+        SYSCALL::SOCKET, 
+        Net::AF::UNIX,
+        Net::SOCK::STREAM, 
+        0,                 
+    );
+    Sys::TryCall(
+        "Net::UN::Connect::sys_connect",
+        SYSCALL::CONNECT,
+        socket, 
+        obj,
+        110,
+    );
+
+    return socket;
+}
+
+
 
 
 
