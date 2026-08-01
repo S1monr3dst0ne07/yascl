@@ -586,8 +586,8 @@ def runtime(emit):
     # process parameters 
     # system V abi, section 3.4 process init
     # (https://web.archive.org/web/20160706074221/http://www.x86-64.org/documentation/abi.pdf)
-    emit("mov rdi, [rsp]")
-    emit("lea rsi, [rsp+8]")
+    emit("mov rax, [rsp]")
+    emit("lea rdi, [rsp+8]")
 
     # call into main
     emit("call main")
