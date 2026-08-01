@@ -13,6 +13,9 @@ seq SYSCALL
 
     BRK = 12,
 
+    SOCKET  = 41,
+    CONNECT = 42,
+
     EXIT = 60,
 }
 
