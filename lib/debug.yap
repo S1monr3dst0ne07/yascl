@@ -16,18 +16,4 @@ fn print(pattern, args)
 
 
 
-fn dump(limit)
-{
-    print("--- heap dump start ---");
-
-    put i = 0;
-    lab loop;
-        put addr = __heap_base : i;
-        print("%d=%d\n", [addr, addr.0]);
-
-        put i = i + 1;
-    jump loop ~ i < limit;
-    
-}
-
 
