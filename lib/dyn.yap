@@ -81,7 +81,7 @@ fn Dyn::Recap(list, cap)
     Mem::Cpy(
         container,
         list.Dyn::CONTAINER,
-        list.Dyn::CAPACITY,
+        list.Dyn::SIZE,
     );
 
     Chunk::Void(list.Dyn::CONTAINER);
