@@ -1,5 +1,6 @@
 
 use "lib/net.yap"
+use "lib/dyn.yap"
 
 
 seq X11::State
@@ -8,6 +9,7 @@ seq X11::State
     ROOT_WIN,
     ID_ALLOCER,
     ID_GC,
+    NET_BUFFER,
 }
 
 
@@ -30,15 +32,44 @@ fn X11::Local::AllocID(state)
     return allocer;
 }
 
+
+
+fn X11::Flush(state)
+{
+    put cache = state.X11::State::NET_BUFFER;
+    jump empty ~ Dyn::Size(cache) == 0;
+        Net::Write(state.X11::State::SOCKET, Dyn::Ptr(cache), Dyn::Size(cache));
+        put cache.Dyn::SIZE = 0;
+    lab empty;
+}
+
 fn X11::Local::Read(state, words)
 {
+    X11::Flush(state);
     put out = Chunk::New(words);
     Net::Read(state.X11::State::SOCKET, out, words);
     return out;
 }
-fn X11::Local::Write(state, buffer, words)
+fn X11::Local::BufferBump(state, words)
 {
-    Net::Write(state.X11::State::SOCKET, buffer, words);
+    put cache = state.X11::State::NET_BUFFER;
+    put new_size = Dyn::Size(cache) + words;
+    put ptr = (cache.Dyn::CONTAINER) : Dyn::Size(cache);
+    put cache.Dyn::SIZE = new_size;
+
+    jump skip_flush ~ new_size < (cache.Dyn::CAPACITY);
+        X11::Flush(state);
+    lab skip_flush;
+
+    return ptr;
+}
+fn X11::Local::Write(state, packet, words)
+{
+    Mem::Cpy(
+        X11::Local::BufferBump(state, words),
+        packet,
+        words,
+    );
 }
 
 
@@ -83,7 +114,8 @@ seq X11::Startup::Resp
 fn X11::OpenDisplay(sock_path)
 {
     put state = Chunk::New(X11::State);
-    //put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
+    put state.X11::State::NET_BUFFER = Dyn::CreatePreAlloc(1 << 20);
+    // put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
 
     // <debug>
         put addr = Net::ParseAddr("127.0.0.1");
@@ -101,6 +133,7 @@ fn X11::OpenDisplay(sock_path)
 
     X11::Local::Write(state, ask, X11::Startup::Ask);
     Chunk::Void(ask);
+
 
     // read response header
     put resp_head = X11::Local::Read(state, X11::Startup::RespHead);
@@ -288,7 +321,7 @@ seq X11::Req::Change
 
 fn X11::Local::ChangeReq(state, opcode, id, bit, val)
 {
-    put req = Chunk::New(X11::Req::Change);
+    put req = X11::Local::BufferBump(state, X11::Req::Change);
     Mem::Set(req, 0, X11::Req::Change);
 
     put req.X11::Req::Change::OPCODE = opcode;
@@ -310,8 +343,6 @@ fn X11::Local::ChangeReq(state, opcode, id, bit, val)
     put req.X11::Req::Change::VAL2 = (val >> 16) & 255;
     put req.X11::Req::Change::VAL3 = (val >> 24) & 255;
 
-    X11::Local::Write(state, req, X11::Req::Change);
-    Chunk::Void(req);
 }
 
 
@@ -396,7 +427,7 @@ seq X11::Req::PolyPoint
 
 fn X11::PolyPointTMP(state, win, x, y)
 {
-    put req = Chunk::New(X11::Req::PolyPoint);
+    put req = X11::Local::BufferBump(state, X11::Req::PolyPoint);
 
     put req.X11::Req::PolyPoint::OPCODE = 64;
     put req.X11::Req::PolyPoint::MODE = 0; // origin relative
@@ -420,10 +451,8 @@ fn X11::PolyPointTMP(state, win, x, y)
     put req.X11::Req::PolyPoint::Y_LOW  = (y >> 0) & 255;
     put req.X11::Req::PolyPoint::Y_HIGH = (y >> 8) & 255;
 
-
-    X11::Local::Write(state, req, X11::Req::PolyPoint);
-    Chunk::Void(req);
 }
+
 
 
 
