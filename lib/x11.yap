@@ -178,7 +178,7 @@ seq X11::Req::CreateGC
     LEN_LOW, LEN_HIGH,
     GC0,  GC1,  GC2,  GC3,  // GC ID from AllocID
     WIN0, WIN1, WIN2, WIN3, // window ID
-    BIT0, BIT1, BIT2, BIT3, // bit mask (has to zero for this impl)
+    BIT0, BIT1, BIT2, BIT3, // bitmask (has to zero for this impl)
 }
 fn X11::CreateGC(state)
 {
@@ -214,5 +214,122 @@ fn X11::CreateGC(state)
     Chunk::Void(req);
 }
 
+
+seq X11::Req::CreateWindow
+{
+    OPCODE, // 1 for this
+    DEPTH,
+    LEN_LOW, LEN_HIGH, 
+    ID0, ID1, ID2, ID3, 
+    ROOT0, ROOT1, ROOT2, ROOT3, 
+    X_LOW, X_HIGH, //pos
+    Y_LOW, Y_HIGH,
+    W_LOW, W_HIGH, //size
+    H_LOW, H_HIGH,
+    B_LOW, B_HIGH, //border width
+    CLASS_LOW, CLASS_HIGH // 1 for InputOutput
+    VIS0, VIS1, VIS2, VIS3, // 0 for CopyFromParent
+    BIT0, BIT1, BIT2, BIT3, // bitmask
+}
+fn X11::CreateWindow(state, x, y, w, h)
+{
+    put req = Chunk::New(X11::Req::CreateWindow);
+    Mem::Set(req, 0, X11::Req::CreateWindow);
+
+    put req.X11::Req::CreateWindow::OPCODE   = 1;
+    put req.X11::Req::CreateWindow::DEPTH    = 0;
+    put req.X11::Req::CreateWindow::LEN_LOW  = 8;
+    put req.X11::Req::CreateWindow::LEN_HIGH = 0;
+
+    put win_id = X11::Local::AllocID(state);
+    put req.X11::Req::CreateWindow::ID0 = (win_id >>  0) & 255;
+    put req.X11::Req::CreateWindow::ID1 = (win_id >>  8) & 255;
+    put req.X11::Req::CreateWindow::ID2 = (win_id >> 16) & 255;
+    put req.X11::Req::CreateWindow::ID3 = (win_id >> 24) & 255;
+
+    put root_id = state.X11::State::ROOT_WIN;
+    put req.X11::Req::CreateWindow::ROOT0 = (root_id >>  0) & 255;
+    put req.X11::Req::CreateWindow::ROOT1 = (root_id >>  8) & 255;
+    put req.X11::Req::CreateWindow::ROOT2 = (root_id >> 16) & 255;
+    put req.X11::Req::CreateWindow::ROOT3 = (root_id >> 24) & 255;
+
+
+    put req.X11::Req::CreateWindow::X_LOW  = (x >> 0) & 255;
+    put req.X11::Req::CreateWindow::X_HIGH = (x >> 8) & 255;
+    put req.X11::Req::CreateWindow::Y_LOW  = (y >> 0) & 255;
+    put req.X11::Req::CreateWindow::Y_HIGH = (y >> 8) & 255;
+
+    put req.X11::Req::CreateWindow::W_LOW  = (w >> 0) & 255;
+    put req.X11::Req::CreateWindow::W_HIGH = (w >> 8) & 255;
+    put req.X11::Req::CreateWindow::H_LOW  = (h >> 0) & 255;
+    put req.X11::Req::CreateWindow::H_HIGH = (h >> 8) & 255;
+
+    put req.X11::Req::CreateWindow::B_LOW  = 1;
+    put req.X11::Req::CreateWindow::CLASS_LOW  = 1;
+
+    X11::Local::Write(state, req, X11::Req::CreateWindow);
+    Chunk::Void(req);
+
+    return win_id;
+}
+
+
+seq X11::Req::ChangeWindowAttr
+{
+    OPCODE, PADDING, // YAY!
+    LEN_LOW, LEN_HIGH,
+    WIN0, WIN1, WIN2, WIN3,
+    BIT0, BIT1, BIT2, BIT3,
+    VAL0, VAL1, VAL2, VAL3,
+}
+fn X11::SelectInput(state, win, mask)
+{
+    put req = Chunk::New(X11::Req::ChangeWindowAttr);
+    Mem::Set(req, 0, X11::Req::ChangeWindowAttr);
+
+    put req.X11::Req::ChangeWindowAttr::OPCODE = 2;
+    put req.X11::Req::ChangeWindowAttr::LEN_LOW  = 4; // 3+n (n = 1)
+    put req.X11::Req::ChangeWindowAttr::LEN_HIGH = 0;
+
+    put req.X11::Req::ChangeWindowAttr::WIN0 = (win >>  0) & 255;
+    put req.X11::Req::ChangeWindowAttr::WIN1 = (win >>  8) & 255;
+    put req.X11::Req::ChangeWindowAttr::WIN2 = (win >> 16) & 255;
+    put req.X11::Req::ChangeWindowAttr::WIN3 = (win >> 24) & 255;
+
+    // #x00400000     PropertyChange
+    put req.X11::Req::ChangeWindowAttr::BIT2 = (1 << 11);
+
+    put req.X11::Req::ChangeWindowAttr::VAL0 = (mask >>  0) & 255;
+    put req.X11::Req::ChangeWindowAttr::VAL1 = (mask >>  8) & 255;
+    put req.X11::Req::ChangeWindowAttr::VAL2 = (mask >> 16) & 255;
+    put req.X11::Req::ChangeWindowAttr::VAL3 = (mask >> 24) & 255;
+
+    X11::Local::Write(state, req, X11::Req::ChangeWindowAttr);
+    Chunk::Void(req);
+}
+
+
+
+seq X11::Req::MapWindow
+{
+    OPCODE, PADDING, // YAY!
+    LEN_LOW, LEN_HIGH,
+    WIN0, WIN1, WIN2, WIN3
+}
+fn X11::MapWindow(state, win)
+{
+    put req = Chunk::New(X11::Req::MapWindow);
+    put req.X11::Req::MapWindow::OPCODE = 8;
+    put req.X11::Req::MapWindow::LEN_LOW = 2;
+    put req.X11::Req::MapWindow::LEN_HIGH = 0;
+
+    put req.X11::Req::MapWindow::WIN0 = (win >>  0) & 255;
+    put req.X11::Req::MapWindow::WIN1 = (win >>  8) & 255;
+    put req.X11::Req::MapWindow::WIN2 = (win >> 16) & 255;
+    put req.X11::Req::MapWindow::WIN3 = (win >> 24) & 255;
+
+    X11::Local::Write(state, req, X11::Req::MapWindow);
+    Chunk::Void(req);
+}
 
 
