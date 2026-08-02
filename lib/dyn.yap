@@ -186,7 +186,7 @@ fn Dyn::Merge(list, other)
     jump skip ~ other_size == 0; // nothing to merge.
 
     put new_size = list_size + other_size;
-    Dyn::Recap(list, new_size);
+    Dyn::Local::EnsureSize(list, new_size);
 
     put other_container = Dyn::Ptr(other);
 
