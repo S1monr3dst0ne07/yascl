@@ -274,38 +274,57 @@ fn X11::CreateWindow(state, x, y, w, h)
 }
 
 
-seq X11::Req::ChangeWindowAttr
+seq X11::Req::Change
+    // generic change request.
+    // used for ChangeWindowAttr
+    // and for ChangeGC
 {
     OPCODE, PADDING, // YAY!
     LEN_LOW, LEN_HIGH,
-    WIN0, WIN1, WIN2, WIN3,
+    ID0,  ID1,  ID2,  ID3,
     BIT0, BIT1, BIT2, BIT3,
     VAL0, VAL1, VAL2, VAL3,
 }
+
+fn X11::Local::ChangeReq(state, opcode, id, bit, val)
+{
+    put req = Chunk::New(X11::Req::Change);
+    Mem::Set(req, 0, X11::Req::Change);
+
+    put req.X11::Req::Change::OPCODE = opcode;
+    put req.X11::Req::Change::LEN_LOW  = 4; // 3+n (n = 1)
+    put req.X11::Req::Change::LEN_HIGH = 0;
+
+    put req.X11::Req::Change::ID0 = (id >>  0) & 255;
+    put req.X11::Req::Change::ID1 = (id >>  8) & 255;
+    put req.X11::Req::Change::ID2 = (id >> 16) & 255;
+    put req.X11::Req::Change::ID3 = (id >> 24) & 255;
+
+    put req.X11::Req::Change::BIT0 = (bit >>  0) & 255;
+    put req.X11::Req::Change::BIT1 = (bit >>  8) & 255;
+    put req.X11::Req::Change::BIT2 = (bit >> 16) & 255;
+    put req.X11::Req::Change::BIT3 = (bit >> 24) & 255;
+
+    put req.X11::Req::Change::VAL0 = (val >>  0) & 255;
+    put req.X11::Req::Change::VAL1 = (val >>  8) & 255;
+    put req.X11::Req::Change::VAL2 = (val >> 16) & 255;
+    put req.X11::Req::Change::VAL3 = (val >> 24) & 255;
+
+    X11::Local::Write(state, req, X11::Req::Change);
+    Chunk::Void(req);
+}
+
+
+
 fn X11::SelectInput(state, win, mask)
 {
-    put req = Chunk::New(X11::Req::ChangeWindowAttr);
-    Mem::Set(req, 0, X11::Req::ChangeWindowAttr);
-
-    put req.X11::Req::ChangeWindowAttr::OPCODE = 2;
-    put req.X11::Req::ChangeWindowAttr::LEN_LOW  = 4; // 3+n (n = 1)
-    put req.X11::Req::ChangeWindowAttr::LEN_HIGH = 0;
-
-    put req.X11::Req::ChangeWindowAttr::WIN0 = (win >>  0) & 255;
-    put req.X11::Req::ChangeWindowAttr::WIN1 = (win >>  8) & 255;
-    put req.X11::Req::ChangeWindowAttr::WIN2 = (win >> 16) & 255;
-    put req.X11::Req::ChangeWindowAttr::WIN3 = (win >> 24) & 255;
-
-    // #x00 40 00 00     PropertyChange
-    put req.X11::Req::ChangeWindowAttr::BIT1 = 8;
-
-    put req.X11::Req::ChangeWindowAttr::VAL0 = (mask >>  0) & 255;
-    put req.X11::Req::ChangeWindowAttr::VAL1 = (mask >>  8) & 255;
-    put req.X11::Req::ChangeWindowAttr::VAL2 = (mask >> 16) & 255;
-    put req.X11::Req::ChangeWindowAttr::VAL3 = (mask >> 24) & 255;
-
-    X11::Local::Write(state, req, X11::Req::ChangeWindowAttr);
-    Chunk::Void(req);
+    X11::Local::ChangeReq(
+        state,
+        2, //ChangeWindowAttr
+        win,
+        (1 << 11), //PropertyChange
+        mask,
+    );
 }
 
 
@@ -337,6 +356,81 @@ fn X11::MapWindow(state, win)
 fn X11::ReadEvent(state)
 {
     return X11::Local::Read(state, 32);
+}
+
+
+seq X11::Event::Expose
+{
+    CODE, PADDING, // hehe padding :3
+    SEQ_LOW, SEQ_HIGH,
+    WIN0, WIN1, WIN2, WIN3,
+    X_LOW, X_HIGH,
+    Y_LOW, Y_HIGH,
+    W_LOW, W_HIGH,
+    H_LOW, H_HIGH,
+    COUNT_LOW, COUNT_HIGH,
+}
+
+fn X11::SetFore(state, r, g, b)
+{
+    X11::Local::ChangeReq(
+        state,
+        56, //ChangeGC
+        state.X11::State::ID_GC,
+        (1 << 2), //Foreground
+        (r <<  0) |
+        (g <<  8) |
+        (b << 16) ,
+    );
+}
+
+seq X11::Req::PolyPoint
+{
+    OPCODE, MODE,
+    LEN_LOW, LEN_HIGH,
+    WIN0, WIN1, WIN2, WIN3,
+    GC0,  GC1,  GC2,  GC3,
+    X_LOW, X_HIGH,
+    Y_LOW, Y_HIGH,
+}
+
+fn X11::PolyPointTMP(state, win, x, y)
+{
+    put req = Chunk::New(X11::Req::PolyPoint);
+
+    put req.X11::Req::PolyPoint::OPCODE = 64;
+    put req.X11::Req::PolyPoint::MODE = 0; // origin relative
+    put req.X11::Req::PolyPoint::LEN_LOW = 4; 
+    put req.X11::Req::PolyPoint::LEN_HIGH = 0; 
+
+    put req.X11::Req::PolyPoint::WIN0 = (win >>  0) & 255;
+    put req.X11::Req::PolyPoint::WIN1 = (win >>  8) & 255;
+    put req.X11::Req::PolyPoint::WIN2 = (win >> 16) & 255;
+    put req.X11::Req::PolyPoint::WIN3 = (win >> 24) & 255;
+
+    put gc = state.X11::State::ID_GC;
+    put req.X11::Req::PolyPoint::GC0 = (gc >>  0) & 255;
+    put req.X11::Req::PolyPoint::GC1 = (gc >>  8) & 255;
+    put req.X11::Req::PolyPoint::GC2 = (gc >> 16) & 255;
+    put req.X11::Req::PolyPoint::GC3 = (gc >> 24) & 255;
+
+    
+    put req.X11::Req::PolyPoint::X_LOW  = (x >> 0) & 255;
+    put req.X11::Req::PolyPoint::X_HIGH = (x >> 8) & 255;
+    put req.X11::Req::PolyPoint::Y_LOW  = (y >> 0) & 255;
+    put req.X11::Req::PolyPoint::Y_HIGH = (y >> 8) & 255;
+
+
+    X11::Local::Write(state, req, X11::Req::PolyPoint);
+    Chunk::Void(req);
+}
+
+
+
+fn X11::DrawPixel(state, win, x, y, r, g, b)
+{
+    X11::SetFore(state, r, g, b);
+    X11::PolyPointTMP(state, win, x, y);
 }
 
 
