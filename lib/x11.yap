@@ -168,3 +168,51 @@ lab conn_init_fail;
 }
 
 
+
+
+
+seq X11::Req::CreateGC
+{
+    OPCODE, // 55=0x37 for this
+    PADDING, // YES!
+    LEN_LOW, LEN_HIGH,
+    GC0,  GC1,  GC2,  GC3,  // GC ID from AllocID
+    WIN0, WIN1, WIN2, WIN3, // window ID
+    BIT0, BIT1, BIT2, BIT3, // bit mask (has to zero for this impl)
+}
+fn X11::CreateGC(state)
+{
+    put req = Chunk::New(X11::Req::CreateGC);
+    put req.X11::Req::CreateGC::OPCODE  = 55;
+
+    // (4+n) where n is the extension.
+    // this impl doesnt support extension,
+    // is the request length is always 4.
+    put req.X11::Req::CreateGC::LEN_LOW  = 4; 
+    put req.X11::Req::CreateGC::LEN_HIGH = 0;
+
+    put gd_id = X11::Local::AllocID(state);
+    put state.X11::State::ID_GC = gd_id;
+    put req.X11::Req::CreateGC::GC0 = (gd_id >>  0) & 255;
+    put req.X11::Req::CreateGC::GC1 = (gd_id >>  8) & 255;
+    put req.X11::Req::CreateGC::GC2 = (gd_id >> 16) & 255;
+    put req.X11::Req::CreateGC::GC3 = (gd_id >> 24) & 255;
+
+    put root_win_id = state.X11::State::ROOT_WIN;
+    put req.X11::Req::CreateGC::WIN0 = (root_win_id >>  0) & 255;
+    put req.X11::Req::CreateGC::WIN1 = (root_win_id >>  8) & 255;
+    put req.X11::Req::CreateGC::WIN2 = (root_win_id >> 16) & 255;
+    put req.X11::Req::CreateGC::WIN3 = (root_win_id >> 24) & 255;
+
+    // bitmask has to be full unset.
+    put req.X11::Req::CreateGC::BIT0 = 0;
+    put req.X11::Req::CreateGC::BIT1 = 0;
+    put req.X11::Req::CreateGC::BIT2 = 0;
+    put req.X11::Req::CreateGC::BIT3 = 0;
+
+    X11::Local::Write(state, req, X11::Req::CreateGC);
+    Chunk::Void(req);
+}
+
+
+
