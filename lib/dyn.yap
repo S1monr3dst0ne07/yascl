@@ -41,14 +41,19 @@ fn Dyn::CreateUseChunk(container)
 }
 
 
-fn Dyn::Create()
+fn Dyn::CreatePreAlloc(words)
 {
-    put DEFAULT_CAP = 1;
     return Dyn::CreatePopulate(
         0,
-        DEFAULT_CAP,
-        Chunk::New(DEFAULT_CAP),
+        words,
+        Chunk::New(words),
     );
+}
+
+
+fn Dyn::Create()
+{
+    return Dyn::CreatePreAlloc(1);
 }
 
 
