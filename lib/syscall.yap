@@ -13,6 +13,8 @@ seq SYSCALL
 
     BRK = 12,
 
+    NANOSLEEP = 35,
+
     SOCKET  = 41,
     CONNECT = 42,
 
