@@ -13,8 +13,8 @@ seq X11::State
 
 seq X11::Mask
 {
-    EXPOSURE = 1,
-    KEYPRESS = 32768,
+    KEYPRESS = 1,
+    EXPOSURE = 32768,
 }
 seq X11::Event
 {
@@ -296,8 +296,8 @@ fn X11::SelectInput(state, win, mask)
     put req.X11::Req::ChangeWindowAttr::WIN2 = (win >> 16) & 255;
     put req.X11::Req::ChangeWindowAttr::WIN3 = (win >> 24) & 255;
 
-    // #x00400000     PropertyChange
-    put req.X11::Req::ChangeWindowAttr::BIT2 = (1 << 11);
+    // #x00 40 00 00     PropertyChange
+    put req.X11::Req::ChangeWindowAttr::BIT1 = 8;
 
     put req.X11::Req::ChangeWindowAttr::VAL0 = (mask >>  0) & 255;
     put req.X11::Req::ChangeWindowAttr::VAL1 = (mask >>  8) & 255;
@@ -331,5 +331,13 @@ fn X11::MapWindow(state, win)
     X11::Local::Write(state, req, X11::Req::MapWindow);
     Chunk::Void(req);
 }
+
+
+
+fn X11::ReadEvent(state)
+{
+    return X11::Local::Read(state, 32);
+}
+
 
 
