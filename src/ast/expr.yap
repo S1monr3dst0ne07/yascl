@@ -175,6 +175,7 @@ lab done;
 fn Ast::Expr::Store(node, ctx)
 {
     jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+    jump error     ~ (node.Ast::Expr::OP) != Ast::Expr::Op::DOT;
 
     Ctx::Emit(ctx, "push rax");
     Ast::Expr::Load(node.Ast::Expr::RIGHT, ctx);
@@ -188,6 +189,9 @@ fn Ast::Expr::Store(node, ctx)
     Ctx::Emit(ctx, "mov [rax], rbx");
 
     jump done;
+
+lab error;
+    Error::PrintError("Trying to store into non-dot expression.");
 lab only_leaf;
     Ast::Leaf::Store(node.Ast::Expr::LEFT, ctx);
 lab done;
