@@ -130,7 +130,16 @@ fn Net::UN::Connect(path)
 }
 
 
-
+fn Net::WriteBytes(socket, bytes, count)
+{
+    return Sys::TryCall(
+        "Net::WriteBytes",
+        SYSCALL::WRITE,
+        socket,
+        bytes,
+        count,
+    );
+}
 
 
 fn Net::Write(socket, buffer, count)
