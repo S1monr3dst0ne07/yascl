@@ -9,7 +9,9 @@ seq X11::State
     ROOT_WIN,
     ID_ALLOCER,
     ID_GC,
-    NET_BUFFER,
+
+    BUFFER_PTR,
+    BUFFER_INDEX,
 }
 
 
@@ -36,10 +38,12 @@ fn X11::Local::AllocID(state)
 
 fn X11::Flush(state)
 {
-    put cache = state.X11::State::NET_BUFFER;
-    jump empty ~ Dyn::Size(cache) == 0;
-        Net::Write(state.X11::State::SOCKET, Dyn::Ptr(cache), Dyn::Size(cache));
-        put cache.Dyn::SIZE = 0;
+    put buffer = state.X11::State::BUFFER_PTR;
+    put index = state.X11::State::BUFFER_INDEX;
+
+    jump empty ~ index == 0;
+        Net::WriteBytes(state.X11::State::SOCKET, buffer, index);
+        put state.X11::State::BUFFER_INDEX = 0;
     lab empty;
 }
 
@@ -50,24 +54,25 @@ fn X11::Local::Read(state, words)
     Net::Read(state.X11::State::SOCKET, out, words);
     return out;
 }
-fn X11::Local::BufferBump(state, words)
+fn X11::Local::BufferBump(state, bytes)
 {
-    put cache = state.X11::State::NET_BUFFER;
-    put new_size = Dyn::Size(cache) + words;
-    put ptr = (cache.Dyn::CONTAINER) : Dyn::Size(cache);
+    put buffer = state.X11::State::BUFFER_PTR;
+    put index  = state.X11::State::BUFFER_INDEX;
+    put cap    = Chunk::Size(buffer) * 8;
+    put new_index = index + bytes;
 
-    jump skip_flush ~ new_size < (cache.Dyn::CAPACITY);
+    jump skip_flush ~ new_index < cap;
         X11::Flush(state);
-        put cache.Dyn::SIZE = words;
-        return cache.Dyn::CONTAINER;
+        put state.X11::State::BUFFER_INDEX = bytes;
+        return buffer;
     lab skip_flush;
 
-    put cache.Dyn::SIZE = new_size;
-    return ptr;
+    put state.X11::State::BUFFER_INDEX = new_index;
+    return buffer + index;
 }
 fn X11::Local::Write(state, packet, words)
 {
-    Mem::Cpy(
+    Mem::ToBytes(
         X11::Local::BufferBump(state, words),
         packet,
         words,
@@ -116,13 +121,14 @@ seq X11::Startup::Resp
 fn X11::OpenDisplay(sock_path)
 {
     put state = Chunk::New(X11::State);
-    put state.X11::State::NET_BUFFER = Dyn::CreatePreAlloc(1 << 10);
-    put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
+    put state.X11::State::BUFFER_PTR   = Chunk::New(1 << 10);
+    put state.X11::State::BUFFER_INDEX = 0;
+    //put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
 
     // <debug>
-    //    put addr = Net::ParseAddr("127.0.0.1");
-    //    put port = Net::HostToNetShort(6000);
-    //    put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
+        put addr = Net::ParseAddr("127.0.0.1");
+        put port = Net::HostToNetShort(6000);
+        put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
     // </debug>
 
 
@@ -319,32 +325,29 @@ seq X11::Req::Change
     ID0,  ID1,  ID2,  ID3,
     BIT0, BIT1, BIT2, BIT3,
     VAL0, VAL1, VAL2, VAL3,
+
+    // this padding is neccesary to prevent
+    // a network buffer overrun.
+    // writing a qword at offset VAL0
+    // will also overwrite these 4 padding bytes.
+    // sometimes you just need some extra
+    // protection to prevent segfaults ;3
+    PADDING0, PADDING1, PADDING2, PADDING3,
 }
 
 fn X11::Local::ChangeReq(state, opcode, id, bit, val)
 {
-    put req = X11::Local::BufferBump(state, X11::Req::Change);
-    Mem::Set(req, 0, X11::Req::Change);
+    put req = X11::Local::BufferBump(state, X11::Req::Change::PADDING0);
 
-    put req.X11::Req::Change::OPCODE = opcode;
-    put req.X11::Req::Change::LEN_LOW  = 4; // 3+n (n = 1)
-    put req.X11::Req::Change::LEN_HIGH = 0;
+    put (req + X11::Req::Change::OPCODE).0 = (opcode << 0) | (4 << 16);
 
-    put req.X11::Req::Change::ID0 = (id >>  0) & 255;
-    put req.X11::Req::Change::ID1 = (id >>  8) & 255;
-    put req.X11::Req::Change::ID2 = (id >> 16) & 255;
-    put req.X11::Req::Change::ID3 = (id >> 24) & 255;
-
-    put req.X11::Req::Change::BIT0 = (bit >>  0) & 255;
-    put req.X11::Req::Change::BIT1 = (bit >>  8) & 255;
-    put req.X11::Req::Change::BIT2 = (bit >> 16) & 255;
-    put req.X11::Req::Change::BIT3 = (bit >> 24) & 255;
-
-    put req.X11::Req::Change::VAL0 = (val >>  0) & 255;
-    put req.X11::Req::Change::VAL1 = (val >>  8) & 255;
-    put req.X11::Req::Change::VAL2 = (val >> 16) & 255;
-    put req.X11::Req::Change::VAL3 = (val >> 24) & 255;
-
+    // the order in which these are written
+    // is very importent, because all of these
+    // only write a half-qword so older
+    // could overwrite never.
+    put (req + (X11::Req::Change::ID0 )).0 = id;
+    put (req + (X11::Req::Change::BIT0)).0 = bit;
+    put (req + (X11::Req::Change::VAL0)).0 = val;
 }
 
 
@@ -419,40 +422,28 @@ fn X11::SetFore(state, r, g, b)
 
 seq X11::Req::PolyPoint
 {
-    OPCODE, MODE,
+    OPCODE, // 64
+    MODE,   // zero for origin relative
     LEN_LOW, LEN_HIGH,
     WIN0, WIN1, WIN2, WIN3,
     GC0,  GC1,  GC2,  GC3,
     X_LOW, X_HIGH,
     Y_LOW, Y_HIGH,
+
+    // for explanation refer to X11::Req::Change
+    //          >w< padding
+    PADDING0, PADDING1, PADDING2, PADDING3
+
 }
 
-fn X11::PolyPointTMP(state, win, x, y)
+fn X11::PolyPoint(state, win, x, y)
 {
-    put req = X11::Local::BufferBump(state, X11::Req::PolyPoint);
-
-    put req.X11::Req::PolyPoint::OPCODE = 64;
-    put req.X11::Req::PolyPoint::MODE = 0; // origin relative
-    put req.X11::Req::PolyPoint::LEN_LOW = 4; 
-    put req.X11::Req::PolyPoint::LEN_HIGH = 0; 
-
-    put req.X11::Req::PolyPoint::WIN0 = (win >>  0) & 255;
-    put req.X11::Req::PolyPoint::WIN1 = (win >>  8) & 255;
-    put req.X11::Req::PolyPoint::WIN2 = (win >> 16) & 255;
-    put req.X11::Req::PolyPoint::WIN3 = (win >> 24) & 255;
-
-    put gc = state.X11::State::ID_GC;
-    put req.X11::Req::PolyPoint::GC0 = (gc >>  0) & 255;
-    put req.X11::Req::PolyPoint::GC1 = (gc >>  8) & 255;
-    put req.X11::Req::PolyPoint::GC2 = (gc >> 16) & 255;
-    put req.X11::Req::PolyPoint::GC3 = (gc >> 24) & 255;
-
-    
-    put req.X11::Req::PolyPoint::X_LOW  = (x >> 0) & 255;
-    put req.X11::Req::PolyPoint::X_HIGH = (x >> 8) & 255;
-    put req.X11::Req::PolyPoint::Y_LOW  = (y >> 0) & 255;
-    put req.X11::Req::PolyPoint::Y_HIGH = (y >> 8) & 255;
-
+    put req = X11::Local::BufferBump(state, X11::Req::PolyPoint::PADDING0);
+    put (req + (X11::Req::PolyPoint::OPCODE)).0 = (64 << 0) | (4 << 16);
+    put (req + (X11::Req::PolyPoint::WIN0  )).0 = win;
+    put (req + (X11::Req::PolyPoint::GC0   )).0 = state.X11::State::ID_GC;
+    put (req + (X11::Req::PolyPoint::X_LOW )).0 = x;
+    put (req + (X11::Req::PolyPoint::Y_LOW )).0 = y;
 }
 
 
@@ -461,7 +452,7 @@ fn X11::PolyPointTMP(state, win, x, y)
 fn X11::DrawPixel(state, win, x, y, r, g, b)
 {
     X11::SetFore(state, r, g, b);
-    X11::PolyPointTMP(state, win, x, y);
+    X11::PolyPoint(state, win, x, y);
 }
 
 
