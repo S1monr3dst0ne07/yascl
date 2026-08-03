@@ -55,12 +55,14 @@ fn X11::Local::BufferBump(state, words)
     put cache = state.X11::State::NET_BUFFER;
     put new_size = Dyn::Size(cache) + words;
     put ptr = (cache.Dyn::CONTAINER) : Dyn::Size(cache);
-    put cache.Dyn::SIZE = new_size;
 
     jump skip_flush ~ new_size < (cache.Dyn::CAPACITY);
         X11::Flush(state);
+        put cache.Dyn::SIZE = words;
+        return cache.Dyn::CONTAINER;
     lab skip_flush;
 
+    put cache.Dyn::SIZE = new_size;
     return ptr;
 }
 fn X11::Local::Write(state, packet, words)
@@ -114,13 +116,13 @@ seq X11::Startup::Resp
 fn X11::OpenDisplay(sock_path)
 {
     put state = Chunk::New(X11::State);
-    put state.X11::State::NET_BUFFER = Dyn::CreatePreAlloc(1 << 20);
-    // put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
+    put state.X11::State::NET_BUFFER = Dyn::CreatePreAlloc(1 << 10);
+    put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
 
     // <debug>
-        put addr = Net::ParseAddr("127.0.0.1");
-        put port = Net::HostToNetShort(6000);
-        put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
+    //    put addr = Net::ParseAddr("127.0.0.1");
+    //    put port = Net::HostToNetShort(6000);
+    //    put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
     // </debug>
 
 
