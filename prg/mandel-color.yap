@@ -12,7 +12,7 @@ fn main()
     put width  = 300;
     put height = 300;
 
-    put win = X11::CreateWindow(state, 200, 200, width, height);
+    put win = X11::CreateWindow(state, 200, 200, width*2, height*2);
     X11::SelectInput(state, win, X11::Mask::EXPOSURE);
     X11::MapWindow(state, win);
 
@@ -77,7 +77,10 @@ fn mandel(state, win, iXmax, iYmax)
             lab iter_done;
 
             put col = (Iteration * 255) / IterationMax;
-            X11::DrawPixel(state, win, iX, iY, 0, col, col);
+            X11::DrawPixel(state, win, iX, iY,       0, col, col);
+            X11::DrawPixel(state, win, iX+iXmax, iY, col, 0, col);
+            X11::DrawPixel(state, win, iX, iY+iYmax, col, col, 0);
+            X11::DrawPixel(state, win, iX+iXmax, iY+iYmax, col, col, col);
 
             put iX = iX + 1;
         jump x_loop ~ iX < iXmax;
