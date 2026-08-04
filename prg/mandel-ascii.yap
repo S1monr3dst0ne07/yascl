@@ -7,10 +7,13 @@ fn main()
     put iXmax = 100;
     put iYmax = 100;
 
-    put CxMin = Frac::Make(5, 2, 1); //-2.5
-    put CxMax = Frac::Make(3, 2, 0); // 1.5
-    put CyMin = Frac::Make(2, 1, 1); //-2.0
-    put CyMax = Frac::Make(2, 1, 0); // 2.0
+    put zoom       = 2;
+    put zoom_frac  = Frac::Make(1, zoom, 0);
+
+    put CxMin = Frac::Mul(Frac::Make(5, 2, 1), zoom_frac); //-2.5
+    put CxMax = Frac::Mul(Frac::Make(3, 2, 0), zoom_frac); // 1.5
+    put CyMin = Frac::Mul(Frac::Make(2, 1, 1), zoom_frac); //-2.0
+    put CyMax = Frac::Mul(Frac::Make(2, 1, 0), zoom_frac); // 2.0
 
     put PixelHeight  = 0;
     put PixelWidth  = Frac::Mul(Frac::Add(CxMax, Frac::Neg(CxMin)), Frac::Make(1, iXmax, 0));
