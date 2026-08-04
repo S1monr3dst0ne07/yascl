@@ -123,12 +123,12 @@ fn X11::OpenDisplay(sock_path)
     put state = Chunk::New(X11::State);
     put state.X11::State::BUFFER_PTR   = Chunk::New(1 << 10);
     put state.X11::State::BUFFER_INDEX = 0;
-    //put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
+    put state.X11::State::SOCKET = Net::UN::Connect(sock_path);
 
     // <debug>
-        put addr = Net::ParseAddr("127.0.0.1");
-        put port = Net::HostToNetShort(6000);
-        put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
+    //    put addr = Net::ParseAddr("127.0.0.1");
+    //    put port = Net::HostToNetShort(6000);
+    //    put state.X11::State::SOCKET = Net::IN::Connect(addr, port);
     // </debug>
 
 
