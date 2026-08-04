@@ -87,9 +87,8 @@ fn Frac::Cmp(big, small)
         return Bool::FALSE;
     lab sign_good;
 
-    put common = Frac::Den(big) * Frac::Den(small);
-    put big_scaled   = Frac::Num(big)   * common;
-    put small_scaled = Frac::Num(small) * common;
+    put big_scaled   = Frac::Num(big)   * Frac::Den(small);
+    put small_scaled = Frac::Num(small) * Frac::Den(big);
 
     return big_scaled > small_scaled;
 }
