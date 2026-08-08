@@ -9,8 +9,8 @@ fn main()
     X11::CreateGC(state);
 
 
-    put width  = 300;
-    put height = 300;
+    put width  = 400;
+    put height = 400;
 
     put win = X11::CreateWindow(state, 200, 200, width*2, height*2);
     X11::SelectInput(state, win, X11::Mask::EXPOSURE);
