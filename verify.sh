@@ -2,7 +2,7 @@
 
 function compile 
 {
-    $1 $2
+    time $1 $2
     mv build.asm $3
     fasm $3 $4
     chmod +x $4

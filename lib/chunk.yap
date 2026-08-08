@@ -14,6 +14,11 @@ seq Chunk::FB // free block
     SIZE, // number of actual qwords stored.
     NEXT, // pointer to next chunk
     PADDING, // everybody needs some extra padding sometimes ;3
+
+    // make sure chunk blocks are 64-byte aligned.
+    // just for cache sanity.
+    // 8 elems * 8 per => 64 total bytes.
+    A1, A2, A3, A4,
 }
 
 
