@@ -1,6 +1,6 @@
 
 use "lib/bool.yap"
-
+use "lib/debug.yap"
 
 seq SYSCALL
 {
