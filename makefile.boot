@@ -1,10 +1,4 @@
 
-TARGET=prg/test.yap
-
-build: compiler
-	./compiler $(TARGET)
-	fasm subbuild.asm build
-	chmod +x build
 
 compiler: src/** lib/*
 	./bootstrap.py src/main.yap
