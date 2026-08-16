@@ -175,7 +175,7 @@ fn Net::Read(socket, buffer, count)
     );
 
     Mem::FromBytes(buffer, bytes, count);
-    //Chunk::Void(bytes);
+    Chunk::Void(bytes);
     return nbytes;
 }
 
