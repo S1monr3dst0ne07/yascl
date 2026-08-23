@@ -32,10 +32,15 @@ fn Ast::Put::Resolve(node, ctx)
     Ast::Expr::Resolve(node.Ast::Put::SRC, ctx);
 }
 
+fn Ast::Put::Collect(node, ctx)
+{
+    Ast::Expr::Collect(node.Ast::Put::DST, ctx);
+}
 
 fn Ast::Put::Compile(node, ctx)
 {
     Ast::Expr::Load (node.Ast::Put::SRC, ctx);
     Ast::Expr::Store(node.Ast::Put::DST, ctx);
 }
+
 

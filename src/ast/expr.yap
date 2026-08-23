@@ -197,3 +197,11 @@ lab only_leaf;
 lab done;
 }
 
+
+fn Ast::Expr::Collect(node, ctx)
+{
+    jump skip ~ (node.Ast::Expr::OP) != Ast::Expr::Op::NONE;
+        Ast::Leaf::Collect(node.Ast::Expr::LEFT, ctx);
+    lab skip;
+}
+

@@ -82,10 +82,12 @@ fn Ctx::VarAlloc(ctx, name)
 
     jump already_allocated ~ HT::Has(vars, name);
 
-    // compute address and increment allocation counter
-    put allocer = local.Ctx::Local::ALLOCER;
+    // compute address and increment allocation counter.
+    // needs to be pre-inc'd because rbp-addr
+    // runs in revserve.
+    put allocer = (local.Ctx::Local::ALLOCER) + 1;
     put addr = allocer * Config::WORD_SIZE;
-    put local.Ctx::Local::ALLOCER = allocer + 1;
+    put local.Ctx::Local::ALLOCER = allocer;
 
     HT::Set(vars, name, addr);
 

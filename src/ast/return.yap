@@ -27,5 +27,6 @@ fn Ast::Return::Resolve(node, ctx)
 fn Ast::Return::Compile(node, ctx)
 {
     Ast::Expr::Load(node.Ast::Return::VALUE, ctx);
+    Ctx::Emit(ctx, "leave");
     Ctx::Emit(ctx, "ret");
 }

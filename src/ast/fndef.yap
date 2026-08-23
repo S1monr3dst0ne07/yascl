@@ -66,10 +66,16 @@ fn Ast::FnDef::Compile(node, ctx)
     put local_ctx = Ctx::MakeLocal(node.Ast::FnDef::NAME);
     put ctx.Ctx::Global::LOCAL = local_ctx;
 
+    // collect local variables and prepare stack frame
+    Ast::FnDef::Collect(node, ctx);
+    put local_count = (local_ctx.Ctx::Local::VARS).HT::LENGTH;
+    put frame_size = local_count * Config::WORD_SIZE;
+
     // function entry point
     Ctx::Emit(ctx, "%s:", [node.Ast::FnDef::NAME]);
+    Ctx::Emit(ctx, "enter %d,0", [frame_size]);
 
-    // allocate and populate parameter variables.
+    // populate parameter variables.
     put abi = Config::ABI();
     put params = node.Ast::FnDef::PARAMS;
     put i = 0;
@@ -78,11 +84,8 @@ fn Ast::FnDef::Compile(node, ctx)
 
         put param_name = Dyn::Ptr(params).i;
         put passing_reg = abi.i;
-        Ctx::VarAlloc(ctx, param_name);
-
-
         put param_addr = Ctx::VarLookup(ctx, param_name);
-        Ctx::Emit(ctx, "mov [vars + %d], %s", [param_addr, passing_reg]);
+        Ctx::Emit(ctx, "mov [rbp - %d], %s", [param_addr, passing_reg]);
         
         put i = i + 1;
         jump loop;
@@ -92,6 +95,7 @@ fn Ast::FnDef::Compile(node, ctx)
     Ast::Block::Compile(node.Ast::FnDef::BODY, ctx);
 
     // function exit
+    Ctx::Emit(ctx, "leave");
     Ctx::Emit(ctx, "xor rax, rax"); // return 0 by default
     Ctx::Emit(ctx, "ret");
 
@@ -100,5 +104,27 @@ fn Ast::FnDef::Compile(node, ctx)
     put ctx.Ctx::Global::LOCAL = local_super_ctx;
 }
 
+
+
+fn Ast::FnDef::Collect(node, ctx)
+{
+    put params = node.Ast::FnDef::PARAMS;
+    
+    // collection local variable from
+    // function parameters.
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(params);
+
+        put param_name = Dyn::Ptr(params).i;
+        Ctx::VarAlloc(ctx, param_name);
+        
+        put i = i + 1;
+        jump loop;
+    lab done;
+
+    put body = node.Ast::FnDef::BODY;
+    Ast::Block::Collect(body, ctx);
+}
 
 

@@ -216,7 +216,7 @@ lab load_const;
 lab load_var;
     jump var_not_exist ~ Bool::Not(Ctx::VarExists(ctx, value));
     put addr = Ctx::VarLookup(ctx, value);
-    Ctx::Emit(ctx, "mov rax, [vars + %d]", [addr]);
+    Ctx::Emit(ctx, "mov rax, [rbp - %d]", [addr]);
     jump done;
 
 lab load_subexpr;
@@ -226,7 +226,7 @@ lab load_subexpr;
 lab load_call;
     put name   = value.Ast::Leaf::Call::NAME;
     put params = value.Ast::Leaf::Call::PARAMS;
-    Ctx::LocalSave(ctx);
+    //Ctx::LocalSave(ctx);
     put abi = Config::ABI();
 
     // push call results
@@ -259,7 +259,7 @@ lab load_call;
     jump call_done;
 
     lab call_done;
-    Ctx::LocalRestore(ctx);
+    //Ctx::LocalRestore(ctx);
     jump done;
 
 lab load_string;
@@ -317,9 +317,8 @@ fn Ast::Leaf::Store(node, ctx)
     jump subexpr ~ kind == Ast::Leaf::Kind::SUBEXPR;
     jump not_var ~ kind != Ast::Leaf::Kind::VAR;
 
-    Ctx::VarAlloc(ctx, value);
     put addr = Ctx::VarLookup(ctx, value);
-    Ctx::Emit(ctx, "mov [vars + %d], rax", [addr]);
+    Ctx::Emit(ctx, "mov [rbp - %d], rax", [addr]);
 
     jump done;
 lab not_var;
@@ -329,5 +328,15 @@ lab subexpr;
 lab done;
 }
 
+
+fn Ast::Leaf::Collect(node, ctx)
+{
+    put kind = node.Ast::Leaf::KIND;
+    put value = node.Ast::Leaf::VALUE;
+
+    jump not_var ~ kind != Ast::Leaf::Kind::VAR;
+        Ctx::VarAlloc(ctx, value);
+    lab not_var;
+}
 
 
