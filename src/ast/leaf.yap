@@ -226,7 +226,6 @@ lab load_subexpr;
 lab load_call;
     put name   = value.Ast::Leaf::Call::NAME;
     put params = value.Ast::Leaf::Call::PARAMS;
-    //Ctx::LocalSave(ctx);
     put abi = Config::ABI();
 
     // push call results
@@ -259,7 +258,6 @@ lab load_call;
     jump call_done;
 
     lab call_done;
-    //Ctx::LocalRestore(ctx);
     jump done;
 
 lab load_string;

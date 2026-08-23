@@ -115,39 +115,6 @@ fn Ctx::VoidLocal(local_ctx)
     Chunk::Void(local_ctx);
 }
 
-
-fn Ctx::LocalSave(ctx)
-{
-    put local = ctx.Ctx::Global::LOCAL;
-
-    put vaddr = 0;
-    lab loop;
-        jump done ~ vaddr == local.Ctx::Local::ALLOCER;
-        put addr = vaddr * Config::WORD_SIZE;
-        put vaddr = vaddr + 1;
-
-        Ctx::Emit(ctx, "push qword [vars + %d]", [addr]);
-        jump loop;
-    lab done;
-}
-
-fn Ctx::LocalRestore(ctx)
-{
-    put local = ctx.Ctx::Global::LOCAL;
-
-    put neg_vaddr = 0;
-    lab loop;
-        jump done ~ neg_vaddr == local.Ctx::Local::ALLOCER;
-        put vaddr = ((local.Ctx::Local::ALLOCER) - 1) - neg_vaddr;
-        put addr = vaddr * Config::WORD_SIZE;
-        put neg_vaddr = neg_vaddr + 1;
-
-        Ctx::Emit(ctx, "pop qword [vars + %d]", [addr]);
-        jump loop;
-    lab done;
-}
-
-
 fn Ctx::RenderLabel(ctx, lab_name)
 {
     put local = ctx.Ctx::Global::LOCAL;
