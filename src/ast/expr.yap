@@ -205,3 +205,50 @@ fn Ast::Expr::Collect(node, ctx)
     lab skip;
 }
 
+fn Ast::Expr::Eval(node, ctx)
+    // static compiler-time evaluation.
+{
+    jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+
+    put left  = Ast::Expr::Eval(node.Ast::Expr::LEFT , ctx);
+    put right = Ast::Expr::Eval(node.Ast::Expr::RIGHT, ctx);
+
+    put op = node.Ast::Expr::OP;
+    jump eval_add         ~ op == Ast::Expr::Op::ADD;
+    jump eval_sub         ~ op == Ast::Expr::Op::SUB;
+    jump eval_equal       ~ op == Ast::Expr::Op::EQUAL;
+    jump eval_not_equal   ~ op == Ast::Expr::Op::NOT_EQUAL;
+    jump eval_lesser      ~ op == Ast::Expr::Op::LESSER;
+    jump eval_greater     ~ op == Ast::Expr::Op::GREATER;
+    jump eval_mul         ~ op == Ast::Expr::Op::MUL;
+    jump eval_div         ~ op == Ast::Expr::Op::DIV;
+    jump eval_and         ~ op == Ast::Expr::Op::AND;
+    jump eval_or          ~ op == Ast::Expr::Op::OR;
+    jump eval_xor         ~ op == Ast::Expr::Op::XOR;
+    jump eval_shift_right ~ op == Ast::Expr::Op::SHIFT_RIGHT;
+    jump eval_shift_left  ~ op == Ast::Expr::Op::SHIFT_LEFT;
+    jump eval_modulo      ~ op == Ast::Expr::Op::MODULO;
+
+    Error::PrintError("Unsupported compile-time operation.");
+
+
+    lab eval_add;       return left + right;
+    lab eval_sub;       return left - right;
+    lab eval_equal;     return left == right;
+    lab eval_not_equal; return left != right;
+    lab eval_lesser;    return left <  right;
+    lab eval_greater;   return left >  right;
+    lab eval_mul;       return left * right;
+    lab eval_div;       return left / right;
+    lab eval_modulo;    return left % right;
+    lab eval_and;       return left & right;
+    lab eval_or;        return left | right;
+    lab eval_xor;       return left ^ right;
+    lab eval_shift_right; return left << right;
+    lab eval_shift_left;  return left >> right;
+
+lab only_leaf;
+    return Ast::Leaf::Eval(node.Ast::Expr::LEFT, ctx);
+
+}
+

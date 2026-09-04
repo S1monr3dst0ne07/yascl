@@ -338,3 +338,28 @@ fn Ast::Leaf::Collect(node, ctx)
 }
 
 
+fn Ast::Leaf::Eval(node, ctx)
+{
+    put kind = node.Ast::Leaf::KIND;
+    put value = node.Ast::Leaf::VALUE;
+
+    jump eval_subexpr   ~ kind == Ast::Leaf::Kind::SUBEXPR;
+    jump eval_number    ~ kind == Ast::Leaf::Kind::NUMBER;
+    jump eval_char      ~ kind == Ast::Leaf::Kind::CHAR;
+    jump eval_const     ~ kind == Ast::Leaf::Kind::CONST;
+
+    Error::PrintError("Unsupported compile-time leaf");
+
+lab eval_char;   
+lab eval_number;
+    return value;
+
+lab eval_const;
+    put const = HT::Get(ctx.Ctx::Global::CONSTS, value);
+    return const;
+
+lab eval_subexpr;
+    return Ast::Expr::Eval(value, ctx);
+
+}
+
