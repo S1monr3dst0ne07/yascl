@@ -210,7 +210,7 @@ fn Ast::Expr::Eval(node, ctx)
 {
     jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
 
-    put left  = Ast::Expr::Eval(node.Ast::Expr::LEFT , ctx);
+    put left  = Ast::Leaf::Eval(node.Ast::Expr::LEFT , ctx);
     put right = Ast::Expr::Eval(node.Ast::Expr::RIGHT, ctx);
 
     put op = node.Ast::Expr::OP;
