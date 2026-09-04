@@ -15,7 +15,7 @@ use "src/ast/prog.yap"
 fn main(argc, argv)
 {
     jump path_good ~ argc > 1;
-        Error::Error("Not source path provided.\n");
+        Error::Error("No source path provided.\n");
     lab path_good;
 
     put ctx = Ctx::MakeGlobal();
