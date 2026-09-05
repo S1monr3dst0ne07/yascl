@@ -19,7 +19,7 @@ seq Net::SOCK
 seq Net::CONFIG
 {
     IPv4_ADDR_PART_COUNT = 4,
-        // not shit! it's in the name.
+        // no shit! it's in the name.
 }
 
 

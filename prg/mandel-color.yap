@@ -77,9 +77,9 @@ fn mandel(state, win, iXmax, iYmax)
             lab iter_done;
 
             put col = (Iteration * 255) / IterationMax;
-            X11::DrawPixel(state, win, iX, iY,       0, col, col);
-            X11::DrawPixel(state, win, iX+iXmax, iY, col, 0, col);
-            X11::DrawPixel(state, win, iX, iY+iYmax, col, col, 0);
+            X11::DrawPixel(state, win, iX,       iY,       0,   col, col);
+            X11::DrawPixel(state, win, iX+iXmax, iY,       col, 0,   col);
+            X11::DrawPixel(state, win, iX,       iY+iYmax, col, col, 0  );
             X11::DrawPixel(state, win, iX+iXmax, iY+iYmax, col, col, col);
 
             put iX = iX + 1;
