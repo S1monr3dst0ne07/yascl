@@ -1,6 +1,7 @@
 
 
 use "lib/mem.yap"
+use "lib/syscall.yap"
 
 // K&R user-heap implementation.
 // hopefully more readable than the original. :3
