@@ -130,7 +130,7 @@ fn Chunk::Local::After(chunk)
     // compute head pointer of
     // chunk immediately after chunk.
 {
-    return chunk : (chunk.Chunk::FB::UNITS);
+    return chunk : ((chunk.Chunk::FB::UNITS) * Chunk::FB);
 }
 
 fn Chunk::Void(ptr)
