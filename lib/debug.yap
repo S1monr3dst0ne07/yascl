@@ -57,6 +57,7 @@ fn dump_heap(path)
 lab done;
 }
 
+use "lib/ht.yap"
 
 fn dump_ht(path, pattern, ht)
 {
