@@ -14,6 +14,49 @@ fn print(pattern, args)
 }
 
 
+use "lib/fs.yap"
+use "lib/mem.yap"
+
+fn dump_heap(path)
+{
+    print("[DEBUG] heap dump in progress\n");
+    Chunk::Local::Init();
+    put primal = Chunk::PrimalPtr();
+
+    put prim_next = primal.Chunk::FB::NEXT;
+    jump primal_good ~ prim_next != primal;
+        print("[WARNING] heap empty. aborting dump.\n");
+        jump done;
+    lab primal_good;
+
+    put brk_start = primal.Chunk::FB::NEXT;
+    put brk_end   = syscall(SYSCALL::BRK, 0);
+    put heap_size = brk_end - brk_start;
+
+    print("[DEBUG] brk_start: %d\n", [brk_start]);
+    print("[DEBUG] brk_end  : %d\n", [brk_end]);
+    print("[DEUBG] heap_size: %d\n", [heap_size]);
+
+    
+    put fd = FS::Sys::Open(path, 
+        FS::ENUM::MODE::WRONLY |
+        FS::ENUM::MODE::CREATE |
+        FS::ENUM::MODE::TRUNC
+    );
+    Sys::TryCall(
+        "dump_heap",
+        SYSCALL::WRITE,
+        fd,
+        brk_start,
+        heap_size,
+    );
+    FS::Sys::Close(fd);
+
+    print("[DEUBG] heap dump success\n");
+
+lab done;
+}
+
 
 
 

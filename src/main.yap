@@ -34,6 +34,8 @@ fn main(argc, argv)
     Ctx::Write(ctx, "build.asm");
 
     Chunk::Void(path);
+
+    dump_heap("core");
 }
 
 

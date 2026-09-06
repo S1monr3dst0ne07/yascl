@@ -29,13 +29,21 @@ fn Chunk::FreePtr()
     return ptr;
 }
 
+fn Chunk::PrimalPtr()
+{
+    // first chunk, ever!
+    // globally accessible.
+    static Chunk::FB ~ primal;
+
+    return primal;
+}
+
 
 fn Chunk::Local::Init()
 {
     jump done ~ Chunk::FreePtr().0;
 
-    // first chunk, ever!
-    static Chunk::FB ~ primal;
+    put primal = Chunk::PrimalPtr();
 
     // initialize free list
     put Chunk::FreePtr().0 = primal;
