@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-
 import sys, os
 from dataclasses import dataclass as dc
 from typing import Literal, Any
@@ -156,6 +155,18 @@ class AstLeaf:
             print(f"Error: Unable to resolve leaf: `{self.value}`")
             sys.exit(1)
 
+    def eval(self, scope):
+        self._resolve(scope)
+        match self.kind:
+            case 'lit':   return self.value
+            case 'char':  return ord(self.value)
+            case 'const': return consts[self.value]
+
+            case x:
+                print(f"Unsupported compiler-time leaf: `{x}`")
+                exit(1)
+
+
     def load(self, emit, scope): #load into rax
         self._resolve(scope)
         match self.kind:
@@ -206,6 +217,8 @@ class AstLeaf:
 
         scope.alloc(self.value)
         emit(f'mov [vars + {scope[self.value]}], rax')
+
+        
 
 
 
@@ -401,13 +414,13 @@ class AstInplace:
 
 @dc
 class AstStatic:
-    words : int
+    words : AstExpr
     expr : AstExpr
 
     @classmethod
     def parse(cls, stream):
         stream.expect('static')
-        words = int(stream.pop())
+        words = AstExpr.parse(stream)
         stream.expect('~')
         expr = AstExpr.parse(stream)
         stream.expect(';')
@@ -415,7 +428,7 @@ class AstStatic:
 
     def compile(self, emit, scope):
         name = next(fresh)
-        statics[name] = self.words
+        statics[name] = self.words.eval(scope)
         emit(f'mov rax, {name}')
         self.expr.store(emit, scope)
 
