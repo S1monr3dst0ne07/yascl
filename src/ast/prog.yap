@@ -55,6 +55,7 @@ fn Ast::Prog::Parse(stream, ctx)
         Dyn::Merge(fns, subprog.Ast::Prog::FNS);
 
         // functions are taken by self.
+        Dyn::Delete(subprog.Ast::Prog::FNS);
         Chunk::Void(subprog);
         jump loop;
         
