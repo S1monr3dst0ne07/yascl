@@ -252,3 +252,14 @@ lab only_leaf;
 
 }
 
+
+fn Ast::Expr::Void(node)
+{
+    jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
+
+    Ast::Expr::Void(node.Ast::Expr::RIGHT);
+lab only_leaf;
+    Ast::Leaf::Void(node.Ast::Expr::LEFT);
+
+    Chunk::Void(node);
+}
