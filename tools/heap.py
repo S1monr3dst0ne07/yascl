@@ -48,4 +48,5 @@ with open('core', 'rb') as f:
     heap = Heap.read(f)
 
 heap.print() 
+print(f"total blocks: {len(heap.blocks)}")
 
