@@ -58,5 +58,43 @@ lab done;
 }
 
 
+fn dump_ht(path, pattern, ht)
+{
+    put fd = FS::Sys::Open(path, 
+        FS::ENUM::MODE::WRONLY |
+        FS::ENUM::MODE::CREATE |
+        FS::ENUM::MODE::TRUNC
+    );
+
+    static 4096 ~ qbuffer;
+    static 1024 ~ bbuffer;
+
+    put it = HT::MakeIter(ht);
+    lab loop;
+        jump done ~ Bool::Not(HT::Next(it));
+
+        Str::Format(qbuffer, pattern, [
+            it.HT::Iter::KEY,
+            it.HT::Iter::VALUE,
+        ]);
+
+        put char_count = Str::Len(qbuffer);
+        Mem::ToBytes(bbuffer, qbuffer, char_count);
+
+        Sys::TryCall(
+            "dump_ht",
+            SYSCALL::WRITE,
+            fd,
+            bbuffer,
+            char_count,
+        );
+
+        jump loop;
+    lab done;
+
+    FS::Sys::Close(fd);
+}
+
+
 
 
