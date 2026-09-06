@@ -21,8 +21,6 @@ fn main(argc, argv)
     put ctx = Ctx::MakeGlobal();
     put path = Args::Read(argv.1);
 
-    Dyn::Recap(ctx.Ctx::Global::OUTPUT, 2048);
-
     put root = Ast::Prog::File(path, ctx);
     Ast::Prog::Resolve(root, ctx);
     
@@ -33,9 +31,13 @@ fn main(argc, argv)
     print("Compilation successful\n");
     Ctx::Write(ctx, "build.asm");
 
-    Chunk::Void(path);
+    //dump_ht("consts.txt", "%s: %d\n", ctx.Ctx::Global::CONSTS);
 
-    dump_heap("core");
+    Chunk::Void(path);
+    Ctx::VoidGlobal(ctx);
+    Ast::Prog::Void(root);
+
+    //dump_heap("core");
 }
 
 
