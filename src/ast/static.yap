@@ -43,6 +43,8 @@ fn Ast::Static::Compile(node, ctx)
 
     Ctx::Emit(ctx, "mov rax, %s", [label]);
     Ast::Expr::Store(node.Ast::Static::EXPR, ctx);
+
+    Chunk::Void(label);
 }
 
 fn Ast::Static::Collect(node, ctx)
