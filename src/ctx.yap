@@ -144,4 +144,14 @@ fn Ctx::Fresh(ctx)
 }
 
 
+fn Ctx::VoidGlobal(ctx)
+{
+    Dyn::Delete(ctx.Ctx::Global::OUTPUT);
+    HT::Void(ctx.Ctx::Global::PATHS);
 
+    HT::Void(ctx.Ctx::Global::STRINGS);
+    HT::Void(ctx.Ctx::Global::STATICS);
+    HT::Void(ctx.Ctx::Global::CONSTS);
+
+    Chunk::Void(ctx);
+}
