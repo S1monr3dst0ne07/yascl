@@ -136,6 +136,7 @@ fn Chunk::Local::After(chunk)
 fn Chunk::Void(ptr)
 {
     put head = ptr : (0 - Chunk::FB);
+    put head.Chunk::FB::SIZE = 0;
     put neigh = Chunk::FreePtr().0;
 
     lab find_neighbor_loop;
