@@ -35,7 +35,7 @@ fn Chunk::Local::Init()
     jump done ~ Chunk::FreePtr().0;
 
     // first chunk, ever!
-    static 10 ~ primal;
+    static Chunk::FB ~ primal;
 
     // initialize free list
     put Chunk::FreePtr().0 = primal;
