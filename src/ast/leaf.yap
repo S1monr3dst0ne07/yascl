@@ -363,3 +363,68 @@ lab eval_subexpr;
 
 }
 
+
+fn Ast::Leaf::Void(node)
+{
+    put kind = node.Ast::Leaf::KIND;
+    put value = node.Ast::Leaf::VALUE;
+    Chunk::Void(node);
+
+    jump void_meta      ~ kind == Ast::Leaf::Kind::META;
+    jump void_subexpr   ~ kind == Ast::Leaf::Kind::SUBEXPR;
+    jump void_var       ~ kind == Ast::Leaf::Kind::VAR;
+    jump void_call      ~ kind == Ast::Leaf::Kind::CALL;
+    jump void_const     ~ kind == Ast::Leaf::Kind::CONST;
+    jump void_string    ~ kind == Ast::Leaf::Kind::STRING;
+    jump void_array     ~ kind == Ast::Leaf::Kind::ARRAY;
+    jump done;
+
+lab void_meta;
+lab void_const;
+lab void_var;
+lab void_string;
+    // all of these are just string identifiers.
+
+    Chunk::Void(value);
+    jump done;
+
+lab void_subexpr;
+    Ast::Expr::Void(value);
+    jump done;
+
+lab void_call;
+    put params = value.Ast::Leaf::Call::PARAMS;
+    put i = 0;
+    lab void_call_loop;
+        jump void_call_done ~ i == Dyn::Size(params);
+        put param = Dyn::Ptr(params).i;
+        put i = i + 1;
+
+        Ast::Expr::Void(param);
+        jump void_call_loop;
+    lab void_call_done;
+
+    Dyn::Delete(value.Ast::Leaf::Call::PARAMS);
+    Chunk::Void(value.Ast::Leaf::Call::NAME);
+    Chunk::Void(value);
+    jump done;
+
+lab void_array;
+    put i = 0;
+    lab array_loop;
+        jump array_done ~ i == Dyn::Size(value);
+        put elem = Dyn::Ptr(value).i;
+        put i = i + 1;
+
+        Ast::Expr::Void(elem);
+
+        jump array_loop;
+    lab array_done;
+
+    Dyn::Delete(value);
+    jump done;
+
+
+lab done;
+}
+
