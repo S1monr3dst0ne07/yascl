@@ -127,4 +127,23 @@ fn Ast::FnDef::Collect(node, ctx)
     Ast::Block::Collect(body, ctx);
 }
 
+fn Ast::FnDef::Void(node)
+{
+    put params = node.Ast::FnDef::PARAMS;
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(params);
+        put param_name = Dyn::Ptr(params).i;
+
+        Chunk::Void(param_name);
+        
+        put i = i + 1;
+        jump loop;
+    lab done;
+    
+    Dyn::Delete(node.Ast::FnDef::PARAMS);
+    Chunk::Void(node.Ast::FnDef::NAME);
+    Ast::Block::Void(node.Ast::FnDef::BODY);
+    Chunk::Void(node);
+}
 
