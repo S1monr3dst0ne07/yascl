@@ -220,3 +220,42 @@ fn Ast::Block::CollectNode(node, ctx)
 }
 
 
+fn Ast::Block::Void(meta)
+{
+    put nodes = meta.Ast::Block::NODES;
+
+    put i = 0;
+    lab loop;
+        put node = Dyn::Ptr(nodes).i;
+        Ast::Block::VoidNode(node);
+        put i = i + 1;
+    jump loop ~ i < Dyn::Size(nodes);
+
+    Dyn::Delete(nodes);
+    Chunk::Void(meta);
+}
+fn Ast::Block::VoidNode(node)
+{
+    put kind    = node.Ast::Block::Node::KIND;
+    put subnode = node.Ast::Block::Node::MESA;
+    Chunk::Void(node);
+
+    jump kind_put     ~ kind == Ast::Block::Kind::PUT;
+    jump kind_return  ~ kind == Ast::Block::Kind::RETURN;
+    jump kind_jump    ~ kind == Ast::Block::Kind::JUMP;
+    jump kind_lab     ~ kind == Ast::Block::Kind::LAB;
+    jump kind_static  ~ kind == Ast::Block::Kind::STATIC;
+    jump kind_inplace ~ kind == Ast::Block::Kind::INPLACE;
+    jump done;
+    
+    lab kind_put;     Ast::Put::Void    (subnode); jump done;
+    lab kind_return;  Ast::Return::Void (subnode); jump done;
+    lab kind_jump;    Ast::Jump::Void   (subnode); jump done;
+    lab kind_lab;     Ast::Lab::Void    (subnode); jump done;
+    lab kind_static;  Ast::Static::Void (subnode); jump done;
+    lab kind_inplace; Ast::Inplace::Void(subnode); jump done;
+    
+    lab done;
+}
+
+
