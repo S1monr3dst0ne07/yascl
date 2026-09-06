@@ -146,7 +146,14 @@ fn Ctx::Fresh(ctx)
 
 fn Ctx::VoidGlobal(ctx)
 {
-    Dyn::Delete(ctx.Ctx::Global::OUTPUT);
+    put output = ctx.Ctx::Global::OUTPUT;
+    put i = 0; 
+    lab loop;
+        Chunk::Void(Dyn::Ptr(output).i);
+        put i = i + 1;
+    jump loop ~ i < Dyn::Size(output);
+    Dyn::Delete(output);
+
     HT::Void(ctx.Ctx::Global::PATHS);
 
     HT::Void(ctx.Ctx::Global::STRINGS);
