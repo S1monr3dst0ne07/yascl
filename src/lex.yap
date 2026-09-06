@@ -275,6 +275,7 @@ fn Lex::VoidStream(stream)
         put i = i + 1;
     jump loop ~ i < limit;
 
+    Chunk::Void(toks);
     Chunk::Void(stream);
 }
 
