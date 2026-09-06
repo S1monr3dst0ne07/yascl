@@ -135,5 +135,23 @@ fn Ast::Prog::Compile(node, ctx)
     jump loop ~ i < Dyn::Size(fns);
 }
 
+fn Ast::Prog::Void(node)
+{
+    put fns = node.Ast::Prog::FNS;
+
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(fns);
+        put func = Dyn::Ptr(fns).i;
+        put i = i + 1;
+
+        Ast::FnDef::Void(func);
+
+        jump loop;
+    lab done;
+
+    Dyn::Delete(fns);
+    Chunk::Void(node);
+}
 
 
