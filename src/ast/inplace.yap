@@ -28,3 +28,9 @@ fn Ast::Inplace::Compile(node, ctx)
     Ast::Expr::Load(node.Ast::Inplace::EXPR, ctx);
 }
 
+
+fn Ast::Inplace::Void(node)
+{
+    Ast::Expr::Void(node.Ast::Inplace::EXPR);
+    Chunk::Void(node);
+}

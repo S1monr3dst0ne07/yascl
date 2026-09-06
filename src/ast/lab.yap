@@ -27,4 +27,8 @@ fn Ast::Lab::Compile(node, ctx)
     Chunk::Void(label);
 }
 
-
+fn Ast::Lab::Void(node)
+{
+    Chunk::Void(node.Ast::Lab::NAME);
+    Chunk::Void(node);
+}

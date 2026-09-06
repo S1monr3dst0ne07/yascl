@@ -30,3 +30,9 @@ fn Ast::Return::Compile(node, ctx)
     Ctx::Emit(ctx, "leave");
     Ctx::Emit(ctx, "ret");
 }
+
+fn Ast::Return::Void(node)
+{
+    Ast::Expr::Void(node.Ast::Return::VALUE);
+    Chunk::Void(node);
+}

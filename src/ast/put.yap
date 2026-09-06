@@ -43,4 +43,10 @@ fn Ast::Put::Compile(node, ctx)
     Ast::Expr::Store(node.Ast::Put::DST, ctx);
 }
 
+fn Ast::Put::Void(node)
+{
+    Ast::Expr::Void(node.Ast::Put::SRC);
+    Ast::Expr::Void(node.Ast::Put::DST);
+    Chunk::Void(node);
+}
 

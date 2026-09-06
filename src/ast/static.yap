@@ -50,4 +50,10 @@ fn Ast::Static::Collect(node, ctx)
     Ast::Expr::Collect(node.Ast::Static::EXPR, ctx);
 }
 
+fn Ast::Static::Void(node)
+{
+    Ast::Expr::Void(node.Ast::Static::WORDS);
+    Ast::Expr::Void(node.Ast::Static::EXPR);
+    Chunk::Void(node);
+}
 

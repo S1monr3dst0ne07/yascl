@@ -58,3 +58,15 @@ lab sometimes;
 lab done;
     Chunk::Void(label);
 }
+
+fn Ast::Jump::Void(node)
+{
+    Chunk::Void(node.Ast::Jump::TARGET);
+
+    put cond = node.Ast::Jump::COND;
+    jump skip ~ cond == Mem::NULL;
+        Ast::Expr::Void(cond);
+    lab skip;
+
+    Chunk::Void(node);
+}
