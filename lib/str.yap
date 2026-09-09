@@ -101,6 +101,7 @@ fn Str::Unescape(content)
         put subchar = content.(i+1);
 
         jump newline    ~ subchar == 'n';
+        jump car_return ~ subchar == 'r';
         jump tabulate   ~ subchar == 't';
         jump terminator ~ subchar == '0';
         jump mesa       ~ subchar == '\\';
@@ -109,6 +110,7 @@ fn Str::Unescape(content)
         jump loop; 
 
     lab newline     ; put content.(i-offset) = '\n'; jump control_done;
+    lab car_return  ; put content.(i-offset) = '\r'; jump control_done;
     lab tabulate    ; put content.(i-offset) = '\t'; jump control_done;
     lab terminator  ; put content.(i-offset) = '\0'; jump control_done;
     lab mesa        ; put content.(i-offset) = '\\'; jump control_done;

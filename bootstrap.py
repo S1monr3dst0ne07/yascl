@@ -127,6 +127,7 @@ class AstLeaf:
                 char = x.strip("'")
                 match char:
                     case '\\n': char = '\n'
+                    case '\\r': char = '\r'
                     case '\\t': char = '\t'
                     case '\\0': char = '\0'
                     case '\\\\': char = '\\'
