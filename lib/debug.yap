@@ -98,4 +98,22 @@ fn dump_ht(path, pattern, ht)
 
 
 
+fn dump_buffer(path, buffer, length)
+{
+    put fd = FS::Sys::Open(path, 
+        FS::ENUM::MODE::WRONLY |
+        FS::ENUM::MODE::CREATE |
+        FS::ENUM::MODE::TRUNC
+    );
+
+    Sys::TryCall(
+        "dump_buffer",
+        SYSCALL::WRITE,
+        fd,
+        buffer,
+        length,
+    );
+
+    FS::Sys::Close(fd);
+}
 
