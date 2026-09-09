@@ -43,12 +43,21 @@ fn Ast::FnDef::Parse(stream)
 
     lab done;
     put node.Ast::FnDef::PARAMS = params;
-        
+
     
     Lex::Expect(stream, ")");
     put node.Ast::FnDef::BODY = Ast::Block::Parse(stream);
 
+    jump param_count_warning ~ Dyn::Size(params) > 6;
     return node;
+
+lab param_count_warning;
+    print("warning: fndef of `%s` uses %d parameters which exceeds the limit of 6\n", [
+        node.Ast::FnDef::NAME,  
+        Dyn::Size(params),  
+    ]);
+
+    return node; 
 }
 
 
