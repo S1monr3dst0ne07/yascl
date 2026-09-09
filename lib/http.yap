@@ -77,6 +77,7 @@ fn Http::Recv(socket)
         jump loop;
     lab done;
 
+    Chunk::Void(buffer);
     return req;
 }
 
