@@ -23,6 +23,8 @@ seq SYSCALL
     BIND     = 49,
     LISTEN   = 50,
 
+    SETSOCKOPT = 54,
+
     EXIT = 60,
 
     GETDENTS = 78,
@@ -41,7 +43,6 @@ fn Sys::TryCall(caller, code, a1, a2, a3, a4, a5)
 
     return retval;
 }
-
 
 
 seq ERROR
