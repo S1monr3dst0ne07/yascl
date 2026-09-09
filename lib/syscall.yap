@@ -17,6 +17,11 @@ seq SYSCALL
 
     SOCKET  = 41,
     CONNECT = 42,
+    ACCEPT  = 43,
+
+    SHUTDOWN = 48,
+    BIND     = 49,
+    LISTEN   = 50,
 
     EXIT = 60,
 
