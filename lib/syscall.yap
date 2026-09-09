@@ -19,6 +19,8 @@ seq SYSCALL
     CONNECT = 42,
 
     EXIT = 60,
+
+    GETDENTS = 78,
 }
 
 
