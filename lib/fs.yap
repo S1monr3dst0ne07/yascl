@@ -3,6 +3,7 @@
 use "lib/syscall.yap"
 use "lib/chunk.yap"
 use "lib/bool.yap"
+use "lib/dyn.yap"
 
 seq FS::STRUCT::__old_kernel_stat
 {
@@ -20,6 +21,14 @@ seq FS::STRUCT::__old_kernel_stat
     mtim    = 88,
     ctim    = 104,
 }
+seq FS::STRUCT::_linux_dirent
+{
+    d_reclen = 16,
+    d_name = 18,
+    _virt_len = 20,
+}
+
+
 
 seq FS::ENUM::MODE // (fcntl.h)
 {
@@ -127,5 +136,86 @@ fn FS::Write(path, qfile)
 }
 
 
+
+
+
+seq FS::Dir::Type
+{
+    UNKNOWN   = 0,
+    FIFO      = 1,
+    CHAR_DEV  = 2,
+    DIR       = 4,
+    BLOCK_DEV = 6,
+    FILE      = 8,
+    LINK      = 10,
+    UNIX_SOCK = 12,
+}
+seq FS::Dir::Ent
+{
+    NAME, // Str
+    TYPE, // FS::Dir::Type
+}
+
+seq FS::Dir::Config
+{
+    BUFFER_SIZE = 1000000,
+}
+
+fn FS::Dir::ParseDirEnt(buffer, listing)
+{
+    put rec_len_ptr = buffer + FS::STRUCT::_linux_dirent::d_reclen;
+    put record_length = (rec_len_ptr.0) & ((1 << 16) - 1);
+    put name_length = 
+        record_length - 
+        (FS::STRUCT::_linux_dirent::_virt_len);
+
+    put name = Chunk::New(name_length);
+    Mem::FromBytes(
+        name, 
+        buffer + FS::STRUCT::_linux_dirent::d_name, 
+        name_length
+    );
+
+    put type_offset = record_length - 1;
+    put type = ((buffer + type_offset).0) & 255;
+
+    put entry = Chunk::New(FS::Dir::Ent);
+    put entry.FS::Dir::Ent::NAME = name;
+    put entry.FS::Dir::Ent::TYPE = type;
+    Dyn::Push(listing, entry);
+
+    return record_length;
+}
+
+fn FS::Dir(path)
+    // gives back Dyn<FS::Dir::Ent>
+{
+    static FS::Dir::Config::BUFFER_SIZE ~ buffer;
+
+    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+
+    put buffer_capacity = Sys::TryCall(
+        "FS::Dir",
+        SYSCALL::GETDENTS,
+        fd,
+        buffer,
+        FS::Dir::Config::BUFFER_SIZE,
+    );
+
+    put listing = Dyn::Create();
+
+    put offset = 0;
+    lab loop;
+        jump done ~ offset == buffer_capacity;
+        put offset = offset + FS::Dir::ParseDirEnt(
+            buffer + offset, 
+            listing
+        );
+
+        jump loop;
+    lab done;
+
+    return listing;
+}
 
 
