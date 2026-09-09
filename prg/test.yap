@@ -1,22 +1,25 @@
 
 
-use "lib/fs.yap"
+use "lib/net.yap"
 
 fn main()
 {
-    put listing = FS::Dir("./");
+    put addr = Net::ParseAddr("127.0.0.1");
+    put port = Net::HostToNetShort(5000);
+    put server = Net::Server::Init(addr, port, 10);
 
-    put i = 0;
+    jump exit ~ server == Mem::NULL;
+
     lab loop;
-        jump done ~ i == Dyn::Size(listing);
-        put dirent = Dyn::Ptr(listing).i;
-        print("name: %s\n", [dirent.FS::Dir::Ent::NAME]);
-        print("type: %d\n", [dirent.FS::Dir::Ent::TYPE]);
+        put conn = Net::Server::Accept(server);
 
-        put i = i + 1;
-        jump loop;
-    lab done;
+        put string = "hello world";
+        Net::Write(conn, string, Str::Len(string));
 
+        Net::Close(conn);
+    jump loop;
+
+lab exit;
 }
 
 
