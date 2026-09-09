@@ -196,6 +196,17 @@ fn Net::Server::Init(addr, port, backlog)
         0,
     );
 
+    static 1 ~ optvalue;
+    put optvalue.0 = Bool::TRUE;
+    Sys::TryCall(
+        "Net::Server::Init::sys_setsockopt",
+        SYSCALL::SETSOCKOPT,
+        socket,
+        1, //SOL_SOCKET,
+        2, // SO_REUSEADDR,
+        optvalue, 4,
+    );
+
     static 1 ~ obj;
     put obj.0 =
         (Net::AF::INET << Net::STRUCT::sockaddr_in::sin_family) |
