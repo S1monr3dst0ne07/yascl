@@ -180,3 +180,76 @@ fn Net::Read(socket, buffer, count)
 }
 
 
+
+
+fn Net::Server::Init(addr, port, backlog)
+{
+    // this function reuses code and
+    // is hence not commented heavily.
+    // see Net::IN::Connect.
+
+    put socket = Sys::TryCall(
+        "Net::Server::Init::sys_socket",
+        SYSCALL::SOCKET, 
+        Net::AF::INET,
+        Net::SOCK::STREAM,
+        0,
+    );
+
+    static 1 ~ obj;
+    put obj.0 =
+        (Net::AF::INET << Net::STRUCT::sockaddr_in::sin_family) |
+        (port          << Net::STRUCT::sockaddr_in::sin_port)   |
+        (addr          << Net::STRUCT::sockaddr_in::sin_addr)   ;
+    
+    put bind_retval = Sys::TryCall(
+        "Net::Server::Init::sys_bind",
+        SYSCALL::BIND,
+        socket, 
+        obj, 16,
+    );
+    jump error ~ Sys::Error(bind_retval);
+
+    put listen_retval = Sys::TryCall(
+        "Net::Server::Init::sys_listen",
+        SYSCALL::LISTEN,
+        socket,
+        backlog,
+    );
+    jump error ~ Sys::Error(bind_retval);
+
+    return socket;
+
+lab error;
+    return Mem::NULL;
+}
+
+fn Net::Server::Accept(socket)
+{
+    return Sys::TryCall(
+        "Net::Server::Accept",
+        SYSCALL::ACCEPT,
+        socket,
+        Mem::NULL,
+        Mem::NULL,
+    );
+}
+    
+
+fn Net::Close(socket)
+{
+    Sys::TryCall(
+        "Net::Close::sys_shutdown",
+        SYSCALL::SHUTDOWN,
+        socket,
+        2, // SHUT_RDWR -> shutdown full duplex
+    );
+
+    Sys::TryCall(
+        "Net::Close::sys_close",
+        SYSCALL::CLOSE,
+        socket,
+    );
+}
+
+
