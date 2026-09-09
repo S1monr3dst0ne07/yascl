@@ -195,6 +195,8 @@ fn Str::Format(buffer, pattern, args)
 
     lab done;
         put buffer.0 = 0;
+
+        return buffer;
 }
 
 
