@@ -206,7 +206,8 @@ fn FS::Dir(path)
         FS::ENUM::MODE::RDONLY,
         0  // irrelevent for open
     );
-    jump not_a_dir ~ Sys::Error(fd);
+    jump path_not_exists ~ Sys::Error(fd);
+    jump not_a_dir       ~ Bool::Not(FS::IsDir(path));
 
     put buffer_capacity = Sys::TryCall(
         "FS::Dir",
@@ -231,6 +232,7 @@ fn FS::Dir(path)
 
     return listing;
 
+lab path_not_exists;
 lab not_a_dir;
     return Mem::NULL;
 }
