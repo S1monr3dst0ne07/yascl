@@ -32,20 +32,6 @@ seq Http::Config
     SEND_BUFFER_SIZE = 1000000,
 }
 
-fn Http::Local::Next(buffer, delim)
-{
-    put i = 0;
-    lab loop;
-        put char = buffer.i;
-        jump done ~ char == delim;
-
-        put i = i + 1;
-        jump loop;
-    lab done;
-
-    put buffer.i = '\0';
-    return buffer : (i + 1);
-}
 
 fn Http::Recv(socket)
 {
@@ -55,9 +41,9 @@ fn Http::Recv(socket)
 
     put req = Chunk::New(Http::Request);
 
-    put method_string = buffer; put buffer = Http::Local::Next(buffer, ' ');
-    put path          = buffer; put buffer = Http::Local::Next(buffer, ' ');
-    put version       = buffer; put buffer = Http::Local::Next(buffer, '\n');
+    put method_string = buffer; put buffer = Str::Token(buffer, ' ');
+    put path          = buffer; put buffer = Str::Token(buffer, ' ');
+    put version       = buffer; put buffer = Str::Token(buffer, '\n');
 
     put table = HT::Create();
 
@@ -70,8 +56,8 @@ fn Http::Recv(socket)
         jump done ~ (buffer.0) == '\n';
         jump done ~ (buffer.0) == '\r';
 
-        put key   = buffer; put buffer = Http::Local::Next(buffer, ':' ) : 1;
-        put value = buffer; put buffer = Http::Local::Next(buffer, '\r') : 1;
+        put key   = buffer; put buffer = Str::Token(buffer, ':' ) : 1;
+        put value = buffer; put buffer = Str::Token(buffer, '\r') : 1;
 
         HT::Set(table, key, Str::Copy(value));
 

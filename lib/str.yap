@@ -80,6 +80,21 @@ fn Str::Diff(alpha, omega)
     return ((alpha.i) - (omega.i));
 }
 
+fn Str::Token(buffer, delim)
+{
+    put i = 0;
+    lab loop;
+        put char = buffer.i;
+        jump done ~ char == delim;
+
+        put i = i + 1;
+        jump loop;
+    lab done;
+
+    put buffer.i = '\0';
+    return buffer : (i + 1);
+}
+
 fn Str::Unescape(content)
     // in-place unescape string.
     // only supports most common control codes.
