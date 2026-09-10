@@ -132,12 +132,18 @@ fn Net::UN::Connect(path)
 
 fn Net::WriteBytes(socket, bytes, count)
 {
-    return Sys::TryCall(
-        "Net::WriteBytes",
-        SYSCALL::WRITE,
+    // long syscall
+    return syscall(
+        SYSCALL::SENDTO,
         socket,
         bytes,
         count,
+        (1 << 14), 
+            // MSG_NOSIGNAL
+            // very important,
+            // yascl cannot handle SIGPIPE
+        Mem::NULL,
+        0,
     );
 }
 
@@ -149,13 +155,15 @@ fn Net::Write(socket, buffer, count)
     put bytes = Chunk::New(count);
     Mem::ToBytes(bytes, buffer, count);
 
-    put nbytes = Sys::TryCall(
-        "Net::Write",
-        SYSCALL::WRITE,
+    put nbytes = Net::WriteBytes(
         socket,
         bytes,
         count,
     );
+
+    jump skip ~ Bool::Not(Sys::Error(nbytes));
+        print("[Net::Write] %s\n", [Sys::ErrorMsg(nbytes)]);
+    lab skip;
 
     Chunk::Void(bytes);
     return nbytes;
