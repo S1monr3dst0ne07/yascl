@@ -67,12 +67,12 @@ fn Http::Recv(socket)
     return req;
 }
 
-fn Http::Send(socket, params, content, content_length)
+fn Http::Send(socket, status_code, params, content, content_length)
 {
     static Http::Config::SEND_BUFFER_SIZE ~ buffer;
     put ptr = buffer;
 
-    put ptr = Str::Format(ptr, "HTTP/1.1 200 OK\r\n");
+    put ptr = Str::Format(ptr, "HTTP/1.1 %d\r\n", [status_code]);
 
     put it = HT::MakeIter(params);
     lab loop;
