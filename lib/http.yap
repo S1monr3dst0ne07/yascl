@@ -26,6 +26,8 @@ seq Http::Request
 
 seq Http::Config
 {
+    // i pray to shiva "let my buffers be sufficient!"
+    // but shiva answered with segfault.
     RECV_BUFFER_SIZE = 1000000,
     SEND_BUFFER_SIZE = 1000000,
 }
@@ -47,13 +49,12 @@ fn Http::Local::Next(buffer, delim)
 
 fn Http::Recv(socket)
 {
-    // i pray to shiva "let my buffers be sufficient", but they are not.
-    put buffer = Chunk::New(Http::Config::RECV_BUFFER_SIZE);
+    static Http::Config::RECV_BUFFER_SIZE ~ buffer;
     put nbytes = Net::Read(socket, buffer, Http::Config::RECV_BUFFER_SIZE);
     put buffer.nbytes = '\0';
 
     put req = Chunk::New(Http::Request);
-    
+
     put method_string = buffer; put buffer = Http::Local::Next(buffer, ' ');
     put path          = buffer; put buffer = Http::Local::Next(buffer, ' ');
     put version       = buffer; put buffer = Http::Local::Next(buffer, '\n');
@@ -72,12 +73,11 @@ fn Http::Recv(socket)
         put key   = buffer; put buffer = Http::Local::Next(buffer, ':') : 1;
         put value = buffer; put buffer = Http::Local::Next(buffer, '\n');
 
-        HT::Set(table, key, value);
+        HT::Set(table, key, Str::Copy(value));
 
         jump loop;
     lab done;
 
-    Chunk::Void(buffer);
     return req;
 }
 
@@ -109,5 +109,20 @@ fn Http::Send(socket, params, content, content_length)
     Net::Write(socket, content, content_length);
 }
 
+
+
+fn Http::VoidReq(req)
+{
+    put it = HT::MakeIter(req.Http::Request::PARAMS);
+    lab loop;
+        jump done ~ Bool::Not(HT::Next(it));
+        Chunk::Void(it.HT::Iter::VALUE);
+        jump loop;
+    lab done;
+
+    Chunk::Void(req.Http::Request::PATH);
+    HT::Void(req.Http::Request::PARAMS);
+    Chunk::Void(req);
+}
 
 
