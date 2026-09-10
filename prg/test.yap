@@ -1,10 +1,10 @@
 
 
-use "lib/net.yap"
+use "lib/http.yap"
 
 fn main()
 {
-    put addr = Net::ParseAddr("127.0.0.1");
+    put addr = Net::ParseAddr("0.0.0.0");
     put port = Net::HostToNetShort(5000);
     put server = Net::Server::Init(addr, port, 10);
 
@@ -13,11 +13,17 @@ fn main()
     lab loop;
         put conn = Net::Server::Accept(server);
 
-        put string = "hello world";
-        Net::Write(conn, string, Str::Len(string));
+        put req = Http::Recv(conn);
 
+        put string = "hello world";
+        put ht = HT::Create();
+        Http::Send(conn, ht, string, Str::Len(string));
+        HT::Void(ht);
+
+        Http::VoidReq(req);
         Net::Close(conn);
     jump loop;
+
 
 lab exit;
 }
