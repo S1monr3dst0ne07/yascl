@@ -5,29 +5,18 @@ use "lib/chunk.yap"
 use "lib/bool.yap"
 use "lib/dyn.yap"
 
-seq FS::STRUCT::__old_kernel_stat
+seq FS::STRUCT::stat
+    // https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/stat.h
 {
-    dev     = 0,
-    ino     = 8,
     mode    = 24,
-    nlink   = 16,
-    uid     = 28,
-    gid     = 32,
-    rdev    = 40,
     size    = 48,
-    blksize = 56,
-    blocks  = 64,
-    atim    = 72,
-    mtim    = 88,
-    ctim    = 104,
 }
-seq FS::STRUCT::_linux_dirent
+seq FS::STRUCT::dirent
 {
     d_reclen = 16,
     d_name = 18,
     _virt_len = 20,
 }
-
 
 
 seq FS::ENUM::MODE // (fcntl.h)
@@ -61,16 +50,18 @@ fn FS::Sys::Open(path, mode)
 
 fn FS::Sys::Stat(fd)
 {
-    put stat = Chunk::New(FS::STRUCT::__old_kernel_stat);
+    put stat = Chunk::New(FS::STRUCT::stat);
     Sys::TryCall("FS::Sys::Stat", SYSCALL::FSTAT, fd, stat);
 
     return stat;
 }
 
+
+
 fn FS::Sys::Size(fd)
 {
     put stat = FS::Sys::Stat(fd);
-    put size = (stat + FS::STRUCT::__old_kernel_stat::size).0;
+    put size = (stat + FS::STRUCT::stat::size).0;
     Chunk::Void(stat);
     return size;
 }
@@ -82,6 +73,23 @@ fn FS::Sys::Close(fd)
         SYSCALL::CLOSE, 
         fd,
     );
+}
+
+fn FS::IsDir(path)
+{
+    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put stat = FS::Sys::Stat(fd);
+
+    // TODO FIX THIS
+    // https://github.com/torvalds/linux/blob/master/include/uapi/linux/stat.h
+
+    put mode = (stat + FS::STRUCT::stat::mode).0;
+    put is_dir = (mode & (1 << 14)) != 0;
+
+    Chunk::Void(stat);
+    FS::Sys::Close(fd);
+
+    return is_dir;
 }
 
 
@@ -163,16 +171,16 @@ seq FS::Dir::Config
 
 fn FS::Dir::ParseDirEnt(buffer, listing)
 {
-    put rec_len_ptr = buffer + FS::STRUCT::_linux_dirent::d_reclen;
+    put rec_len_ptr = buffer + FS::STRUCT::dirent::d_reclen;
     put record_length = (rec_len_ptr.0) & ((1 << 16) - 1);
     put name_length = 
         record_length - 
-        (FS::STRUCT::_linux_dirent::_virt_len);
+        (FS::STRUCT::dirent::_virt_len);
 
     put name = Chunk::New(name_length);
     Mem::FromBytes(
         name, 
-        buffer + FS::STRUCT::_linux_dirent::d_name, 
+        buffer + FS::STRUCT::dirent::d_name, 
         name_length
     );
 
