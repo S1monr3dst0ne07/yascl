@@ -192,7 +192,13 @@ fn FS::Dir(path)
 {
     static FS::Dir::Config::BUFFER_SIZE ~ buffer;
 
-    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put fd = syscall(
+        SYSCALL::OPEN, 
+        FS::ConvertPath(path),
+        FS::ENUM::MODE::RDONLY,
+        0  // irrelevent for open
+    );
+    jump not_a_dir ~ Sys::Error(fd);
 
     put buffer_capacity = Sys::TryCall(
         "FS::Dir",
@@ -216,6 +222,9 @@ fn FS::Dir(path)
     lab done;
 
     return listing;
+
+lab not_a_dir;
+    return Mem::NULL;
 }
 
 
