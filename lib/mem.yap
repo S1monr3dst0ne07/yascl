@@ -87,3 +87,20 @@ fn Mem::SmartBreak(inc)
 }
 
 
+
+fn Mem::Offset(buffer, target, length, default)
+    // like `memchr` but returns offset into buffer.
+    // if not found, returns default.
+{
+    put offset = 0;
+    lab loop;
+        jump missing ~         offset  == length;
+        jump found   ~ (buffer.offset) == target;
+
+        put offset = offset + 1;
+    jump loop;
+
+lab missing; return default;
+lab found;   return offset;
+}
+
