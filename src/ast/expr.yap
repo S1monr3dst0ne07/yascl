@@ -244,8 +244,8 @@ fn Ast::Expr::Eval(node, ctx)
     lab eval_and;       return left & right;
     lab eval_or;        return left | right;
     lab eval_xor;       return left ^ right;
-    lab eval_shift_right; return left << right;
-    lab eval_shift_left;  return left >> right;
+    lab eval_shift_right; return left >> right;
+    lab eval_shift_left;  return left << right;
 
 lab only_leaf;
     return Ast::Leaf::Eval(node.Ast::Expr::LEFT, ctx);
