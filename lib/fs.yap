@@ -177,7 +177,8 @@ fn FS::Dir::ParseDirEnt(buffer, listing)
         record_length - 
         (FS::STRUCT::dirent::_virt_len);
 
-    put name = Chunk::New(name_length);
+    put name = Chunk::New(name_length+1);
+    put name.name_length = '\0';
     Mem::FromBytes(
         name, 
         buffer + FS::STRUCT::dirent::d_name, 
