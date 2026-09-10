@@ -125,4 +125,35 @@ fn Http::VoidReq(req)
     Chunk::Void(req);
 }
 
+fn Http::Unescape(src)
+{
+    put dst = Chunk::New(Str::Len(src));
+    put dst_i = 0;
+
+    lab loop;
+        put char = src.0;
+        put src = src : 1;
+        jump done    ~ char == '\0';
+        jump special ~ char == '%';
+
+        put dst.dst_i = char;
+        put dst_i = dst_i + 1;
+        jump loop;
+
+    lab special;
+        put char = 0;
+
+        put digits = "0123456789ABCDEF";
+        put char = (char << 4) + Mem::Offset(digits, src.0, 16, 0);
+        put char = (char << 4) + Mem::Offset(digits, src.1, 16, 0);
+        put src = src : 2;
+
+        put dst.dst_i = char;
+        put dst_i = dst_i + 1;
+        jump loop;
+
+    lab done;
+        put dst.dst_i = '\0';
+        return dst; 
+}
 
