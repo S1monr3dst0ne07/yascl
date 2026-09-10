@@ -28,6 +28,13 @@ seq FS::ENUM::MODE // (fcntl.h)
     TRUNC  = 512,
 }
 
+seq FS::Seek::Mode
+{
+    SEEK_SET,
+    SEEK_CUR,
+    SEEK_END,
+}
+
 fn FS::ConvertPath(qpath)
 {
     static 4096 ~ bpath;
