@@ -20,6 +20,7 @@ seq SYSCALL
     SOCKET  = 41,
     CONNECT = 42,
     ACCEPT  = 43,
+    SENDTO  = 44,
 
     SHUTDOWN = 48,
     BIND     = 49,
