@@ -10,6 +10,8 @@ seq SYSCALL
     CLOSE,
     STAT,
     FSTAT,
+    
+    LSEEK = 8,
 
     BRK = 12,
 
