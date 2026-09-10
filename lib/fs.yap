@@ -92,6 +92,13 @@ fn FS::IsDir(path)
     return is_dir;
 }
 
+fn FS::Size(path)
+{
+    put fd = FS::Sys::Open(path);
+    put size = FS::Sys::Size(fd);
+    FS::Sys::Close(fd);
+    return size;
+}
 
 fn FS::Read(path)
 {
