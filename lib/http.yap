@@ -70,8 +70,8 @@ fn Http::Recv(socket)
         jump done ~ (buffer.0) == '\n';
         jump done ~ (buffer.0) == '\r';
 
-        put key   = buffer; put buffer = Http::Local::Next(buffer, ':') : 1;
-        put value = buffer; put buffer = Http::Local::Next(buffer, '\n');
+        put key   = buffer; put buffer = Http::Local::Next(buffer, ':' ) : 1;
+        put value = buffer; put buffer = Http::Local::Next(buffer, '\r') : 1;
 
         HT::Set(table, key, Str::Copy(value));
 
