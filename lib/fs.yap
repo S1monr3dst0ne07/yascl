@@ -101,7 +101,7 @@ fn FS::IsDir(path)
 
 fn FS::Size(path)
 {
-    put fd = FS::Sys::Open(path);
+    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
     put size = FS::Sys::Size(fd);
     FS::Sys::Close(fd);
     return size;
