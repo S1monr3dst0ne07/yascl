@@ -67,7 +67,9 @@ fn Http::Recv(socket)
     return req;
 }
 
-fn Http::Send(socket, status_code, params, content, content_length)
+
+
+fn Http::SendHeader(socket, status_code, params)
 {
     static Http::Config::SEND_BUFFER_SIZE ~ buffer;
     put ptr = buffer;
@@ -92,9 +94,13 @@ fn Http::Send(socket, status_code, params, content, content_length)
 
     put header_length = (ptr - buffer) >> 3;
     Net::Write(socket, buffer, header_length);
-    Net::Write(socket, content, content_length);
 }
 
+fn Http::Send(socket, status_code, params, content, content_length)
+{
+    Http::SendHeader(socket, status_code, params);
+    Net::Write(socket, content, content_length);
+}
 
 
 fn Http::VoidReq(req)
