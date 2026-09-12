@@ -1,0 +1,18 @@
+
+- compiler
+    -IR
+        - optimization
+        - backend
+
+    -fix empty functions / programs
+    -fix formatting in dispatch
+
+    -fix error handling
+
+    -fix seq value expr parsing and comptime eval
+
+    - move Str::Unescape -> Utils::Unescape
+    
+
+
+
