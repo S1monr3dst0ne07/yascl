@@ -141,9 +141,10 @@ fn FS::Dir::ParseDirEnt(buffer, listing)
 {
     put rec_len_ptr = buffer + FS::Struct::Dirent::RECLEN;
     put record_length = (rec_len_ptr.0) & ((1 << 16) - 1);
-    put name_length = 
-        record_length - 
-        (FS::Struct::Dirent::SIZEOF);
+
+    // see: https://www.man7.org/linux/man-pages/man2/getdents.2.html
+    // for name length computation 
+    put name_length = record_length - (2 + FS::Struct::Dirent::NAME);
 
     put name = Chunk::New(name_length+1);
     put name.name_length = '\0';

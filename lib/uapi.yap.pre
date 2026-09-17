@@ -18,7 +18,6 @@ seq FS::Struct::Dirent
 {
     RECLEN = `offsetof(struct linux_dirent, d_reclen)`,
     NAME   = `offsetof(struct linux_dirent, d_name)`,
-    SIZEOF = `sizeof_linux_dirent`,
 }
 
 seq FS::Mode
