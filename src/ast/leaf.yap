@@ -84,14 +84,14 @@ lab array;
 
 lab char_lit;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Unescape(content).0, 
+        Utils::Unescape(content).0, 
         Ast::Leaf::Kind::CHAR,
     );
 
 
 lab string;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Unescape(Str::Copy(content)),
+        Utils::Unescape(Str::Copy(content)),
         Ast::Leaf::Kind::STRING,
     );
 
