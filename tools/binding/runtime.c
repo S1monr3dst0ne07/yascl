@@ -15,15 +15,11 @@ void print(long long number)
     // print as hexadecimal
 {
     const char digits[16] = "0123456789abcdef";
-    long long offset = 64;
 
-    outchar('0');
-    outchar('x');
-    while (offset)
-    {
-        offset -= 4;
-        outchar(digits[number & (0b1111 << offset)]);
-    }
+    int i = 16;
+    while (i--)
+        outchar(digits[(number >> (i * 4)) & 0xf]);
+
     outchar('\n');
 }
 

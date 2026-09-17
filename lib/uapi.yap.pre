@@ -3,7 +3,7 @@
 #include <asm/stat.h>
 #include <asm/fcntl.h>
 #include <linux/fs.h>
-#include "tools/binding/dirent.h"
+#include "dirent.h"
 
 seq FS::Struct::Stat
 {
