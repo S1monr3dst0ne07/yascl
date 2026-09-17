@@ -3,7 +3,7 @@
 #include <asm/stat.h>
 #include <asm/fcntl.h>
 #include <linux/fs.h>
-#include "tools/dirent.h"
+#include "tools/binding/dirent.h"
 
 seq FS::Struct::Stat
 {
@@ -13,17 +13,17 @@ seq FS::Struct::Stat
 
 seq FS::Struct::Dirent
 {
-    RECLEN = `offsetof(struct linux_dirent, d_reclan)`,
+    RECLEN = `offsetof(struct linux_dirent, d_reclen)`,
     NAME   = `offsetof(struct linux_dirent, d_name)`,
-    SIZEOF = `sizeof(struct linux_dirent)`,
+    SIZEOF = `sizeof_linux_dirent`,
 }
 
 seq FS::Mode
 {
     RDONLY = `O_RDONLY`,
     WRONLY = `O_WRONLY`,
-    WRDR   = `O_WRDR`,
-    CREATE = `O_CREATE`,
+    RDWR   = `O_RDWR`,
+    CREATE = `O_CREAT`,
     TRUNC  = `O_TRUNC`,
 }
 
