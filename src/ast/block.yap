@@ -195,11 +195,14 @@ fn Ast::Block::Collect(meta, ctx)
 
     put i = 0;
     lab loop;
+        jump done ~ i == Dyn::Size(nodes);
+
         put node = Dyn::Ptr(nodes).i;
         Ast::Block::CollectNode(node, ctx);
 
         put i = i + 1;
-    jump loop ~ i < Dyn::Size(nodes);
+        jump loop;
+    lab done;
 }
 
 
@@ -226,10 +229,14 @@ fn Ast::Block::Void(meta)
 
     put i = 0;
     lab loop;
+        jump done ~ i == Dyn::Size(nodes);
+
         put node = Dyn::Ptr(nodes).i;
         Ast::Block::VoidNode(node);
         put i = i + 1;
-    jump loop ~ i < Dyn::Size(nodes);
+
+        jump loop;
+    lab done;
 
     Dyn::Delete(nodes);
     Chunk::Void(meta);
