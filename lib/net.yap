@@ -1,21 +1,6 @@
 
 use "lib/chunk.yap"
 
-
-seq Net::AF
-{
-    UNSPEC,
-    UNIX,
-    INET,
-}
-
-seq Net::SOCK
-{
-	STREAM	  = 1,
-	DGRAM	  = 2,
-	RAW       = 3,
-}
-
 seq Net::CONFIG
 {
     IPv4_ADDR_PART_COUNT = 4,
@@ -60,17 +45,6 @@ fn Net::HostToNetShort(x)
     return (low << 8) + high;
 }
 
-
-seq Net::STRUCT::sockaddr_in
-    // in bit count format.
-{
-    sin_family = 0, 
-    sin_port   = 16, 
-    sin_addr   = 32,
-}
-
-
-
 fn Net::IN::Connect(addr, port)
 {
     // create socket
@@ -78,7 +52,7 @@ fn Net::IN::Connect(addr, port)
         "Net::IN::Connect::sys_socket",
         SYSCALL::SOCKET, 
         Net::AF::INET,     // address family: internet
-        Net::SOCK::STREAM, // socket type: stream (meaning: make sure all data get there it's supposed to.)
+        Net::Sock::STREAM, // socket type: stream (meaning: make sure all data get there it's supposed to.)
         0,                 // only tcp/ip for this config, so protocol can be let blank.
     );
 
@@ -87,9 +61,9 @@ fn Net::IN::Connect(addr, port)
     // 8 bytes of padding which can be ignored when rawdogging.
     static 1 ~ obj;
     put obj.0 =
-        (Net::AF::INET << Net::STRUCT::sockaddr_in::sin_family) |
-        (port          << Net::STRUCT::sockaddr_in::sin_port)   |
-        (addr          << Net::STRUCT::sockaddr_in::sin_addr)   ;
+        (Net::AF::INET << Net::Struct::sockaddr_in::sin_family) |
+        (port          << Net::Struct::sockaddr_in::sin_port)   |
+        (addr          << Net::Struct::sockaddr_in::sin_addr)   ;
 
     Sys::TryCall(
         "Net::IN::Connect::sys_connect",
@@ -115,7 +89,7 @@ fn Net::UN::Connect(path)
         "Net::UN::Connect::sys_socket",
         SYSCALL::SOCKET, 
         Net::AF::UNIX,
-        Net::SOCK::STREAM, 
+        Net::Sock::STREAM, 
         0,                 
     );
     Sys::TryCall(
@@ -200,7 +174,7 @@ fn Net::Server::Init(addr, port, backlog)
         "Net::Server::Init::sys_socket",
         SYSCALL::SOCKET, 
         Net::AF::INET,
-        Net::SOCK::STREAM,
+        Net::Sock::STREAM,
         0,
     );
 
@@ -217,9 +191,9 @@ fn Net::Server::Init(addr, port, backlog)
 
     static 1 ~ obj;
     put obj.0 =
-        (Net::AF::INET << Net::STRUCT::sockaddr_in::sin_family) |
-        (port          << Net::STRUCT::sockaddr_in::sin_port)   |
-        (addr          << Net::STRUCT::sockaddr_in::sin_addr)   ;
+        (Net::AF::INET << Net::Struct::sockaddr_in::sin_family) |
+        (port          << Net::Struct::sockaddr_in::sin_port)   |
+        (addr          << Net::Struct::sockaddr_in::sin_addr)   ;
     
     put bind_retval = Sys::TryCall(
         "Net::Server::Init::sys_bind",

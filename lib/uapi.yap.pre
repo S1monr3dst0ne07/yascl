@@ -3,7 +3,10 @@
 #include <asm/stat.h>
 #include <asm/fcntl.h>
 #include <linux/fs.h>
+#include <netinet/in.h>
+
 #include "dirent.h"
+
 
 seq FS::Struct::Stat
 {
@@ -45,6 +48,30 @@ seq FS::Dir::Type
     LINK      = `DT_LNK`,
     UNIX_SOCK = `DT_SOCK`,
 }
+
+
+seq Net::AF
+{
+    UNSPEC = `AF_UNSPEC`,
+    UNIX   = `AF_UNIX`,
+    INET   = `AF_INET`,
+}
+
+seq Net::Sock
+{
+	STREAM	  = `SOCK_STREAM`,
+	DGRAM	  = `SOCK_DGRAM`,
+	RAW       = `SOCK_RAW`,
+}
+
+seq Net::Struct::sockaddr_in
+    // in bit count format.
+{
+    sin_family = `offsetof(struct sockaddr_in, sin_family) * 8`, 
+    sin_port   = `offsetof(struct sockaddr_in, sin_port  ) * 8`, 
+    sin_addr   = `offsetof(struct sockaddr_in, sin_addr  ) * 8`,
+}
+
 
 
 
