@@ -2,6 +2,7 @@
 
 import re
 import subprocess
+import os
 
 INPUT_PATH  = 'lib/uapi.yap.pre'
 OUTPUT_PATH = 'lib/uapi.yap'
@@ -50,4 +51,7 @@ dst = re.sub(
 
 with open(OUTPUT_PATH, "w") as f:
     f.write(dst)
+
+os.remove(SOURCE_PATH)
+os.remove(EXEC_PATH)
 
