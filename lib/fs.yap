@@ -1,39 +1,10 @@
 
+use "lib/uapi.yap"
 
 use "lib/syscall.yap"
 use "lib/chunk.yap"
 use "lib/bool.yap"
 use "lib/dyn.yap"
-
-seq FS::STRUCT::stat
-    // https://github.com/torvalds/linux/blob/master/arch/x86/include/uapi/asm/stat.h
-{
-    mode    = 24,
-    size    = 48,
-}
-seq FS::STRUCT::dirent
-{
-    d_reclen = 16,
-    d_name = 18,
-    _virt_len = 20,
-}
-
-
-seq FS::ENUM::MODE // (fcntl.h)
-{
-    RDONLY = 0,
-    WRONLY = 1,
-    WRDR   = 2,
-    CREATE = 64,
-    TRUNC  = 512,
-}
-
-seq FS::Seek::Mode
-{
-    SEEK_SET,
-    SEEK_CUR,
-    SEEK_END,
-}
 
 fn FS::ConvertPath(qpath)
 {
@@ -41,7 +12,6 @@ fn FS::ConvertPath(qpath)
     Str::ToBytes(bpath, qpath);
     return bpath;
 }
-
 
 
 fn FS::Sys::Open(path, mode)
@@ -57,7 +27,7 @@ fn FS::Sys::Open(path, mode)
 
 fn FS::Sys::Stat(fd)
 {
-    put stat = Chunk::New(FS::STRUCT::stat);
+    put stat = Chunk::New(FS::Struct::Stat);
     Sys::TryCall("FS::Sys::Stat", SYSCALL::FSTAT, fd, stat);
 
     return stat;
@@ -68,7 +38,7 @@ fn FS::Sys::Stat(fd)
 fn FS::Sys::Size(fd)
 {
     put stat = FS::Sys::Stat(fd);
-    put size = (stat + FS::STRUCT::stat::size).0;
+    put size = (stat + FS::Struct::Stat::SIZE).0;
     Chunk::Void(stat);
     return size;
 }
@@ -84,13 +54,10 @@ fn FS::Sys::Close(fd)
 
 fn FS::IsDir(path)
 {
-    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put fd = FS::Sys::Open(path, FS::Mode::RDONLY);
     put stat = FS::Sys::Stat(fd);
 
-    // TODO FIX THIS
-    // https://github.com/torvalds/linux/blob/master/include/uapi/linux/stat.h
-
-    put mode = (stat + FS::STRUCT::stat::mode).0;
+    put mode = (stat + FS::Struct::Stat::MODE).0;
     put is_dir = (mode & (1 << 14)) != 0;
 
     Chunk::Void(stat);
@@ -101,7 +68,7 @@ fn FS::IsDir(path)
 
 fn FS::Size(path)
 {
-    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put fd = FS::Sys::Open(path, FS::Mode::RDONLY);
     put size = FS::Sys::Size(fd);
     FS::Sys::Close(fd);
     return size;
@@ -109,7 +76,7 @@ fn FS::Size(path)
 
 fn FS::Read(path)
 {
-    put fd = FS::Sys::Open(path, FS::ENUM::MODE::RDONLY);
+    put fd = FS::Sys::Open(path, FS::Mode::RDONLY);
     put size = FS::Sys::Size(fd) + 1;
 
         // 8 times too big. doesn't matter, will get deallocated anyways.
@@ -135,9 +102,9 @@ fn FS::Read(path)
 fn FS::Write(path, qfile)
 {
     put fd = FS::Sys::Open(path, 
-        FS::ENUM::MODE::WRONLY |
-        FS::ENUM::MODE::CREATE |
-        FS::ENUM::MODE::TRUNC
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC
     );
 
     put size = Str::Len(qfile);
@@ -159,19 +126,6 @@ fn FS::Write(path, qfile)
 
 
 
-
-
-seq FS::Dir::Type
-{
-    UNKNOWN   = 0,
-    FIFO      = 1,
-    CHAR_DEV  = 2,
-    DIR       = 4,
-    BLOCK_DEV = 6,
-    FILE      = 8,
-    LINK      = 10,
-    UNIX_SOCK = 12,
-}
 seq FS::Dir::Ent
 {
     NAME, // Str
@@ -185,17 +139,17 @@ seq FS::Dir::Config
 
 fn FS::Dir::ParseDirEnt(buffer, listing)
 {
-    put rec_len_ptr = buffer + FS::STRUCT::dirent::d_reclen;
+    put rec_len_ptr = buffer + FS::Struct::Dirent::RECLEN;
     put record_length = (rec_len_ptr.0) & ((1 << 16) - 1);
     put name_length = 
         record_length - 
-        (FS::STRUCT::dirent::_virt_len);
+        (FS::Struct::Dirent::SIZEOF);
 
     put name = Chunk::New(name_length+1);
     put name.name_length = '\0';
     Mem::FromBytes(
         name, 
-        buffer + FS::STRUCT::dirent::d_name, 
+        buffer + FS::Struct::Dirent::NAME, 
         name_length
     );
 
@@ -218,7 +172,7 @@ fn FS::Dir(path)
     put fd = syscall(
         SYSCALL::OPEN, 
         FS::ConvertPath(path),
-        FS::ENUM::MODE::RDONLY,
+        FS::Mode::RDONLY,
         0  // irrelevent for open
     );
     jump path_not_exists ~ Sys::Error(fd);

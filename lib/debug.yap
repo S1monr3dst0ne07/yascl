@@ -39,9 +39,9 @@ fn dump_heap(path)
 
     
     put fd = FS::Sys::Open(path, 
-        FS::ENUM::MODE::WRONLY |
-        FS::ENUM::MODE::CREATE |
-        FS::ENUM::MODE::TRUNC
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC
     );
     Sys::TryCall(
         "dump_heap",
@@ -62,9 +62,9 @@ use "lib/ht.yap"
 fn dump_ht(path, pattern, ht)
 {
     put fd = FS::Sys::Open(path, 
-        FS::ENUM::MODE::WRONLY |
-        FS::ENUM::MODE::CREATE |
-        FS::ENUM::MODE::TRUNC
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC
     );
 
     static 4096 ~ qbuffer;
@@ -101,9 +101,9 @@ fn dump_ht(path, pattern, ht)
 fn dump_buffer(path, buffer, length)
 {
     put fd = FS::Sys::Open(path, 
-        FS::ENUM::MODE::WRONLY |
-        FS::ENUM::MODE::CREATE |
-        FS::ENUM::MODE::TRUNC
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC
     );
 
     Sys::TryCall(

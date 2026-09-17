@@ -34,7 +34,17 @@ seq FS::Seek::Mode
     SEEK_END = `SEEK_END`,
 }
 
-
+seq FS::Dir::Type
+{
+    UNKNOWN   = 0,
+    FIFO      = 1,
+    CHAR_DEV  = 2,
+    DIR       = 4,
+    BLOCK_DEV = 6,
+    FILE      = 8,
+    LINK      = 10,
+    UNIX_SOCK = 12,
+}
 
 
 
