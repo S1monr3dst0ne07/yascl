@@ -4,15 +4,15 @@
         - optimization
         - backend
 
-    -fix empty functions / programs
     -fix formatting in dispatch
-
     -fix error handling
+        - usage & cmdline //
 
-    -fix seq value expr parsing and comptime eval
+    (-fix seq value expr parsing and comptime eval)
+        - this requires global context during parse-time.
+        - hence it should require deep restructuring of the entire compiler.
 
-    - move Str::Unescape -> Utils::Unescape
-    
+- fix time.yap, making bindings for time.h
 
 
 
