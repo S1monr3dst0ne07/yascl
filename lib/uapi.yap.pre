@@ -36,14 +36,14 @@ seq FS::Seek::Mode
 
 seq FS::Dir::Type
 {
-    UNKNOWN   = 0,
-    FIFO      = 1,
-    CHAR_DEV  = 2,
-    DIR       = 4,
-    BLOCK_DEV = 6,
-    FILE      = 8,
-    LINK      = 10,
-    UNIX_SOCK = 12,
+    UNKNOWN   = `DT_UNKNOWN`,
+    FIFO      = `DT_FIFO`,
+    CHAR_DEV  = `DT_CHR`,
+    DIR       = `DT_DIR`,
+    BLOCK_DEV = `DT_BLK`,
+    FILE      = `DT_REG`,
+    LINK      = `DT_LNK`,
+    UNIX_SOCK = `DT_SOCK`,
 }
 
 

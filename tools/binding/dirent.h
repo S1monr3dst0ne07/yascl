@@ -1,7 +1,8 @@
 
-// this structure is not part of uAPI for some reason.
+// this stuff is not part of uAPI for some reason.
 // i don't know. i'm not a kernel wizard.
 
+// TODO: look into why this is like this
 
 // https://www.man7.org/linux/man-pages/man2/getdents.2.html
 struct linux_dirent 
@@ -21,5 +22,18 @@ struct linux_dirent
 
 #define sizeof_linux_dirent (sizeof(struct linux_dirent) + 2)
 
+// from /usr/include/dirent.h
+enum
+{
+    DT_UNKNOWN = 0,
+    DT_FIFO = 1,
+    DT_CHR = 2,
+    DT_DIR = 4,
+    DT_BLK = 6,
+    DT_REG = 8,
+    DT_LNK = 10,
+    DT_SOCK = 12,
+    DT_WHT = 14
+};
 
 
