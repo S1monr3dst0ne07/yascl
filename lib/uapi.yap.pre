@@ -1,0 +1,40 @@
+
+
+#include <asm/stat.h>
+#include <asm/fcntl.h>
+#include <linux/fs.h>
+#include "tools/dirent.h"
+
+seq FS::Struct::Stat
+{
+    MODE = `offsetof(struct stat, st_mode)`,
+    SIZE = `offsetof(struct stat, st_size)`,
+}
+
+seq FS::Struct::Dirent
+{
+    RECLEN = `offsetof(struct linux_dirent, d_reclan)`,
+    NAME   = `offsetof(struct linux_dirent, d_name)`,
+    SIZEOF = `sizeof(struct linux_dirent)`,
+}
+
+seq FS::Mode
+{
+    RDONLY = `O_RDONLY`,
+    WRONLY = `O_WRONLY`,
+    WRDR   = `O_WRDR`,
+    CREATE = `O_CREATE`,
+    TRUNC  = `O_TRUNC`,
+}
+
+seq FS::Seek::Mode
+{
+    SEEK_SET = `SEEK_SET`,
+    SEEK_CUR = `SEEK_CUR`,
+    SEEK_END = `SEEK_END`,
+}
+
+
+
+
+
