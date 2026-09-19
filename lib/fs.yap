@@ -168,7 +168,7 @@ fn FS::Dir::ParseDirEnt(buffer, listing)
 fn FS::Dir(path)
     // gives back Dyn<FS::Dir::Ent>
 {
-    static FS::Dir::Config::BUFFER_SIZE ~ buffer;
+    jump not_a_dir ~ Bool::Not(FS::IsDir(path));
 
     put fd = syscall(
         SYSCALL::OPEN, 
@@ -177,8 +177,8 @@ fn FS::Dir(path)
         0  // irrelevent for open
     );
     jump path_not_exists ~ Sys::Error(fd);
-    jump not_a_dir       ~ Bool::Not(FS::IsDir(path));
 
+    static FS::Dir::Config::BUFFER_SIZE ~ buffer;
     put buffer_capacity = Sys::TryCall(
         "FS::Dir",
         SYSCALL::GETDENTS,
@@ -200,6 +200,7 @@ fn FS::Dir(path)
         jump loop;
     lab done;
 
+    FS::Sys::Close(fd);
     return listing;
 
 lab path_not_exists;
