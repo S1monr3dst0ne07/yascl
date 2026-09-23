@@ -7,6 +7,7 @@
     -fix formatting in dispatch
     -fix error handling
         - usage & cmdline //
+        - lex_info !!!!!
 
     (-fix seq value expr parsing and comptime eval)
         - this requires global context during parse-time.
