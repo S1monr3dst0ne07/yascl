@@ -162,8 +162,6 @@ fn Net::Read(socket, buffer, count)
 }
 
 
-
-
 fn Net::Server::Init(addr, port, backlog)
 {
     // this function reuses code and
@@ -184,8 +182,8 @@ fn Net::Server::Init(addr, port, backlog)
         "Net::Server::Init::sys_setsockopt",
         SYSCALL::SETSOCKOPT,
         socket,
-        1, //SOL_SOCKET,
-        2, // SO_REUSEADDR,
+        Net::SockOptionLevel::SOCKET
+        Net::SockOption::REUSEADDR,
         optvalue, 4,
     );
 
