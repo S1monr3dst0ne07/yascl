@@ -231,12 +231,16 @@ fn Net::Server::Accept(socket)
 
 fn Net::Close(socket)
 {
-    Sys::TryCall(
-        "Net::Close::sys_shutdown",
+    put ret = syscall(
         SYSCALL::SHUTDOWN,
         socket,
         2, // SHUT_RDWR -> shutdown full duplex
     );
+    jump good ~ Bool::Not(Sys::Error(ret));
+    jump good ~ ret == (0 - Sys::Errno::ENOTCONN); // fine if already disconnected.
+        print("[Net::Close::sys_shutdown] %s\n", [Sys::ErrorMsg(ret)]);
+        print("debug: %d\n", [0 - ret]);
+    lab good;
 
     Sys::TryCall(
         "Net::Close::sys_close",
