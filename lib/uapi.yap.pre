@@ -75,10 +75,14 @@ seq Net::Struct::sockaddr_in
     sin_addr   = `offsetof(struct sockaddr_in, sin_addr  ) * 8`,
 }
 
+
+
 seq Time::Val
+    // in user q-word format
 {
-    SEC  = `offsetof(struct timeval, tv_sec)`,
-    USEC = `offsetof(struct timeval, tv_usec)`,
+    SEC  = `offsetof(struct timeval, tv_sec)  >> 3`,
+    USEC = `offsetof(struct timeval, tv_usec) >> 3`,
+    __last = `sizeof(struct timeval) - 1`,
 }
 
 seq Sys::Errno
