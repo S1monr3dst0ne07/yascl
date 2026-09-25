@@ -37,6 +37,7 @@ fn Http::Recv(socket)
 {
     static Http::Config::RECV_BUFFER_SIZE ~ buffer;
     put nbytes = Net::Read(socket, buffer, Http::Config::RECV_BUFFER_SIZE);
+    jump error ~ Sys::Error(nbytes);
     put buffer.nbytes = '\0';
 
     put req = Chunk::New(Http::Request);
@@ -65,6 +66,9 @@ fn Http::Recv(socket)
     lab done;
 
     return req;
+
+lab error;
+    return Mem::NULL;
 }
 
 
