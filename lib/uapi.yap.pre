@@ -2,10 +2,13 @@
 
 #include <asm/stat.h>
 #include <asm/fcntl.h>
-#include <linux/fs.h>
-#include <netinet/in.h>
 #include <asm/errno.h>
+#include <linux/fs.h>
 
+#include <linux/time.h>
+#define __timeval_defined
+
+#include <netinet/in.h>
 #include "dirent.h"
 
 
@@ -72,6 +75,11 @@ seq Net::Struct::sockaddr_in
     sin_addr   = `offsetof(struct sockaddr_in, sin_addr  ) * 8`,
 }
 
+seq Time::Val
+{
+    SEC  = `offsetof(struct timeval, tv_sec)`,
+    USEC = `offsetof(struct timeval, tv_usec)`,
+}
 
 seq Sys::Errno
 {
