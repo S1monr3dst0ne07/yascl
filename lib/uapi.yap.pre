@@ -75,7 +75,15 @@ seq Net::Struct::sockaddr_in
     sin_addr   = `offsetof(struct sockaddr_in, sin_addr  ) * 8`,
 }
 
-
+seq Net::SockOptionLevel
+{
+    SOCKET = `SOL_SOCKET`, 
+}
+seq Net::SockOption
+{
+    REUSEADDR = `SO_REUSEADDR`,
+    RCVTIMEO  = `SO_RCVTIMEO`,
+}
 
 seq Time::Val
     // in user q-word format
