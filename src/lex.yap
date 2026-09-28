@@ -90,13 +90,17 @@ fn Lex::Get(char)
 }
 
 
+seq Lex::Info
+{
+    LINENO,  // Int
+    PATH,    // Str
+}
 
 seq Lex::Token
 {
     CONTENT, // Str
     KIND,    // Lex::Kind
-    LINENO,  // Int
-    PATH,    // Str
+    INFO,    // Lex::Info
 }
 
 
@@ -142,13 +146,23 @@ fn Lex::Done(stream)
     return index == limit;
 }
 
+fn Lex::Info(stream)
+{
+    put token = Lex::PeekTok(stream);
+    put info = token.Lex::Token::INFO;
+    put copy = Chunk::New(Lex::Info);
+    Mem::Cpy(copy, info, Lex::Info);
+    return copy;
+}
+
 fn Lex::PopCheck(stream, kind)
 {
     put token = Lex::PopTok(stream);
     jump error ~ (token.Lex::Token::KIND) != kind;
         return token.Lex::Token::CONTENT;
     lab error;
-        Error::TokenError(token, "Expected kind `%s` got `%s`", [
+        put info = token.Lex::Token::INFO;
+        Error::LexError(info, "Expected kind `%s` got `%s`", [
             Lex::DecodeKind(kind),
             Lex::DecodeKind(token.Lex::Token::KIND),
         ]);
@@ -157,7 +171,8 @@ fn Lex::Expect(stream, content)
 {
     put token = Lex::PopTok(stream);
     jump good ~ Str::Diff(token.Lex::Token::CONTENT, content) == 0;
-        Error::TokenError(token, "Expected `%s` got `%s`", [
+        put info = token.Lex::Token::INFO;
+        Error::LexError(info, "Expected `%s` got `%s`", [
             content,
             token.Lex::Token::CONTENT,
         ]);
@@ -189,10 +204,6 @@ fn Lex::Tokenize(path)
         put kind = Lex::Get(char);
 
 
-        jump skip_newline ~ char != '\n';
-            put lineno = lineno + 1;
-        lab skip_newline;
-
         put state_comment = state_comment | ((Str::Diff(buffer, "//") == 0) & Bool::Not(state_string));
         put state_string  = state_string  ^ (last == Lex::Kind::DOUBLE_QUOTE);
         put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
@@ -218,11 +229,14 @@ fn Lex::Tokenize(path)
             jump skip_push ~ last == Lex::Kind::NONE;
             jump skip_push ~ last == Lex::Kind::FORMAT;
 
+                put info = Chunk::New(Lex::Info);
+                put info.Lex::Info::LINENO = lineno;
+                put info.Lex::Info::PATH   = path;
+
                 put token = Chunk::New(Lex::Token);
                 put token.Lex::Token::CONTENT = Str::Copy(buffer);
                 put token.Lex::Token::KIND    = last;
-                put token.Lex::Token::LINENO  = lineno;
-                put token.Lex::Token::PATH    = path;
+                put token.Lex::Token::INFO    = info;
 
                 Dyn::Push(tokens, token);
             lab skip_push;
@@ -238,6 +252,9 @@ fn Lex::Tokenize(path)
             put state_char    = Bool::FALSE;
         lab skip_comment_end;
 
+        jump skip_newline ~ char != '\n';
+            put lineno = lineno + 1;
+        lab skip_newline;
 
         // do not buffer/emit quotes. (annoying to filter out later)
         jump skip_write ~ kind == Lex::Kind::SINGLE_QUOTE;
@@ -279,8 +296,14 @@ fn Lex::VoidStream(stream)
     Chunk::Void(stream);
 }
 
+fn Lex::VoidInfo(info)
+{
+    Chunk::Void(info);
+}
+
 fn Lex::VoidToken(token)
 {
+    Lex::VoidInfo(token.Lex::Token::INFO);
     Chunk::Void(token.Lex::Token::CONTENT);
     Chunk::Void(token);
 }
