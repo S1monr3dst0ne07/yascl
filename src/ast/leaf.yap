@@ -8,6 +8,8 @@ seq Ast::Leaf
 {
     VALUE, // Void
     KIND,  // Ast::Leaf::Kind
+
+    INFO,  // Lex::Info
 }
 
 seq Ast::Leaf::Call
@@ -30,11 +32,12 @@ seq Ast::Leaf::Kind
 }
 
 
-fn Ast::Leaf::Local::MakeLeaf(value, kind)
+fn Ast::Leaf::Local::MakeLeaf(value, kind, info)
 {
     put node = Chunk::New(Ast::Leaf);
     put node.Ast::Leaf::VALUE = value;
     put node.Ast::Leaf::KIND  = kind;
+    put node.Ast::Leaf::INFO  = info;
     return node;
 }
 
@@ -42,6 +45,8 @@ fn Ast::Leaf::Local::MakeLeaf(value, kind)
 
 fn Ast::Leaf::Parse(stream)
 {
+    put info = Lex::Info(stream);
+
     put token = Lex::PopTok(stream);
     put tok_kind = token.Lex::Token::KIND;
     put content  = token.Lex::Token::CONTENT;
@@ -62,7 +67,7 @@ lab sub_expr;
     Lex::Expect(stream, ")");
 
     return Ast::Leaf::Local::MakeLeaf(
-        expr, Ast::Leaf::Kind::SUBEXPR,
+        expr, Ast::Leaf::Kind::SUBEXPR, info,
     );
 
 lab array;
@@ -78,7 +83,7 @@ lab array;
     Lex::Expect(stream, "]");
 
     return Ast::Leaf::Local::MakeLeaf(
-        elems, Ast::Leaf::Kind::ARRAY,
+        elems, Ast::Leaf::Kind::ARRAY, info,
     );
 
 
@@ -86,6 +91,7 @@ lab char_lit;
     return Ast::Leaf::Local::MakeLeaf(
         Utils::Unescape(content).0, 
         Ast::Leaf::Kind::CHAR,
+        info,
     );
 
 
@@ -93,6 +99,7 @@ lab string;
     return Ast::Leaf::Local::MakeLeaf(
         Utils::Unescape(Str::Copy(content)),
         Ast::Leaf::Kind::STRING,
+        info,
     );
 
 
@@ -116,17 +123,17 @@ lab call;
     put subnode.Ast::Leaf::Call::PARAMS = params;
 
     return Ast::Leaf::Local::MakeLeaf(
-        subnode, Ast::Leaf::Kind::CALL,
+        subnode, Ast::Leaf::Kind::CALL, info
     );
 
 lab number;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::ToInt(content), Ast::Leaf::Kind::NUMBER,
+        Str::ToInt(content), Ast::Leaf::Kind::NUMBER, info
     );
 
 lab meta;
     return Ast::Leaf::Local::MakeLeaf(
-        Str::Copy(content), Ast::Leaf::Kind::META,
+        Str::Copy(content), Ast::Leaf::Kind::META, info
     );
     
 
@@ -191,8 +198,9 @@ fn Ast::Leaf::Resolve(node, ctx)
 
 fn Ast::Leaf::Load(node, ctx)
 {
-    put kind = node.Ast::Leaf::KIND;
+    put kind  = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
+    put info  = node.Ast::Leaf::INFO;
 
     jump load_subexpr   ~ kind == Ast::Leaf::Kind::SUBEXPR;
     jump load_number    ~ kind == Ast::Leaf::Kind::NUMBER;
@@ -202,7 +210,7 @@ fn Ast::Leaf::Load(node, ctx)
     jump load_string    ~ kind == Ast::Leaf::Kind::STRING;
     jump load_array     ~ kind == Ast::Leaf::Kind::ARRAY;
     jump load_char      ~ kind == Ast::Leaf::Kind::CHAR;
-    Error::PrintError("internal error: meta node while Ast::Leaf::Load");
+    Error::LexError(info, "Internal error: meta node while Ast::Leaf::Load");
     jump done;
 
 lab load_char;   
@@ -303,7 +311,7 @@ lab load_array;
     jump done;
 
 lab var_not_exist;
-    Error::PrintError("Variable `%s` has not been defined", [value]);
+    Error::LexError(info, "Variable `%s` has not been defined", [value]);
 
 lab done;
 }
@@ -320,7 +328,8 @@ fn Ast::Leaf::Store(node, ctx)
 
     jump done;
 lab not_var;
-    Error::PrintError("Trying to store into non-variable value");
+    put info = node.Ast::Leaf::INFO;
+    Error::LexError(info, "Trying to store into non-variable value");
 lab subexpr;
     Ast::Expr::Store(value, ctx);
 lab done;
@@ -348,7 +357,8 @@ fn Ast::Leaf::Eval(node, ctx)
     jump eval_char      ~ kind == Ast::Leaf::Kind::CHAR;
     jump eval_const     ~ kind == Ast::Leaf::Kind::CONST;
 
-    Error::PrintError("Unsupported compile-time leaf");
+    put info = node.Ast::Leaf::INFO;
+    Error::LexError(info, "Unsupported compile-time leaf");
 
 lab eval_char;   
 lab eval_number;
@@ -368,6 +378,7 @@ fn Ast::Leaf::Void(node)
 {
     put kind = node.Ast::Leaf::KIND;
     put value = node.Ast::Leaf::VALUE;
+    Lex::VoidInfo(node.Ast::Leaf::INFO);
     Chunk::Void(node);
 
     jump void_meta      ~ kind == Ast::Leaf::Kind::META;
