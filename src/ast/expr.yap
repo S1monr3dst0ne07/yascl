@@ -29,6 +29,8 @@ seq Ast::Expr
     LEFT,  // AstExpr | AstLeaf
     RIGHT, // AstExpr | AstLeaf
     OP,    // Ast::Expr::Op
+
+    INFO,  // Lex::Info
 }
 
 
@@ -60,6 +62,7 @@ fn Ast::Expr::Parse(stream)
     put left = Ast::Leaf::Parse(stream);
     put right = Mem::NULL;
     put op = Ast::Expr::OpDecode(Lex::Peek(stream));
+    put info = Lex::Info(stream);
 
     jump skip_right ~ op == Ast::Expr::Op::NONE;
         Lex::Pop(stream);
@@ -70,6 +73,7 @@ fn Ast::Expr::Parse(stream)
     put node.Ast::Expr::LEFT  = left;
     put node.Ast::Expr::RIGHT = right;
     put node.Ast::Expr::OP    = op;
+    put node.Ast::Expr::INFO  = info;
     return node;
 }
 
@@ -191,7 +195,8 @@ fn Ast::Expr::Store(node, ctx)
     jump done;
 
 lab error;
-    Error::PrintError("Trying to store into non-dot expression.");
+    put info = node.Ast::Expr::INFO;
+    Error::LexError(info, "Trying to store into non-dot expression.");
 lab only_leaf;
     Ast::Leaf::Store(node.Ast::Expr::LEFT, ctx);
 lab done;
@@ -229,7 +234,8 @@ fn Ast::Expr::Eval(node, ctx)
     jump eval_shift_left  ~ op == Ast::Expr::Op::SHIFT_LEFT;
     jump eval_modulo      ~ op == Ast::Expr::Op::MODULO;
 
-    Error::PrintError("Unsupported compile-time operation.");
+    put info = node.Ast::Expr::INFO;
+    Error::LexError(info, "Unsupported compile-time operation.");
 
 
     lab eval_add;       return left + right;
@@ -261,5 +267,6 @@ fn Ast::Expr::Void(node)
 lab only_leaf;
     Ast::Leaf::Void(node.Ast::Expr::LEFT);
 
+    Lex::VoidInfo(node.Ast::Expr::INFO);
     Chunk::Void(node);
 }
