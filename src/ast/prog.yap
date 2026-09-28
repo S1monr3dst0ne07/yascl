@@ -28,7 +28,11 @@ fn Ast::Prog::Parse(stream, ctx)
         jump seq ~ Str::Diff(content, "seq") == 0;
         jump use ~ Str::Diff(content, "use") == 0;
 
-        Error::PrintError("Invalid toplevel prefix: %s\n", [content]);
+        put token = Lex::PeekTok(stream);
+        Error::LexError(
+            token.Lex::Token::INFO,
+            "Invalid toplevel prefix: %s\n", [content],
+        );
 
     
     lab fn;
