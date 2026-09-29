@@ -5,10 +5,16 @@ use "lib/dyn.yap"
 use "lib/fs.yap"
 use "lib/mem.yap"
 
+use "src/ir.yap"
 
 seq Ctx::Global
 {
-    OUTPUT,  // output asm buffer
+    IR_ROOT,  // IR::Node
+    IR_ITER,  // IR::Node
+    OUTPUT,   // buffer for output binary
+
+    FN_TABLE, // HT<Name, IR::Node>
+
     PATHS,   // all included paths, prevent circular import
 
     LOCAL,   // current local compilation context 
@@ -32,7 +38,13 @@ fn Ctx::MakeGlobal()
 {
     put ctx = Chunk::New(Ctx::Global);
 
-    put ctx.Ctx::Global::OUTPUT  = Dyn::Create();
+    put ir_root = Chunk::New(IR::Node);
+    put ctx.Ctx::Global::IR_ROOT = ir_root;
+    put ctx.Ctx::Global::IR_ITER = ir_root;
+    put ctx.Ctx::Global::OUTPUT  = Dyn::Create(); 
+
+    put ctx.Ctx::Global::FN_TABLE = HT::Create();
+
     put ctx.Ctx::Global::PATHS   = HT::Create();
 
     put ctx.Ctx::Global::LOCAL   = Mem::NULL;
@@ -58,20 +70,7 @@ fn Ctx::MakeLocal(fn_name)
 
 fn Ctx::Emit(ctx, pattern, args)
 {
-    static 4096 ~ buffer;
-    Str::Format(buffer, pattern, args);
-
-    Dyn::Push(
-        ctx.Ctx::Global::OUTPUT,
-        Str::Copy(buffer),
-    );
-}
-
-fn Ctx::Write(ctx, path)
-{
-    put output = Dyn::Join(ctx.Ctx::Global::OUTPUT, "\n");
-    FS::Write(path, output);
-    Chunk::Void(output);
+    print("Ctx::Emit not implemented\n");
 }
 
 
@@ -146,13 +145,6 @@ fn Ctx::Fresh(ctx)
 
 fn Ctx::VoidGlobal(ctx)
 {
-    put output = ctx.Ctx::Global::OUTPUT;
-    put i = 0; 
-    lab loop;
-        Chunk::Void(Dyn::Ptr(output).i);
-        put i = i + 1;
-    jump loop ~ i < Dyn::Size(output);
-    Dyn::Delete(output);
 
     HT::Void(ctx.Ctx::Global::PATHS);
 

@@ -215,7 +215,8 @@ fn Ast::Leaf::Load(node, ctx)
 
 lab load_char;   
 lab load_number;
-    Ctx::Emit(ctx, "mov rax, %d", [value]);
+    //Ctx::Emit(ctx, "mov rax, %d", [value]);
+    IR::Emit(ctx, IR::Op::LOAD_INT, value);
     jump done;
 lab load_const;
     put const = HT::Get(ctx.Ctx::Global::CONSTS, value);
@@ -324,7 +325,8 @@ fn Ast::Leaf::Store(node, ctx)
     jump not_var ~ kind != Ast::Leaf::Kind::VAR;
 
     put addr = Ctx::VarLookup(ctx, value);
-    Ctx::Emit(ctx, "mov [rbp - %d], rax", [addr]);
+    //Ctx::Emit(ctx, "mov [rbp - %d], rax", [addr]);
+    IR::Emit(ctx, IR::Op::STORE_LOCAL, addr);
 
     jump done;
 lab not_var;

@@ -6,7 +6,6 @@ use "lib/args.yap"
 
 use "src/lex.yap"
 use "src/ctx.yap"
-use "src/tmpl.yap"
 use "src/error.yap"
 use "src/ast/prog.yap"
 
@@ -24,19 +23,32 @@ fn main(argc, argv)
     put root = Ast::Prog::File(path, ctx);
     Ast::Prog::Resolve(root, ctx);
     
-    Tmpl::Header(ctx);
     Ast::Prog::Compile(root, ctx);
-    Tmpl::Finalize(ctx);
+    IR::Asm(ctx);
 
     print("Compilation successful\n");
-    Ctx::Write(ctx, "build.asm");
+
+
+
+
+    put output = ctx.Ctx::Global::OUTPUT;
+    put fd = FS::Sys::Open("raw.out", 
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC
+    );
+    put file = Chunk::New(Dyn::Size(output) >> 3);
+    Mem::ToBytes(file, Dyn::Ptr(output), Dyn::Size(output));
+    Sys::TryCall(
+        "output",
+        SYSCALL::WRITE,
+        fd,
+        file,
+        Dyn::Size(output),
+    );
+
 
     //dump_ht("consts.txt", "%s: %d\n", ctx.Ctx::Global::CONSTS);
-
-    Chunk::Void(path);
-    Ctx::VoidGlobal(ctx);
-    Ast::Prog::Void(root);
-
     //dump_heap("core");
 }
 
