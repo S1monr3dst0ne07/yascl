@@ -9,6 +9,7 @@
         - hence it should require deep restructuring of the entire compiler.
 
     - fix Lex::Info::PATH use after free
+    - fix zero default return value
 
 - fix time.yap, making bindings for time.h
 
