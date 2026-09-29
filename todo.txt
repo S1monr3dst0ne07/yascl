@@ -8,6 +8,8 @@
         - this requires global context during parse-time.
         - hence it should require deep restructuring of the entire compiler.
 
+    - fix Lex::Info::PATH use after free
+
 - fix time.yap, making bindings for time.h
 
 
