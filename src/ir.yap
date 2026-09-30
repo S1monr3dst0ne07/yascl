@@ -17,7 +17,8 @@ seq IR::Op
     LOAD_INT,    // mov rax, arg
     LOAD_STRING, // mov rax, "arg"
 
-    PUSH, // push rax
+    PUSH,    // push rax
+    POP_AUX, // pop rbx
 
     LOAD_PARAM,  // mov rax, ABI[arg]
     STORE_PARAM, // pop ABI[arg]
@@ -25,8 +26,10 @@ seq IR::Op
     LOAD_LOCAL,  // mov rax, [rbp - arg]
     STORE_LOCAL, // mov [rbp - arg], rax
 
-    ENTER,  // arg = local count = frame_count / WORD_SIZE
-    LEAVE,  // also returns
+    ENTER,  // enter arg,0
+    LEAVE,  // leave; ret;
+
+    ADD,
 
     SYSCALL,
 }
@@ -164,13 +167,17 @@ lab loop;
 
     jump asm_ref      ~ opcode == IR::Op::REF;
     jump asm_load_int ~ opcode == IR::Op::LOAD_INT;
+    jump asm_load_local  ~ opcode == IR::Op::LOAD_LOCAL;
     jump asm_store_local ~ opcode == IR::Op::STORE_LOCAL;
     jump asm_enter ~ opcode == IR::Op::ENTER;
     jump asm_leave ~ opcode == IR::Op::LEAVE;
-    jump asm_push  ~ opcode == IR::Op::PUSH;
+    jump asm_push    ~ opcode == IR::Op::PUSH;
+    jump asm_pop_aux ~ opcode == IR::Op::POP_AUX;
     jump asm_store_param ~ opcode == IR::Op::STORE_PARAM;
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
+
+    jump asm_add ~ opcode == IR::Op::ADD;
 
     print("Invalid opcode: %d\n", [opcode]);
 
@@ -186,6 +193,12 @@ lab asm_load_int;
     IR::Push64(ctx, arg);
     jump loop;
 
+lab asm_load_local;
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 139); // 0x8b
+    IR::Push8(ctx, 133); // 0x85
+    IR::Push32(ctx, (1 << 32) - arg);
+    jump loop;
 lab asm_store_local;
     IR::PushREXW(ctx);
     IR::Push8(ctx, 137); // 0x89
@@ -206,6 +219,15 @@ lab asm_leave;
 
 lab asm_push;
     IR::Push8(ctx, 80); // 0x50 -> push rax
+    jump loop;
+lab asm_pop_aux;
+    IR::Push8(ctx, 91); // 0x5b -> pop rbx
+    jump loop;
+    
+lab asm_add;
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 1);
+    IR::Push8(ctx, 216);
     jump loop;
 
 lab asm_store_param;

@@ -79,10 +79,9 @@ fn Ast::FnDef::Compile(node, ctx)
     // collect local variables and prepare stack frame
     Ast::FnDef::Collect(node, ctx);
     put local_count = (local_ctx.Ctx::Local::VARS).HT::LENGTH;
-    //put frame_size = local_count * Config::WORD_SIZE;
+    put frame_size = local_count * Config::WORD_SIZE;
 
     // function entry point
-    //Ctx::Emit(ctx, "%s:", [node.Ast::FnDef::NAME]);
     IR::Emit(ctx, IR::Op::REF);
     HT::Set(
         ctx.Ctx::Global::FN_TABLE, // table
@@ -90,8 +89,7 @@ fn Ast::FnDef::Compile(node, ctx)
         ctx.Ctx::Global::IR_ITER,  // to   it's node
     );
 
-    //Ctx::Emit(ctx, "enter %d,0", [frame_size]);
-    IR::Emit(ctx, IR::Op::ENTER, local_count);
+    IR::Emit(ctx, IR::Op::ENTER, frame_size);
 
     // populate parameter variables.
     put params = node.Ast::FnDef::PARAMS;
@@ -112,9 +110,6 @@ fn Ast::FnDef::Compile(node, ctx)
     Ast::Block::Compile(node.Ast::FnDef::BODY, ctx);
 
     // function exit
-    //Ctx::Emit(ctx, "leave");
-    //Ctx::Emit(ctx, "xor rax, rax"); // return 0 by default
-    //Ctx::Emit(ctx, "ret");
     IR::Emit(ctx, IR::Op::LEAVE);
 
     // void subctx, restore superctx

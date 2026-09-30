@@ -94,9 +94,9 @@ fn Ast::Expr::Load(node, ctx)
     jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
 
     Ast::Expr::Load(node.Ast::Expr::RIGHT, ctx);
-    Ctx::Emit(ctx, "push rax");
+    IR::Emit(ctx, IR::Op::PUSH);
     Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
-    Ctx::Emit(ctx, "pop rbx");
+    IR::Emit(ctx, IR::Op::POP_AUX); // pop into auxiliary register (rbx)
 
     put op = node.Ast::Expr::OP;
     jump compile_add         ~ op == Ast::Expr::Op::ADD;
@@ -117,7 +117,7 @@ fn Ast::Expr::Load(node, ctx)
     jump compile_modulo      ~ op == Ast::Expr::Op::MODULO;
 
 
-    lab compile_add; Ctx::Emit(ctx, "add rax, rbx"); jump done;
+    lab compile_add; IR::Emit(ctx, IR::Op::ADD); jump done;
     lab compile_sub; Ctx::Emit(ctx, "sub rax, rbx"); jump done;
     lab compile_dot; Ctx::Emit(ctx, "mov rax, [rax + rbx*%d]", [Config::WORD_SIZE]); jump done;
     lab compile_double_dot;

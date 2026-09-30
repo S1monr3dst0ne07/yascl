@@ -215,7 +215,6 @@ fn Ast::Leaf::Load(node, ctx)
 
 lab load_char;   
 lab load_number;
-    //Ctx::Emit(ctx, "mov rax, %d", [value]);
     IR::Emit(ctx, IR::Op::LOAD_INT, value);
     jump done;
 lab load_const;
@@ -225,7 +224,7 @@ lab load_const;
 lab load_var;
     jump var_not_exist ~ Bool::Not(Ctx::VarExists(ctx, value));
     put addr = Ctx::VarLookup(ctx, value);
-    Ctx::Emit(ctx, "mov rax, [rbp - %d]", [addr]);
+    IR::Emit(ctx, IR::Op::LOAD_LOCAL, addr);
     jump done;
 
 lab load_subexpr;
@@ -237,7 +236,6 @@ lab load_call;
     put params = value.Ast::Leaf::Call::PARAMS;
     put param_count = Dyn::Size(params);
 
-    // TODO: implement error message
     jump num_param_fine ~ param_count < 8;
         Error::LexError(
             info,
@@ -326,7 +324,6 @@ fn Ast::Leaf::Store(node, ctx)
     jump not_var ~ kind != Ast::Leaf::Kind::VAR;
 
     put addr = Ctx::VarLookup(ctx, value);
-    //Ctx::Emit(ctx, "mov [rbp - %d], rax", [addr]);
     IR::Emit(ctx, IR::Op::STORE_LOCAL, addr);
 
     jump done;
