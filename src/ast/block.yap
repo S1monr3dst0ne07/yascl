@@ -238,7 +238,7 @@ fn Ast::Block::Void(meta)
         jump loop;
     lab done;
 
-    Dyn::Delete(nodes);
+    Dyn::Void(nodes);
     Chunk::Void(meta);
 }
 fn Ast::Block::VoidNode(node)

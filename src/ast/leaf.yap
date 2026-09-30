@@ -410,7 +410,7 @@ lab void_call;
         jump void_call_loop;
     lab void_call_done;
 
-    Dyn::Delete(value.Ast::Leaf::Call::PARAMS);
+    Dyn::Void(value.Ast::Leaf::Call::PARAMS);
     Chunk::Void(value.Ast::Leaf::Call::NAME);
     Chunk::Void(value);
     jump done;
@@ -427,7 +427,7 @@ lab void_array;
         jump array_loop;
     lab array_done;
 
-    Dyn::Delete(value);
+    Dyn::Void(value);
     jump done;
 
 

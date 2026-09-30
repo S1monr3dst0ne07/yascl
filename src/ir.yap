@@ -495,7 +495,7 @@ lab asm_load_static;
 
 lab done;
     IR::PostAsm(ctx, patch_nodes);
-    Dyn::Delete(patch_nodes);
+    Dyn::Void(patch_nodes);
     Tmpl::Finalize(ctx);
 }
 

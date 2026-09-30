@@ -155,7 +155,7 @@ fn Ast::FnDef::Void(node)
         jump loop;
     lab done;
     
-    Dyn::Delete(node.Ast::FnDef::PARAMS);
+    Dyn::Void(node.Ast::FnDef::PARAMS);
     Chunk::Void(node.Ast::FnDef::NAME);
     Ast::Block::Void(node.Ast::FnDef::BODY);
     Chunk::Void(node);

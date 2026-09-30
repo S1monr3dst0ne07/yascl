@@ -69,7 +69,7 @@ fn Dyn::Copy(list)
     return Dyn::CreateCopyChunk(list.Dyn::CONTAINER);
 }
 
-fn Dyn::Delete(list)
+fn Dyn::Void(list)
 {
     Chunk::Void(list.Dyn::CONTAINER);
     Chunk::Void(list);

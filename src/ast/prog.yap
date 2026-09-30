@@ -59,7 +59,7 @@ fn Ast::Prog::Parse(stream, ctx)
         Dyn::Merge(fns, subprog.Ast::Prog::FNS);
 
         // functions are taken by self.
-        Dyn::Delete(subprog.Ast::Prog::FNS);
+        Dyn::Void(subprog.Ast::Prog::FNS);
         Chunk::Void(subprog);
         jump loop;
         
@@ -155,7 +155,7 @@ fn Ast::Prog::Void(node)
         jump loop;
     lab done;
 
-    Dyn::Delete(fns);
+    Dyn::Void(fns);
     Chunk::Void(node);
 }
 
