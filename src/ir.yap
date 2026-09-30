@@ -204,7 +204,7 @@ fn IR::PostAsm(ctx, patch_nodes)
                 put char = arg.i;
                 put i = i + 1;
 
-                IR::Push8(ctx, char);
+                IR::Push64(ctx, char);
             jump op_string_loop ~ char != '\0';
 
             IR::Patch64(ctx, addr, base_ptr);
