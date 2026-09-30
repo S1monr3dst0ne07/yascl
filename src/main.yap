@@ -28,16 +28,13 @@ fn main(argc, argv)
 
     print("Compilation successful\n");
 
-
-
-
     put output = ctx.Ctx::Global::OUTPUT;
     put fd = FS::Sys::Open("raw.out", 
         FS::Mode::WRONLY |
         FS::Mode::CREATE |
         FS::Mode::TRUNC
     );
-    put file = Chunk::New(Dyn::Size(output) >> 3);
+    put file = Chunk::New(Dyn::Size(output));
     Mem::ToBytes(file, Dyn::Ptr(output), Dyn::Size(output));
     Sys::TryCall(
         "output",
