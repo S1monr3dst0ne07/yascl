@@ -268,6 +268,7 @@ lab loop;
     jump asm_push_aux ~ opcode == IR::Op::PUSH_AUX;
     jump asm_pop_aux  ~ opcode == IR::Op::POP_AUX;
 
+    jump asm_load_param  ~ opcode == IR::Op::LOAD_PARAM;
     jump asm_store_param ~ opcode == IR::Op::STORE_PARAM;
 
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
@@ -299,10 +300,7 @@ lab loop;
     jump asm_shr        ~ opcode == IR::Op::SHR;
     jump asm_shl        ~ opcode == IR::Op::SHL;
 
-
-    print("Invalid opcode: %d\n", [opcode]);
-
-    jump loop;
+    Error::PrintError("INTERNAL: Invalid IR opcode %d", [opcode]);
 
 lab asm_ref;
     put iter.IR::Node::ADDR = IR::Addr(ctx);
@@ -427,6 +425,23 @@ lab asm_shl;
     IR::PushREXW(ctx); IR::Push8(ctx, 137); IR::Push8(ctx, 217); // mov rcx, rbx
     IR::PushREXW(ctx); IR::Push8(ctx, 211); IR::Push8(ctx, 224); // shl rax, cl
     jump loop;
+
+lab asm_load_param;
+    jump loop               ~ arg == 0; // mov rax, rax -> noop
+    jump asm_load_param_rdi ~ arg == 1;
+    jump asm_load_param_rsi ~ arg == 2;
+    jump asm_load_param_rdx ~ arg == 3;
+    jump asm_load_param_r10 ~ arg == 4;
+    jump asm_load_param_r8 ~ arg  == 5;
+    jump asm_load_param_r9 ~ arg  == 6;
+    Error::Error("PANIC: INTERNAL ERROR, DO NOT RUN EXECUTABLE");
+
+    lab asm_load_param_rdi; IR::Push8(ctx, 72); IR::Push8(ctx, 137); IR::Push8(ctx, 248); jump loop;
+    lab asm_load_param_rsi; IR::Push8(ctx, 72); IR::Push8(ctx, 137); IR::Push8(ctx, 240); jump loop;
+    lab asm_load_param_rdx; IR::Push8(ctx, 72); IR::Push8(ctx, 137); IR::Push8(ctx, 208); jump loop;
+    lab asm_load_param_r10; IR::Push8(ctx, 76); IR::Push8(ctx, 137); IR::Push8(ctx, 208); jump loop;
+    lab asm_load_param_r8 ; IR::Push8(ctx, 76); IR::Push8(ctx, 137); IR::Push8(ctx, 192); jump loop;
+    lab asm_load_param_r9 ; IR::Push8(ctx, 76); IR::Push8(ctx, 137); IR::Push8(ctx, 200); jump loop;
 
 lab asm_store_param;
     jump asm_store_param_rax ~ arg == 0;
