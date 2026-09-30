@@ -118,32 +118,14 @@ fn Ast::Expr::Load(node, ctx)
 
 
     lab compile_add; IR::Emit(ctx, IR::Op::ADD); jump done;
-    lab compile_sub; Ctx::Emit(ctx, "sub rax, rbx"); jump done;
-    lab compile_dot; Ctx::Emit(ctx, "mov rax, [rax + rbx*%d]", [Config::WORD_SIZE]); jump done;
-    lab compile_double_dot;
-        Ctx::Emit(ctx, "lea rax, [rax + rbx*%d]", [Config::WORD_SIZE]); 
-        jump done;
-    lab compile_equal;
-        Ctx::Emit(ctx, "cmp rax, rbx");
-        Ctx::Emit(ctx, "sete cl");
-        Ctx::Emit(ctx, "movzx rax, cl");
-        jump done;
-    lab compile_not_equal;
-        Ctx::Emit(ctx, "cmp rax, rbx");
-        Ctx::Emit(ctx, "setne cl");
-        Ctx::Emit(ctx, "movzx rax, cl");
-        jump done;
-    lab compile_lesser;
-        Ctx::Emit(ctx, "cmp rax, rbx");
-        Ctx::Emit(ctx, "setb cl"); //below
-        Ctx::Emit(ctx, "movzx rax, cl");
-        jump done;
-    lab compile_greater;
-        Ctx::Emit(ctx, "cmp rax, rbx");
-        Ctx::Emit(ctx, "seta cl"); //above
-        Ctx::Emit(ctx, "movzx rax, cl");
-        jump done;
+    lab compile_sub; IR::Emit(ctx, IR::Op::SUB); jump done;
+    lab compile_dot; IR::Emit(ctx, IR::Op::DOT); jump done;
+    lab compile_double_dot; IR::Emit(ctx, IR::Op::DOUBLE_DOT); jump done;
 
+    lab compile_equal;     IR::Emit(ctx, IR::Op::EQUAL);     jump done;
+    lab compile_not_equal; IR::Emit(ctx, IR::Op::NOT_EQUAL); jump done;
+    lab compile_lesser;    IR::Emit(ctx, IR::Op::LESSER);    jump done;
+    lab compile_greater;   IR::Emit(ctx, IR::Op::GREATER);   jump done;
 
     lab compile_mul;
         Ctx::Emit(ctx, "mul rbx"); 

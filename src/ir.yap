@@ -29,7 +29,17 @@ seq IR::Op
     ENTER,  // enter arg,0
     LEAVE,  // leave; ret;
 
-    ADD,
+    ADD, // add rax, rbx
+    SUB, // sub rax, rbx
+    DOT, // mov rax, [rax + rbx*8]
+    DOUBLE_DOT, // lea rax, [rax + rbx*8]
+
+    // cmp rax, rbx
+    EQUAL,
+    NOT_EQUAL,
+    LESSER,
+    GREATER,
+    // movzx rax, cl
 
     SYSCALL,
 }
@@ -116,6 +126,25 @@ fn IR::Patch64(ctx, addr, value)
     jump loop ~ i < 8;
 }
 
+fn IR::PushCompare(ctx, cond)
+{
+    // cmp rax, rbx
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 57);
+    IR::Push8(ctx, 216);
+
+    // setcc cl
+    IR::Push8(ctx, 15); // 0xf -> setcc
+    IR::Push8(ctx, cond);
+    IR::Push8(ctx, 193); // 0xc1 -> cl
+
+    // movzx rax, cl
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 15);  // 0xf -> movzx
+    IR::Push8(ctx, 182); // 0xb6 -> movzbq
+    IR::Push8(ctx, 193); // 0xc1 -> cl
+
+}
 
 fn IR::PostAsm(ctx, patch_nodes)
 {
@@ -177,7 +206,14 @@ lab loop;
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
 
-    jump asm_add ~ opcode == IR::Op::ADD;
+    jump asm_add        ~ opcode == IR::Op::ADD;
+    jump asm_sub        ~ opcode == IR::Op::SUB;
+    jump asm_dot        ~ opcode == IR::Op::DOT;
+    jump asm_double_dot ~ opcode == IR::Op::DOUBLE_DOT;
+    jump asm_equal      ~ opcode == IR::Op::EQUAL;
+    jump asm_not_equal  ~ opcode == IR::Op::NOT_EQUAL;
+    jump asm_lesser     ~ opcode == IR::Op::LESSER;
+    jump asm_greater    ~ opcode == IR::Op::GREATER;
 
     print("Invalid opcode: %d\n", [opcode]);
 
@@ -224,11 +260,25 @@ lab asm_pop_aux;
     IR::Push8(ctx, 91); // 0x5b -> pop rbx
     jump loop;
     
-lab asm_add;
+lab asm_add; IR::PushREXW(ctx); IR::Push8(ctx, 1);  IR::Push8(ctx, 216); jump loop;
+lab asm_sub; IR::PushREXW(ctx); IR::Push8(ctx, 41); IR::Push8(ctx, 216); jump loop;
+lab asm_dot;
     IR::PushREXW(ctx);
-    IR::Push8(ctx, 1);
+    IR::Push8(ctx, 139);
+    IR::Push8(ctx, 4);
     IR::Push8(ctx, 216);
     jump loop;
+lab asm_double_dot;
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 141);
+    IR::Push8(ctx, 4);
+    IR::Push8(ctx, 216);
+    jump loop;
+
+lab asm_equal;     IR::PushCompare(ctx, 148); jump done;
+lab asm_not_equal; IR::PushCompare(ctx, 149); jump done;
+lab asm_lesser;    IR::PushCompare(ctx, 146); jump done;
+lab asm_greater;   IR::PushCompare(ctx, 151); jump done;
 
 lab asm_store_param;
     jump asm_store_param_rax ~ arg == 0;
