@@ -215,7 +215,7 @@ fn IR::PostAsm(ctx, patch_nodes)
             put i = 0;
             lab op_static_loop;
                 jump op_static_done ~ i == arg;
-                IR::Push8(ctx, 0);
+                IR::Push64(ctx, 0);
                 put i = i + 1;
                 jump op_static_loop;
             lab op_static_done;

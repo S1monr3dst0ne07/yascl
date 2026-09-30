@@ -107,6 +107,7 @@ fn Ast::FnDef::Compile(node, ctx)
     Ast::Block::Compile(node.Ast::FnDef::BODY, ctx);
 
     // function exit
+    IR::Emit(ctx, IR::Op::LOAD_INT, 0); //default return value
     IR::Emit(ctx, IR::Op::LEAVE);
 
     // link function scope
