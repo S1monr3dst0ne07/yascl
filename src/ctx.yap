@@ -74,6 +74,36 @@ lab label_not_def_error;
 lab done;
 }
 
+fn Ctx::LinkGlobal(ctx)
+    // this does the same thing as LinkLocal,
+    // but for function def/calls instread.
+{
+    put def_table = ctx.Ctx::Global::DEF_TABLE;
+    put cal_table = ctx.Ctx::Global::CALL_TABLE;
+
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(cal_table);
+        put cal_node = Dyn::Ptr(cal_table).i;
+        put i = i + 1;
+
+        put fn_name = cal_node.IR::Node::ARG;
+        jump fn_not_def_error ~ Bool::Not(HT::Has(
+            def_table, fn_name,
+        ));
+
+        put ref_node = HT::Get(def_table, fn_name);
+        put cal_node.IR::Node::ARG = ref_node; 
+
+        jump loop;
+
+lab fn_not_def_error;
+    Error::PrintError("Function `%s` is called but not defined", [
+        fn_name,
+    ]);
+
+lab done;
+}
 
 fn Ctx::MakeGlobal()
 {

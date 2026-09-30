@@ -265,17 +265,17 @@ lab load_call;
         jump pop_loop;
     lab pop_done;
     
-    //actual call
     jump syscall ~ Str::Diff(name, "syscall") == 0;
-    Ctx::Emit(ctx, "call %s", [Utils::TranslateFuncName(name)]);
-    jump call_done;
+        //actual call
+        Dyn::Push(
+            ctx.Ctx::Global::CALL_TABLE,
+            IR::Emit(ctx, IR::Op::CALL, name),
+        );
+        jump done;
 
     lab syscall;
-    IR::Emit(ctx, IR::Op::SYSCALL);
-    jump call_done;
-
-    lab call_done;
-    jump done;
+        IR::Emit(ctx, IR::Op::SYSCALL);
+        jump done;
 
 lab load_string;
     IR::Emit(ctx, IR::Op::LOAD_STRING, value);

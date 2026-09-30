@@ -32,8 +32,9 @@ seq IR::Op
     ENTER,  // enter arg,0
     LEAVE,  // leave; ret
 
-    JMP, // jmp arg
-    JNZ, // test rax, rax; jnz arg
+    CALL, // call arg
+    JMP,  // jmp arg
+    JNZ,  // test rax, rax; jnz arg
 
     ADD, // add rax, rbx
     SUB, // sub rax, rbx
@@ -192,6 +193,7 @@ fn IR::PostAsm(ctx, patch_nodes)
         jump op_static ~ opcode == IR::Op::LOAD_STATIC;
         jump op_jmp    ~ opcode == IR::Op::JMP;
         jump op_jmp    ~ opcode == IR::Op::JNZ;
+        jump op_call   ~ opcode == IR::Op::CALL;
         jump loop;
 
         lab op_string;
@@ -223,6 +225,7 @@ fn IR::PostAsm(ctx, patch_nodes)
 
         lab op_jmp;
         lab op_jnz;
+        lab op_call;
             // subtract 4 for the rel32 value itself.
             // 4 * 8 = 32.
 
@@ -275,8 +278,9 @@ lab loop;
     jump asm_indirect_store ~ opcode == IR::Op::INDIRECT_STORE;
     jump asm_offset_store   ~ opcode == IR::Op::OFFSET_STORE;
 
-    jump asm_jmp ~ opcode == IR::Op::JMP;
-    jump asm_jnz ~ opcode == IR::Op::JNZ;
+    jump asm_call ~ opcode == IR::Op::CALL;
+    jump asm_jmp  ~ opcode == IR::Op::JMP;
+    jump asm_jnz  ~ opcode == IR::Op::JNZ;
 
     jump asm_add        ~ opcode == IR::Op::ADD;
     jump asm_sub        ~ opcode == IR::Op::SUB;
@@ -349,6 +353,13 @@ lab asm_pop_aux;
 
 lab asm_branch;
 
+
+lab asm_call;
+    IR::Push8(ctx, 232);
+    put iter.IR::Node::ADDR = IR::Addr(ctx);
+    IR::Push32(ctx, 0); //rel32;
+    Dyn::Push(patch_nodes, iter);
+    jump loop;
 
 lab asm_jmp;
     IR::Push8(ctx, 233);

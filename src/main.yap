@@ -24,6 +24,7 @@ fn main(argc, argv)
     Ast::Prog::Resolve(root, ctx);
     
     Ast::Prog::Compile(root, ctx);
+    Ctx::LinkGlobal(ctx);
     IR::Asm(ctx);
 
     print("Compilation successful\n");
