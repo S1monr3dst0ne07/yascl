@@ -32,6 +32,8 @@ seq SYSCALL
     EXIT = 60,
 
     GETDENTS = 78,
+
+    UNLINK = 87,
 }
 
 
