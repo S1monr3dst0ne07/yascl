@@ -222,3 +222,33 @@ fn Ctx::VoidGlobal(ctx)
     // TODO: reimplement this, when done with backend
     Chunk::Void(ctx);
 }
+
+fn Ctx::Output(ctx, path)
+{
+    put output = ctx.Ctx::Global::OUTPUT;
+
+    // delete file, if exists
+    syscall(SYSCALL::UNLINK, path);
+
+    // create with all perms
+    put fd = syscall(SYSCALL::OPEN
+        FS::ConvertPath(path), 
+        FS::Mode::WRONLY |
+        FS::Mode::CREATE |
+        FS::Mode::TRUNC,
+        511, // 0o777
+    );
+
+    put file = Chunk::New(Dyn::Size(output));
+    Mem::ToBytes(file, Dyn::Ptr(output), Dyn::Size(output));
+    Sys::TryCall(
+        "output",
+        SYSCALL::WRITE,
+        fd,
+        file,
+        Dyn::Size(output),
+    );
+
+    Chunk::Void(file);
+}
+
