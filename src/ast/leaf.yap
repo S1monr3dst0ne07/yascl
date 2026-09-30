@@ -235,17 +235,27 @@ lab load_subexpr;
 lab load_call;
     put name   = value.Ast::Leaf::Call::NAME;
     put params = value.Ast::Leaf::Call::PARAMS;
-    put abi = Config::ABI();
+    put param_count = Dyn::Size(params);
+
+    // TODO: implement error message
+    jump num_param_fine ~ param_count < 8;
+        Error::LexError(
+            info,
+            "Call to function `%s` with %d parameter, only up to 7 paramters are allowed",
+            name,
+            param_count,
+        );
+    lab num_param_fine;
 
     // push call results
     put i = 0;
     lab push_loop;
-        jump push_done ~ i == Dyn::Size(params);
+        jump push_done ~ i == param_count;
         put param = Dyn::Ptr(params).i;
         put i = i + 1;
 
         Ast::Expr::Load(param, ctx);
-        Ctx::Emit(ctx, "push rax");
+        IR::Emit(ctx, IR::Op::PUSH);
         jump push_loop;
     lab push_done;
 
@@ -253,7 +263,7 @@ lab load_call;
     lab pop_loop;
         jump pop_done ~ i == 0;
         put i = i - 1;
-        Ctx::Emit(ctx, "pop %s", [abi.i]);
+        IR::Emit(ctx, IR::Op::STORE_PARAM, i);
         jump pop_loop;
     lab pop_done;
     
@@ -263,23 +273,14 @@ lab load_call;
     jump call_done;
 
     lab syscall;
-    Ctx::Emit(ctx, "syscall");
+    IR::Emit(ctx, IR::Op::SYSCALL);
     jump call_done;
 
     lab call_done;
     jump done;
 
 lab load_string;
-    put label = Ctx::Fresh(ctx);
-
-    HT::Set(
-        ctx.Ctx::Global::STRINGS, 
-        label, 
-        value,
-    );
-    Ctx::Emit(ctx, "mov rax, %s", [label]);
-
-    Chunk::Void(label);
+    IR::Emit(ctx, IR::Op::LOAD_STRING, value);
     jump done;
 
 lab load_array;

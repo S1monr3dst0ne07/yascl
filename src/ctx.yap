@@ -149,12 +149,6 @@ fn Ctx::Fresh(ctx)
 
 fn Ctx::VoidGlobal(ctx)
 {
-
-    HT::Void(ctx.Ctx::Global::PATHS);
-
-    HT::Void(ctx.Ctx::Global::STRINGS);
-    HT::Void(ctx.Ctx::Global::STATICS);
-    HT::Void(ctx.Ctx::Global::CONSTS);
-
+    // TODO: reimplement this, when done with backend
     Chunk::Void(ctx);
 }
