@@ -40,6 +40,39 @@ seq Ctx::Local
     ALLOCER,
 }
 
+fn Ctx::LinkLocal(ctx)
+    // replaces ARG field in IR::Node for jumps,
+    // by a pointer to the REF node.
+    // this can only be done after the function is compiled,
+    // because only then are all labels known.
+{
+    put local = ctx.Ctx::Global::LOCAL;
+    put lab_table = local.Ctx::Local::LAB_TABLE;
+    put jmp_table = local.Ctx::Local::JMP_TABLE;
+
+    put i = 0;
+    lab loop;
+        jump done ~ i == Dyn::Size(jmp_table);
+        put jmp_node = Dyn::Ptr(jmp_table).i;
+        put i = i + 1;
+
+        put lab_name = jmp_node.IR::Node::ARG;
+        jump label_not_def_error ~ Bool::Not(HT::Has(
+            lab_table, lab_name,
+        ));
+
+        put ref_node = HT::Get(lab_table, lab_name);
+        put jmp_node.IR::Node::ARG = ref_node; 
+
+        jump loop;
+
+lab label_not_def_error;
+    Error::PrintError("Label `%s` used in function `%s` but is not defined", [
+        lab_name, local.Ctx::Local::FN_NAME,
+    ]);
+
+lab done;
+}
 
 
 fn Ctx::MakeGlobal()
@@ -118,7 +151,6 @@ fn Ctx::VarExists(ctx, name)
     put vars = local.Ctx::Local::VARS;
     return HT::Has(vars, name);
 }
-
 
 fn Ctx::VoidLocal(local_ctx)
 {

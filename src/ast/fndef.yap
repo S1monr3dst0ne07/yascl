@@ -111,6 +111,9 @@ fn Ast::FnDef::Compile(node, ctx)
     // function exit
     IR::Emit(ctx, IR::Op::LEAVE);
 
+    // link function scope
+    Ctx::LinkLocal(ctx);
+
     // void subctx, restore superctx
     Ctx::VoidLocal(local_ctx);
     put ctx.Ctx::Global::LOCAL = local_super_ctx;
