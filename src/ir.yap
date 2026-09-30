@@ -76,7 +76,7 @@ fn IR::Push32(ctx, value)
     IR::Push8(ctx, value);
     IR::Push8(ctx, value >> 8);
     IR::Push8(ctx, value >> 16);
-    IR::Push8(ctx, value >> 32);
+    IR::Push8(ctx, value >> 24);
 }
 fn IR::Push64(ctx, value)
 {
