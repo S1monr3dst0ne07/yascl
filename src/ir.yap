@@ -131,7 +131,7 @@ fn IR::Push64(ctx, value)
     jump loop ~ i < 8;
 }
 
-fn IR::Patch64(ctx, addr, value)
+fn IR::PatchDyn(ctx, addr, value, bytes)
 {
     put vaddr = addr - Tmpl::Config::LOAD_ADDR;
     put output = ctx.Ctx::Global::OUTPUT;
@@ -141,7 +141,16 @@ fn IR::Patch64(ctx, addr, value)
         put Dyn::Ptr(output).(vaddr + i) = value & 255;
         put value = value >> 8;
         put i = i + 1;
-    jump loop ~ i < 8;
+    jump loop ~ i < bytes;
+}
+
+fn IR::Patch32(ctx, addr, value)
+{
+    IR::PatchDyn(ctx, addr, value, 4);
+}
+fn IR::Patch64(ctx, addr, value)
+{
+    IR::PatchDyn(ctx, addr, value, 8);
 }
 
 fn IR::PushCompare(ctx, cond)
@@ -174,9 +183,12 @@ fn IR::PostAsm(ctx, patch_nodes)
 
         put opcode = node.IR::Node::OPCODE; 
         put arg    = node.IR::Node::ARG; 
+        put addr   = node.IR::Node::ADDR;
 
         jump op_string ~ opcode == IR::Op::LOAD_STRING;
         jump op_static ~ opcode == IR::Op::LOAD_STATIC;
+        jump op_jmp    ~ opcode == IR::Op::JMP;
+        jump op_jmp    ~ opcode == IR::Op::JNZ;
         jump loop;
 
         lab op_string;
@@ -189,19 +201,33 @@ fn IR::PostAsm(ctx, patch_nodes)
 
                 IR::Push8(ctx, char);
             jump op_string_loop ~ char != '\0';
-            jump run_patch;
+
+            IR::Patch64(ctx, addr, base_ptr);
+            jump loop;
 
         lab op_static;
             put base_ptr = IR::Addr(ctx);
             put i = 0;
             lab op_static_loop;
-                jump run_patch ~ i == arg;
+                jump op_static_done ~ i == arg;
                 IR::Push8(ctx, 0);
                 put i = i + 1;
-            jump op_static_loop;
+                jump op_static_loop;
+            lab op_static_done;
 
-        lab run_patch;
-            IR::Patch64(ctx, node.IR::Node::ADDR, base_ptr);
+            IR::Patch64(ctx, addr, base_ptr);
+            jump loop;
+
+        lab op_jmp;
+        lab op_jnz;
+            // subtract 4 for the rel32 value itself.
+            // 4 * 8 = 32.
+
+            put target_addr = arg.IR::Node::ADDR;
+            put offset = (target_addr - addr) - 4;
+            IR::Patch32(ctx, addr, offset);
+            jump loop;
+
 
         jump loop;
     lab done;
@@ -312,6 +338,11 @@ lab asm_jmp;
     jump loop;
 
 lab asm_jnz;
+    // test rax, rax
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 133);
+    IR::Push8(ctx, 192);
+
     IR::Push8(ctx, 15);
     IR::Push8(ctx, 133);
     put iter.IR::Node::ADDR = IR::Addr(ctx);
