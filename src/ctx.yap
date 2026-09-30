@@ -17,8 +17,8 @@ seq Ctx::Global
     PATCH_FILE_SIZE,
     PATCH_MEM_SIZE,
 
-    DEF_TABLE,  // HT<Name, IR::Node> (function name -> ref node)
-    CALL_TABLE, // Dyn<IR::Node>      (call nodes)
+    DEF_TABLE,  // HT<Str, IR::Node> (function name -> ref node)
+    CALL_TABLE, // Dyn<IR::Node>     (call nodes)
 
     PATHS,   // all included paths, prevent circular import
 
@@ -32,6 +32,9 @@ seq Ctx::Global
 
 seq Ctx::Local
 {
+    LAB_TABLE, // HT<Str, IR::Node> (label name -> ref node) 
+    JMP_TABLE, // Dyn<IR::Node>     (jump nodes)
+
     FN_NAME,
     VARS,
     ALLOCER,
@@ -67,6 +70,9 @@ fn Ctx::MakeGlobal()
 fn Ctx::MakeLocal(fn_name)
 {
     put ctx = Chunk::New(Ctx::Local);
+    put ctx.Ctx::Local::LAB_TABLE = HT::Create();
+    put ctx.Ctx::Local::JMP_TABLE = Dyn::Create();
+
     put ctx.Ctx::Local::FN_NAME = fn_name;
     put ctx.Ctx::Local::VARS    = HT::Create();
     put ctx.Ctx::Local::ALLOCER = 0;

@@ -39,24 +39,23 @@ fn Ast::Jump::Resolve(node, ctx)
 
 fn Ast::Jump::Compile(node, ctx)
 {
-    put label = Ctx::RenderLabel(ctx, node.Ast::Jump::TARGET);
-
-    put cond = node.Ast::Jump::COND;
+    put target = node.Ast::Jump::TARGET;
+    put cond   = node.Ast::Jump::COND;
     jump always ~ cond == Mem::NULL;
     jump sometimes;
 
 lab always;
-    Ctx::Emit(ctx, "jmp %s", [label]);
+    put node = IR::Emit(ctx, IR::Op::JMP, target);
     jump done;
 
 lab sometimes;
     Ast::Expr::Load(cond, ctx);
-    Ctx::Emit(ctx, "cmp rax, 0");
-    Ctx::Emit(ctx, "jne %s", [label]);
+    put node = IR::Emit(ctx, IR::Op::JNZ, target);
     jump done;
 
 lab done;
-    Chunk::Void(label);
+    put local = ctx.Ctx::Global::LOCAL; 
+    Dyn::Push(local.Ctx::Local::JMP_TABLE, node);
 }
 
 fn Ast::Jump::Void(node)

@@ -30,6 +30,9 @@ seq IR::Op
     ENTER,  // enter arg,0
     LEAVE,  // leave; ret
 
+    JMP, // jmp arg
+    JNZ, // test rax, rax; jnz arg
+
     ADD, // add rax, rbx
     SUB, // sub rax, rbx
     DOT, // mov rax, [rax + rbx*8]
@@ -63,8 +66,8 @@ seq IR::Node
 
     // relevant node address
     //  ref            -> defintion address
-    //  call / jump    -> patch address
-    //  string / const -> literal patch address0
+    //  call / jump    -> rel32 patch address
+    //  string / const -> abs64 patch address
     //  etc ...
     ADDR, 
     
@@ -232,6 +235,8 @@ lab loop;
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
     jump asm_load_static ~ opcode == IR::Op::LOAD_STATIC;
     jump asm_indirect_store ~ opcode == IR::Op::INDIRECT_STORE;
+    jump asm_jmp ~ opcode == IR::Op::JMP;
+    jump asm_jnz ~ opcode == IR::Op::JNZ;
 
     jump asm_add        ~ opcode == IR::Op::ADD;
     jump asm_sub        ~ opcode == IR::Op::SUB;
@@ -295,6 +300,25 @@ lab asm_push;
 lab asm_pop_aux;
     IR::Push8(ctx, 91); // 0x5b -> pop rbx
     jump loop;
+
+lab asm_branch;
+
+
+lab asm_jmp;
+    IR::Push8(ctx, 233);
+    put iter.IR::Node::ADDR = IR::Addr(ctx);
+    IR::Push32(ctx, 0); //rel32
+    Dyn::Push(patch_nodes, iter);
+    jump loop;
+
+lab asm_jnz;
+    IR::Push8(ctx, 15);
+    IR::Push8(ctx, 133);
+    put iter.IR::Node::ADDR = IR::Addr(ctx);
+    IR::Push32(ctx, 0); //rel32
+    Dyn::Push(patch_nodes, iter);
+    jump loop;
+    
     
 lab asm_add; IR::PushREXW(ctx); IR::Push8(ctx, 1);  IR::Push8(ctx, 216); jump loop;
 lab asm_sub; IR::PushREXW(ctx); IR::Push8(ctx, 41); IR::Push8(ctx, 216); jump loop;
