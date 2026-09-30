@@ -147,16 +147,14 @@ fn Ast::Expr::Store(node, ctx)
     jump only_leaf ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
     jump error     ~ (node.Ast::Expr::OP) != Ast::Expr::Op::DOT;
 
-    Ctx::Emit(ctx, "push rax");
+    IR::Emit(ctx, IR::Op::PUSH);
     Ast::Expr::Load(node.Ast::Expr::RIGHT, ctx);
-    Ctx::Emit(ctx, "push rax");
+    IR::Emit(ctx, IR::Op::PUSH);
     Ast::Leaf::Load(node.Ast::Expr::LEFT,  ctx);
-    Ctx::Emit(ctx, "pop rbx");
-    Ctx::Emit(ctx, "lea rbx, [rbx*%d]", [Config::WORD_SIZE]);
-    Ctx::Emit(ctx, "add rax, rbx");
-
-    Ctx::Emit(ctx, "pop rbx");
-    Ctx::Emit(ctx, "mov [rax], rbx");
+    IR::Emit(ctx, IR::Op::POP_AUX);
+    IR::Emit(ctx, IR::Op::DOUBLE_DOT);
+    IR::Emit(ctx, IR::Op::POP_AUX);
+    IR::Emit(ctx, IR::Op::INDIRECT_STORE);
 
     jump done;
 

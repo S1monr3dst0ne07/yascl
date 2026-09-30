@@ -50,6 +50,8 @@ seq IR::Op
     SHR, // mov rcx, rbx; shr rax, cl
     SHL, // mov rcx, rbx; shl rax, cl
 
+    INDIRECT_STORE, // mov [rax], rbx
+
     SYSCALL,
 }
 
@@ -217,6 +219,7 @@ lab loop;
     jump asm_store_param ~ opcode == IR::Op::STORE_PARAM;
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
+    jump asm_indirect_store ~ opcode == IR::Op::INDIRECT_STORE;
 
     jump asm_add        ~ opcode == IR::Op::ADD;
     jump asm_sub        ~ opcode == IR::Op::SUB;
@@ -234,6 +237,7 @@ lab loop;
     jump asm_xor        ~ opcode == IR::Op::XOR;
     jump asm_shr        ~ opcode == IR::Op::SHR;
     jump asm_shl        ~ opcode == IR::Op::SHL;
+
 
     print("Invalid opcode: %d\n", [opcode]);
 
@@ -346,6 +350,12 @@ lab asm_store_param;
     lab asm_store_param_r10; IR::Push8(ctx, 90); jump loop;
     lab asm_store_param_r8 ; IR::Push8(ctx, 88); jump loop;
     lab asm_store_param_r9 ; IR::Push8(ctx, 89); jump loop;
+
+lab asm_indirect_store;
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 137);
+    IR::Push8(ctx, 24);
+    jump loop;
 
 lab asm_syscall;
     IR::Push8(ctx, 15);
