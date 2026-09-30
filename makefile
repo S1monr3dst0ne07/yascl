@@ -8,6 +8,7 @@ stage0: bindings src/** lib/*
 	./bootstrap.py src/main.yap
 	fasm build.asm compiler
 	chmod +x compiler
+	rm build.asm
 
 bindings:
 	./tools/binding/gen.py
