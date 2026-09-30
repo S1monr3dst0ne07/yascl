@@ -56,7 +56,7 @@ fn Mem::ToBytes(dst, src, count)
 {
     put i = 0;
     lab loop;
-        put (dst+i).0 = src.i;
+        put (dst+i).0 = (src.i) & 255;
         put i = i + 1;
     jump loop ~ i < count;
 }
