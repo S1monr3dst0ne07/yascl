@@ -219,7 +219,7 @@ lab load_number;
     jump done;
 lab load_const;
     put const = HT::Get(ctx.Ctx::Global::CONSTS, value);
-    Ctx::Emit(ctx, "mov rax, %d", [const]);
+    IR::Emit(ctx, IR::Op::LOAD_INT, const);
     jump done;
 lab load_var;
     jump var_not_exist ~ Bool::Not(Ctx::VarExists(ctx, value));
@@ -282,13 +282,9 @@ lab load_string;
     jump done;
 
 lab load_array;
-    put label = Ctx::Fresh(ctx);
-
-    HT::Set(
-        ctx.Ctx::Global::STATICS, 
-        label, 
-        Dyn::Size(value),
-    );
+    put value_count = Dyn::Size(value);
+    IR::Emit(ctx, IR::Op::LOAD_STATIC, value_count);
+    IR::Emit(ctx, IR::Op::PUSH);
 
     // load elements of array
     put vaddr = 0;
@@ -298,16 +294,15 @@ lab load_array;
 
         put elem = Dyn::Ptr(value).vaddr;
         Ast::Expr::Load(elem, ctx);
-        Ctx::Emit(ctx, "mov [%s + %d], rax", [label, addr]);
+        IR::Emit(ctx, IR::Op::POP_AUX);
+        IR::Emit(ctx, IR::Op::PUSH_AUX);
+        IR::Emit(ctx, IR::Op::OFFSET_STORE, addr);
 
         put vaddr = vaddr + 1;
         jump array_loop;
     lab array_done;
 
-    // load reference
-    Ctx::Emit(ctx, "mov rax, %s", [label]);
-
-    Chunk::Void(label);
+    IR::Emit(ctx, IR::Op::POP);
     jump done;
 
 lab var_not_exist;

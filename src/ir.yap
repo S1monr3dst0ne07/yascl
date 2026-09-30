@@ -18,8 +18,10 @@ seq IR::Op
     LOAD_STRING, // mov rax, "arg"
     LOAD_STATIC, // mov rax, sizeof(arg)
 
-    PUSH,    // push rax
-    POP_AUX, // pop rbx
+    PUSH,     // push rax
+    POP,      // pop  rax
+    PUSH_AUX, // push rbx
+    POP_AUX,  // pop  rbx
 
     LOAD_PARAM,  // mov rax, ABI[arg]
     STORE_PARAM, // pop ABI[arg]
@@ -55,6 +57,7 @@ seq IR::Op
     SHL, // mov rcx, rbx; shl rax, cl
 
     INDIRECT_STORE, // mov [rax], rbx
+    OFFSET_STORE,   // mov [rbx + arg], rax
 
     SYSCALL,
 }
@@ -249,18 +252,29 @@ lab loop;
     put arg = iter.IR::Node::ARG;
 
     jump asm_ref      ~ opcode == IR::Op::REF;
+
     jump asm_load_int ~ opcode == IR::Op::LOAD_INT;
     jump asm_load_local  ~ opcode == IR::Op::LOAD_LOCAL;
     jump asm_store_local ~ opcode == IR::Op::STORE_LOCAL;
+
     jump asm_enter ~ opcode == IR::Op::ENTER;
     jump asm_leave ~ opcode == IR::Op::LEAVE;
-    jump asm_push    ~ opcode == IR::Op::PUSH;
-    jump asm_pop_aux ~ opcode == IR::Op::POP_AUX;
+
+    jump asm_push     ~ opcode == IR::Op::PUSH;
+    jump asm_pop      ~ opcode == IR::Op::POP;
+    jump asm_push_aux ~ opcode == IR::Op::PUSH_AUX;
+    jump asm_pop_aux  ~ opcode == IR::Op::POP_AUX;
+
     jump asm_store_param ~ opcode == IR::Op::STORE_PARAM;
+
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
+
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
     jump asm_load_static ~ opcode == IR::Op::LOAD_STATIC;
+
     jump asm_indirect_store ~ opcode == IR::Op::INDIRECT_STORE;
+    jump asm_offset_store   ~ opcode == IR::Op::OFFSET_STORE;
+
     jump asm_jmp ~ opcode == IR::Op::JMP;
     jump asm_jnz ~ opcode == IR::Op::JNZ;
 
@@ -322,6 +336,12 @@ lab asm_leave;
 
 lab asm_push;
     IR::Push8(ctx, 80); // 0x50 -> push rax
+    jump loop;
+lab asm_pop;
+    IR::Push8(ctx, 88); // 0x58 -> pop rax
+    jump loop;
+lab asm_push_aux;
+    IR::Push8(ctx, 83); // 0x53 -> push rbx
     jump loop;
 lab asm_pop_aux;
     IR::Push8(ctx, 91); // 0x5b -> pop rbx
@@ -422,6 +442,12 @@ lab asm_indirect_store;
     IR::PushREXW(ctx);
     IR::Push8(ctx, 137);
     IR::Push8(ctx, 24);
+    jump loop;
+lab asm_offset_store;
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 137); // mov m, r
+    IR::Push8(ctx, 131); // ModR/M 0x83 -> [EBX + disp32]
+    IR::Push32(ctx, arg);
     jump loop;
 
 lab asm_syscall;
