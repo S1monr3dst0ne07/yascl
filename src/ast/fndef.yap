@@ -83,13 +83,15 @@ fn Ast::FnDef::Compile(node, ctx)
 
     // function entry point
     //Ctx::Emit(ctx, "%s:", [node.Ast::FnDef::NAME]);
-    //Ctx::Emit(ctx, "enter %d,0", [frame_size]);
-    IR::Emit(ctx, IR::Op::ENTER, local_count);
+    IR::Emit(ctx, IR::Op::REF);
     HT::Set(
         ctx.Ctx::Global::FN_TABLE, // table
         node.Ast::FnDef::NAME,     // from it's name
         ctx.Ctx::Global::IR_ITER,  // to   it's node
     );
+
+    //Ctx::Emit(ctx, "enter %d,0", [frame_size]);
+    IR::Emit(ctx, IR::Op::ENTER, local_count);
 
     // populate parameter variables.
     put params = node.Ast::FnDef::PARAMS;

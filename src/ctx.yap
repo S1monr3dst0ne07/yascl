@@ -13,6 +13,10 @@ seq Ctx::Global
     IR_ITER,  // IR::Node
     OUTPUT,   // buffer for output binary
 
+    PATCH_MAIN, // address of main call in header stub
+    PATCH_FILE_SIZE,
+    PATCH_MEM_SIZE,
+
     FN_TABLE, // HT<Name, IR::Node>
 
     PATHS,   // all included paths, prevent circular import

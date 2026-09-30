@@ -1,8 +1,101 @@
 
-// FASM backend templating
+// elf64 header tables
 use "src/ctx.yap"
+use "src/ir.yap"
+
+
+seq Tmpl::Config
+{
+    HEADER_SIZE = 120,   // 0x78 = header + program
+    LOAD_ADDR   = 4194304, // 0x400000
+}
 
 fn Tmpl::Header(ctx)
+{
+    // --- ELF header table ---
+    IR::Emit8(ctx, 127); // MAGIC
+    IR::Emit8(ctx, 'E');
+    IR::Emit8(ctx, 'L');
+    IR::Emit8(ctx, 'F');
+
+    IR::Emit8(ctx, 2); // 64-bit format
+    IR::Emit8(ctx, 1); // little endian
+
+    IR::Emit8(ctx, 1); // elf version 1 (still waiting for elf 2)
+    IR::Emit8(ctx, 0); // ABI System V
+    IR::Emit8(ctx, 0); // ABI Version 0
+
+    // PADDING!!!!!
+    // a hole 7 bytes >;3
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+    IR::Emit8(ctx, 0);
+
+    IR::Emit16(ctx, 2); // ET_EXEC
+    IR::Emit16(ctx, 62); // x86
+    IR::Emit32(ctx, 1); // just 1
+
+    put entry = Tmpl::Config::HEADER_SIZE + Tmpl::Config::LOAD_ADDR;
+    IR::Emit64(ctx, entry); // entry address = 0x400078
+    IR::Emit64(ctx, 64); // phoff bytes
+    IR::Emit64(ctx, 0);  // shoff bytes
+    IR::Emit32(ctx, 0);  // flags = 0x0
+    IR::Emit16(ctx, 64); // size of this header
+
+    IR::Emit16(ctx, 56); // size of program header
+    IR::Emit16(ctx, 1);  // number of program headers
+    IR::Emit16(ctx, 0);  // size of section header
+    IR::Emit16(ctx, 0);  // number of section headers
+
+    IR::Emit16(ctx, 0);  // section header string table index (i have no idea what this means)
+
+    
+    // --- ELF program table ---
+    IR::Emit32(ctx, 1); // PT_LOAD
+    IR::Emit32(ctx, 7); // PF_X | PF_W | PF_R
+    IR::Emit64(ctx, 0); // segment offset
+    IR::Emit64(ctx, Tmpl::Config::LOAD_ADDR); // vaddr
+    IR::Emit64(ctx, Tmpl::Config::LOAD_ADDR); // paddr (doesn't matter)
+
+    // need to be patched
+    put ctx.Ctx::Global::PATCH_FILE_SIZE = IR::Addr(ctx);
+    IR::Emit64(ctx, 0);  // file size
+    put ctx.Ctx::Global::PATCH_MEM_SIZE  = IR::Addr(ctx);
+    IR::Emit64(ctx, 0);  // mem  size
+
+    IR::Emit64(ctx, 4096); // align to page size
+    
+    // --- call stub ---
+    // mov rbx, main (needs to be patched)
+    IR::EmitREXW(ctx);
+    IR::Emit8(ctx, 187); // B8 + 3 (3 -> rbx)
+    put ctx.Ctx::Global::PATCH_MAIN = IR::Addr(ctx);
+    IR::Emit64(ctx, 0);
+    // call *rbx
+    IR::Emit8(ctx, 255);
+    IR::Emit8(ctx, 211);
+
+}
+
+
+fn Tmpl::Finalize(ctx)
+{
+    put segment_size = IR::Addr(ctx);
+    //IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MEM_SIZE,  segment_size);
+    //IR::Patch64(ctx, ctx.Ctx::Global::PATCH_FILE_SIZE, segment_size);
+
+    put main_node = HT::Get(ctx.Ctx::Global::FN_TABLE, "main");
+    put main_addr = main_node.IR::Node::ARG; // must be REF node.
+    IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MAIN, main_addr);
+}
+
+
+
+fn Tmpl::HeaderDEAD(ctx)
 {
     // fasm headers
     Ctx::Emit(ctx, "format ELF64 executable");
@@ -28,7 +121,7 @@ fn Tmpl::Header(ctx)
 }
 
 
-fn Tmpl::Finalize(ctx)
+fn Tmpl::FinalizeDEAD(ctx)
 {
     Ctx::Emit(ctx, "segment writeable readable");
 

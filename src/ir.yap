@@ -4,9 +4,16 @@
 // - register decoder: https://intel.github.io/SDM/definition/Read_GPR.html
 
 
+use "src/tmpl.yap"
+
 
 seq IR::Op
 {
+    // reference exists to this node. noop.
+    // address of node in binary will be written
+    // to arg field by assembly pass.
+    REF, 
+
     LOAD_INT, // mov rax, arg
 
     LOAD_PARAM,  // mov rax, ABI[arg]
@@ -43,6 +50,12 @@ fn IR::Emit(ctx, opcode, arg)
     put ctx.Ctx::Global::IR_ITER = new;
 }
 
+fn IR::Addr(ctx)
+{
+    put output = ctx.Ctx::Global::OUTPUT;
+    return Dyn::Size(output) + Tmpl::Config::LOAD_ADDR;
+}
+
 
 fn IR::Emit8(ctx, value)
 {
@@ -58,6 +71,13 @@ fn IR::Emit16(ctx, value)
     IR::Emit8(ctx, value);
     IR::Emit8(ctx, value >> 8);
 }
+fn IR::Emit32(ctx, value)
+{
+    IR::Emit8(ctx, value);
+    IR::Emit8(ctx, value >> 8);
+    IR::Emit8(ctx, value >> 16);
+    IR::Emit8(ctx, value >> 32);
+}
 fn IR::Emit64(ctx, value)
 {
     put i = 0;
@@ -68,9 +88,23 @@ fn IR::Emit64(ctx, value)
     jump loop ~ i < 8;
 }
 
+fn IR::Patch64(ctx, addr, value)
+{
+    put vaddr = addr - Tmpl::Config::LOAD_ADDR;
+    put output = ctx.Ctx::Global::OUTPUT;
+
+    put i = 0;
+    lab loop;
+        put Dyn::Ptr(output).(vaddr + i) = value & 255;
+        put value = value >> 8;
+        put i = i + 1;
+    jump loop ~ i < 8;
+}
+
 
 fn IR::Asm(ctx)
 {
+    Tmpl::Header(ctx);
     put iter = ctx.Ctx::Global::IR_ROOT;
 
 lab loop;
@@ -79,6 +113,7 @@ lab loop;
     put opcode = iter.IR::Node::OPCODE;
     put arg = iter.IR::Node::ARG;
 
+    jump asm_ref      ~ opcode == IR::Op::REF;
     jump asm_load_int ~ opcode == IR::Op::LOAD_INT;
     jump asm_store_local ~ opcode == IR::Op::STORE_LOCAL;
 
@@ -89,6 +124,9 @@ lab loop;
 
     jump loop;
 
+lab asm_ref;
+    put iter.IR::Node::ARG = IR::Addr(ctx);
+    jump loop;    
 
 lab asm_load_int;
     IR::EmitREXW(ctx);
@@ -99,8 +137,8 @@ lab asm_load_int;
 lab asm_store_local;
     IR::EmitREXW(ctx);
     IR::Emit8(ctx, 137); // 0x89
-    IR::Emit8(ctx, 69);  // 0x45
-    IR::Emit8(ctx, 256 - arg);
+    IR::Emit8(ctx, 133); // 0x85
+    IR::Emit32(ctx, (1 << 32) - arg);
     jump loop;
 
 lab asm_enter;
@@ -115,6 +153,7 @@ lab asm_leave;
     jump loop;
 
 lab done;
+    Tmpl::Finalize(ctx);
 }
 
 
