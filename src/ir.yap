@@ -16,6 +16,7 @@ seq IR::Op
 
     LOAD_INT,    // mov rax, arg
     LOAD_STRING, // mov rax, "arg"
+    LOAD_STATIC, // mov rax, sizeof(arg)
 
     PUSH,    // push rax
     POP_AUX, // pop rbx
@@ -172,6 +173,7 @@ fn IR::PostAsm(ctx, patch_nodes)
         put arg    = node.IR::Node::ARG; 
 
         jump op_string ~ opcode == IR::Op::LOAD_STRING;
+        jump op_static ~ opcode == IR::Op::LOAD_STATIC;
         jump loop;
 
         lab op_string;
@@ -185,6 +187,15 @@ fn IR::PostAsm(ctx, patch_nodes)
                 IR::Push8(ctx, char);
             jump op_string_loop ~ char != '\0';
             jump run_patch;
+
+        lab op_static;
+            put base_ptr = IR::Addr(ctx);
+            put i = 0;
+            lab op_static_loop;
+                jump run_patch ~ i == arg;
+                IR::Push8(ctx, 0);
+                put i = i + 1;
+            jump op_static_loop;
 
         lab run_patch;
             IR::Patch64(ctx, node.IR::Node::ADDR, base_ptr);
@@ -219,6 +230,7 @@ lab loop;
     jump asm_store_param ~ opcode == IR::Op::STORE_PARAM;
     jump asm_syscall ~ opcode == IR::Op::SYSCALL;
     jump asm_load_string ~ opcode == IR::Op::LOAD_STRING;
+    jump asm_load_static ~ opcode == IR::Op::LOAD_STATIC;
     jump asm_indirect_store ~ opcode == IR::Op::INDIRECT_STORE;
 
     jump asm_add        ~ opcode == IR::Op::ADD;
@@ -363,6 +375,7 @@ lab asm_syscall;
     jump loop;
 
 lab asm_load_string;
+lab asm_load_static;
     IR::PushREXW(ctx);
     IR::Push8(ctx, 184);
     put iter.IR::Node::ADDR = IR::Addr(ctx);
@@ -370,8 +383,8 @@ lab asm_load_string;
 
     Dyn::Push(patch_nodes, iter);
     jump loop;
-    
 
+    
 
 lab done;
     IR::PostAsm(ctx, patch_nodes);

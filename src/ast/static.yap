@@ -34,17 +34,8 @@ fn Ast::Static::Compile(node, ctx)
 {
     put words = Ast::Expr::Eval(node.Ast::Static::WORDS, ctx);
 
-    put label = Ctx::Fresh(ctx);
-    HT::Set(
-        ctx.Ctx::Global::STATICS,
-        label,
-        words,
-    );
-
-    Ctx::Emit(ctx, "mov rax, %s", [label]);
+    IR::Emit(ctx, IR::Op::LOAD_STATIC, words);
     Ast::Expr::Store(node.Ast::Static::EXPR, ctx);
-
-    Chunk::Void(label);
 }
 
 fn Ast::Static::Collect(node, ctx)
