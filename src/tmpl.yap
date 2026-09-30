@@ -71,6 +71,15 @@ fn Tmpl::Header(ctx)
     
     // --- call stub ---
 
+    // make sure processes parameters are accessible to main.
+    // System V ABI, section 3.4 process init
+    // (https://web.archive.org/web/20160706074221/http://www.x86-64.org/documentation/abi.pdf)
+
+    // mov rax, [rsp]
+    // mov rdi, [rsp+8]
+    IR::Push8(ctx, 72); IR::Push8(ctx, 139); IR::Push8(ctx,   4); IR::Push8(ctx, 36);
+    IR::Push8(ctx, 72); IR::Push8(ctx, 141); IR::Push8(ctx, 124); IR::Push8(ctx, 36); IR::Push8(ctx, 8);
+
     // mov rbx, main (needs to be patched)
     IR::PushREXW(ctx);
     IR::Push8(ctx, 187); // B8 + 3 (3 -> rbx)
