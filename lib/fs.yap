@@ -134,7 +134,10 @@ seq FS::Dir::Ent
 
 seq FS::Dir::Config
 {
-    BUFFER_SIZE = 1000000,
+    // sizeof(linux_dirent) < 300.
+    // 300 * 1000 / 8 = 37500
+    // assuming a limit 1000 objects per directory
+    BUFFER_SIZE = 40000,
 }
 
 fn FS::Dir::ParseDirEnt(buffer, listing)
