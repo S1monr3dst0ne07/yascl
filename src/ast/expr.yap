@@ -122,35 +122,19 @@ fn Ast::Expr::Load(node, ctx)
     lab compile_dot; IR::Emit(ctx, IR::Op::DOT); jump done;
     lab compile_double_dot; IR::Emit(ctx, IR::Op::DOUBLE_DOT); jump done;
 
-    lab compile_equal;     IR::Emit(ctx, IR::Op::EQUAL);     jump done;
-    lab compile_not_equal; IR::Emit(ctx, IR::Op::NOT_EQUAL); jump done;
-    lab compile_lesser;    IR::Emit(ctx, IR::Op::LESSER);    jump done;
-    lab compile_greater;   IR::Emit(ctx, IR::Op::GREATER);   jump done;
+    lab compile_equal;          IR::Emit(ctx, IR::Op::EQUAL);     jump done;
+    lab compile_not_equal;      IR::Emit(ctx, IR::Op::NOT_EQUAL); jump done;
+    lab compile_lesser;         IR::Emit(ctx, IR::Op::LESSER);    jump done;
+    lab compile_greater;        IR::Emit(ctx, IR::Op::GREATER);   jump done;
 
-    lab compile_mul;
-        Ctx::Emit(ctx, "mul rbx"); 
-        jump done;
-    lab compile_div;
-        Ctx::Emit(ctx, "xor rdx, rdx"); 
-        Ctx::Emit(ctx, "div rbx"); 
-        jump done;
-    lab compile_modulo;
-        Ctx::Emit(ctx, "xor rdx, rdx"); 
-        Ctx::Emit(ctx, "div rbx"); 
-        Ctx::Emit(ctx, "mov rax, rdx"); 
-        jump done;
-    lab compile_and; Ctx::Emit(ctx, "and rax, rbx"); jump done;
-    lab compile_or;  Ctx::Emit(ctx, "or  rax, rbx"); jump done;
-    lab compile_xor; Ctx::Emit(ctx, "xor rax, rbx"); jump done;
-    lab compile_shift_right;
-        Ctx::Emit(ctx, "mov rcx, rbx");
-        Ctx::Emit(ctx, "shr rax, cl");
-        jump done;
-    lab compile_shift_left;
-        Ctx::Emit(ctx, "mov rcx, rbx");
-        Ctx::Emit(ctx, "shl rax, cl");
-        jump done;
-
+    lab compile_mul;            IR::Emit(ctx, IR::Op::MUL); jump done;
+    lab compile_div;            IR::Emit(ctx, IR::Op::DIV); jump done;
+    lab compile_modulo;         IR::Emit(ctx, IR::Op::MOD); jump done;
+    lab compile_and;            IR::Emit(ctx, IR::Op::AND); jump done;
+    lab compile_or ;            IR::Emit(ctx, IR::Op::OR ); jump done;
+    lab compile_xor;            IR::Emit(ctx, IR::Op::XOR); jump done;
+    lab compile_shift_right;    IR::Emit(ctx, IR::Op::SHR); jump done;
+    lab compile_shift_left;     IR::Emit(ctx, IR::Op::SHL); jump done;
 
 lab only_leaf;
     Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);

@@ -27,7 +27,7 @@ seq IR::Op
     STORE_LOCAL, // mov [rbp - arg], rax
 
     ENTER,  // enter arg,0
-    LEAVE,  // leave; ret;
+    LEAVE,  // leave; ret
 
     ADD, // add rax, rbx
     SUB, // sub rax, rbx
@@ -40,6 +40,15 @@ seq IR::Op
     LESSER,
     GREATER,
     // movzx rax, cl
+
+    MUL, // mul rbx
+    DIV, // xor rdx, rdx; div rbx
+    MOD, // xor rdx, rdx; div rbx; mov rax, rdx
+    AND, // and rax, rbx
+    OR,  // or  rax, rbx
+    XOR, // xor rax, rbx
+    SHR, // mov rcx, rbx; shr rax, cl
+    SHL, // mov rcx, rbx; shl rax, cl
 
     SYSCALL,
 }
@@ -66,6 +75,7 @@ fn IR::Emit(ctx, opcode, arg)
     put new = Chunk::New(IR::Node);
     put new.IR::Node::OPCODE = opcode;
     put new.IR::Node::ARG    = arg;
+    put new.IR::Node::NEXT   = Mem::NULL;
 
     put iter = ctx.Ctx::Global::IR_ITER;
 
@@ -216,6 +226,14 @@ lab loop;
     jump asm_not_equal  ~ opcode == IR::Op::NOT_EQUAL;
     jump asm_lesser     ~ opcode == IR::Op::LESSER;
     jump asm_greater    ~ opcode == IR::Op::GREATER;
+    jump asm_mul        ~ opcode == IR::Op::MUL;
+    jump asm_div        ~ opcode == IR::Op::DIV;
+    jump asm_mod        ~ opcode == IR::Op::MOD;
+    jump asm_and        ~ opcode == IR::Op::AND;
+    jump asm_or         ~ opcode == IR::Op::OR;
+    jump asm_xor        ~ opcode == IR::Op::XOR;
+    jump asm_shr        ~ opcode == IR::Op::SHR;
+    jump asm_shl        ~ opcode == IR::Op::SHL;
 
     print("Invalid opcode: %d\n", [opcode]);
 
@@ -277,10 +295,36 @@ lab asm_double_dot;
     IR::Push8(ctx, 216);
     jump loop;
 
-lab asm_equal;     IR::PushCompare(ctx, 148); jump done;
-lab asm_not_equal; IR::PushCompare(ctx, 149); jump done;
-lab asm_lesser;    IR::PushCompare(ctx, 146); jump done;
-lab asm_greater;   IR::PushCompare(ctx, 151); jump done;
+lab asm_equal;     IR::PushCompare(ctx, 148); jump loop;
+lab asm_not_equal; IR::PushCompare(ctx, 149); jump loop;
+lab asm_lesser;    IR::PushCompare(ctx, 146); jump loop;
+lab asm_greater;   IR::PushCompare(ctx, 151); jump loop;
+
+lab asm_mul; 
+    IR::PushREXW(ctx); IR::Push8(ctx, 247); IR::Push8(ctx, 227); // mul rbx
+    jump loop;
+lab asm_div; 
+    IR::PushREXW(ctx); IR::Push8(ctx, 49);  IR::Push8(ctx, 210); // xor rdx, rdx
+    IR::PushREXW(ctx); IR::Push8(ctx, 247); IR::Push8(ctx, 243); // div rbx
+    jump loop;
+lab asm_mod; 
+    IR::PushREXW(ctx); IR::Push8(ctx, 49);  IR::Push8(ctx, 210); // xor rdx, rdx
+    IR::PushREXW(ctx); IR::Push8(ctx, 247); IR::Push8(ctx, 243); // div rbx
+    IR::PushREXW(ctx); IR::Push8(ctx, 137); IR::Push8(ctx, 208); // mov rax, rdx
+    jump loop;
+
+lab asm_and; IR::PushREXW(ctx); IR::Push8(ctx, 33); IR::Push8(ctx, 216); jump loop;
+lab asm_or ; IR::PushREXW(ctx); IR::Push8(ctx,  9); IR::Push8(ctx, 216); jump loop;
+lab asm_xor; IR::PushREXW(ctx); IR::Push8(ctx, 49); IR::Push8(ctx, 216); jump loop;
+
+lab asm_shr; 
+    IR::PushREXW(ctx); IR::Push8(ctx, 137); IR::Push8(ctx, 217); // mov rcx, rbx
+    IR::PushREXW(ctx); IR::Push8(ctx, 211); IR::Push8(ctx, 232); // shr rax, cl
+    jump loop;
+lab asm_shl;
+    IR::PushREXW(ctx); IR::Push8(ctx, 137); IR::Push8(ctx, 217); // mov rcx, rbx
+    IR::PushREXW(ctx); IR::Push8(ctx, 211); IR::Push8(ctx, 224); // shl rax, cl
+    jump loop;
 
 lab asm_store_param;
     jump asm_store_param_rax ~ arg == 0;
