@@ -7,10 +7,10 @@ rm build.asm
 chmod +x stage_zero
 
 # stage 1, compile compiler with itself
-./stage_zero src/main.yap stage_one
+time ./stage_zero src/main.yap stage_one
 
 # stage 2, compile-compile compiler with itself
-./stage_one src/main.yap stage_two
+time ./stage_one src/main.yap stage_two
 
 
 # now stage_one and stage_two should be identical
