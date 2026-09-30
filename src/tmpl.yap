@@ -13,71 +13,79 @@ seq Tmpl::Config
 fn Tmpl::Header(ctx)
 {
     // --- ELF header table ---
-    IR::Emit8(ctx, 127); // MAGIC
-    IR::Emit8(ctx, 'E');
-    IR::Emit8(ctx, 'L');
-    IR::Emit8(ctx, 'F');
+    IR::Push8(ctx, 127); // MAGIC
+    IR::Push8(ctx, 'E');
+    IR::Push8(ctx, 'L');
+    IR::Push8(ctx, 'F');
 
-    IR::Emit8(ctx, 2); // 64-bit format
-    IR::Emit8(ctx, 1); // little endian
+    IR::Push8(ctx, 2); // 64-bit format
+    IR::Push8(ctx, 1); // little endian
 
-    IR::Emit8(ctx, 1); // elf version 1 (still waiting for elf 2)
-    IR::Emit8(ctx, 0); // ABI System V
-    IR::Emit8(ctx, 0); // ABI Version 0
+    IR::Push8(ctx, 1); // elf version 1 (still waiting for elf 2)
+    IR::Push8(ctx, 0); // ABI System V
+    IR::Push8(ctx, 0); // ABI Version 0
 
     // PADDING!!!!!
     // a hole 7 bytes >;3
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
-    IR::Emit8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
+    IR::Push8(ctx, 0);
 
-    IR::Emit16(ctx, 2); // ET_EXEC
-    IR::Emit16(ctx, 62); // x86
-    IR::Emit32(ctx, 1); // just 1
+    IR::Push16(ctx, 2); // ET_EXEC
+    IR::Push16(ctx, 62); // x86
+    IR::Push32(ctx, 1); // just 1
 
     put entry = Tmpl::Config::HEADER_SIZE + Tmpl::Config::LOAD_ADDR;
-    IR::Emit64(ctx, entry); // entry address = 0x400078
-    IR::Emit64(ctx, 64); // phoff bytes
-    IR::Emit64(ctx, 0);  // shoff bytes
-    IR::Emit32(ctx, 0);  // flags = 0x0
-    IR::Emit16(ctx, 64); // size of this header
+    IR::Push64(ctx, entry); // entry address = 0x400078
+    IR::Push64(ctx, 64); // phoff bytes
+    IR::Push64(ctx, 0);  // shoff bytes
+    IR::Push32(ctx, 0);  // flags = 0x0
+    IR::Push16(ctx, 64); // size of this header
 
-    IR::Emit16(ctx, 56); // size of program header
-    IR::Emit16(ctx, 1);  // number of program headers
-    IR::Emit16(ctx, 0);  // size of section header
-    IR::Emit16(ctx, 0);  // number of section headers
+    IR::Push16(ctx, 56); // size of program header
+    IR::Push16(ctx, 1);  // number of program headers
+    IR::Push16(ctx, 0);  // size of section header
+    IR::Push16(ctx, 0);  // number of section headers
 
-    IR::Emit16(ctx, 0);  // section header string table index (i have no idea what this means)
+    IR::Push16(ctx, 0);  // section header string table index (i have no idea what this means)
 
     
     // --- ELF program table ---
-    IR::Emit32(ctx, 1); // PT_LOAD
-    IR::Emit32(ctx, 7); // PF_X | PF_W | PF_R
-    IR::Emit64(ctx, 0); // segment offset
-    IR::Emit64(ctx, Tmpl::Config::LOAD_ADDR); // vaddr
-    IR::Emit64(ctx, Tmpl::Config::LOAD_ADDR); // paddr (doesn't matter)
+    IR::Push32(ctx, 1); // PT_LOAD
+    IR::Push32(ctx, 7); // PF_X | PF_W | PF_R
+    IR::Push64(ctx, 0); // segment offset
+    IR::Push64(ctx, Tmpl::Config::LOAD_ADDR); // vaddr
+    IR::Push64(ctx, Tmpl::Config::LOAD_ADDR); // paddr (doesn't matter)
 
     // need to be patched
     put ctx.Ctx::Global::PATCH_FILE_SIZE = IR::Addr(ctx);
-    IR::Emit64(ctx, 0);  // file size
+    IR::Push64(ctx, 0);  // file size
     put ctx.Ctx::Global::PATCH_MEM_SIZE  = IR::Addr(ctx);
-    IR::Emit64(ctx, 0);  // mem  size
+    IR::Push64(ctx, 0);  // mem  size
 
-    IR::Emit64(ctx, 4096); // align to page size
+    IR::Push64(ctx, 4096); // align to page size
     
     // --- call stub ---
+
     // mov rbx, main (needs to be patched)
-    IR::EmitREXW(ctx);
-    IR::Emit8(ctx, 187); // B8 + 3 (3 -> rbx)
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 187); // B8 + 3 (3 -> rbx)
     put ctx.Ctx::Global::PATCH_MAIN = IR::Addr(ctx);
-    IR::Emit64(ctx, 0);
+    IR::Push64(ctx, 0);
     // call *rbx
-    IR::Emit8(ctx, 255);
-    IR::Emit8(ctx, 211);
+    IR::Push8(ctx, 255);
+    IR::Push8(ctx, 211);
+
+    // mov rdi, rax
+    // mov rax, 60
+    // syscall
+    IR::PushREXW(ctx); IR::Push8(ctx, 137); IR::Push8(ctx, 199);
+    IR::PushREXW(ctx); IR::Push8(ctx, 199); IR::Push8(ctx, 192); IR::Push32(ctx, 60);
+    IR::Push8(ctx, 15); IR::Push8(ctx, 5);
 
 }
 

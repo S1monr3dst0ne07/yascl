@@ -57,32 +57,32 @@ fn IR::Addr(ctx)
 }
 
 
-fn IR::Emit8(ctx, value)
+fn IR::Push8(ctx, value)
 {
     put output = ctx.Ctx::Global::OUTPUT;
     Dyn::Push(output, value & 255);
 }
-fn IR::EmitREXW(ctx)
+fn IR::PushREXW(ctx)
 {
-    IR::Emit8(ctx, 72); // 0x48
+    IR::Push8(ctx, 72); // 0x48
 }
-fn IR::Emit16(ctx, value)
+fn IR::Push16(ctx, value)
 {
-    IR::Emit8(ctx, value);
-    IR::Emit8(ctx, value >> 8);
+    IR::Push8(ctx, value);
+    IR::Push8(ctx, value >> 8);
 }
-fn IR::Emit32(ctx, value)
+fn IR::Push32(ctx, value)
 {
-    IR::Emit8(ctx, value);
-    IR::Emit8(ctx, value >> 8);
-    IR::Emit8(ctx, value >> 16);
-    IR::Emit8(ctx, value >> 32);
+    IR::Push8(ctx, value);
+    IR::Push8(ctx, value >> 8);
+    IR::Push8(ctx, value >> 16);
+    IR::Push8(ctx, value >> 32);
 }
-fn IR::Emit64(ctx, value)
+fn IR::Push64(ctx, value)
 {
     put i = 0;
     lab loop;
-        IR::Emit8(ctx, value);
+        IR::Push8(ctx, value);
         put value = value >> 8;
         put i = i + 1;
     jump loop ~ i < 8;
@@ -129,27 +129,27 @@ lab asm_ref;
     jump loop;    
 
 lab asm_load_int;
-    IR::EmitREXW(ctx);
-    IR::Emit8(ctx, 184); // B8 + 0 (0 -> rax)
-    IR::Emit64(ctx, arg);
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 184); // B8 + 0 (0 -> rax)
+    IR::Push64(ctx, arg);
     jump loop;
 
 lab asm_store_local;
-    IR::EmitREXW(ctx);
-    IR::Emit8(ctx, 137); // 0x89
-    IR::Emit8(ctx, 133); // 0x85
-    IR::Emit32(ctx, (1 << 32) - arg);
+    IR::PushREXW(ctx);
+    IR::Push8(ctx, 137); // 0x89
+    IR::Push8(ctx, 133); // 0x85
+    IR::Push32(ctx, (1 << 32) - arg);
     jump loop;
 
 lab asm_enter;
-    IR::Emit8(ctx, 200); // 0xC8 -> enter
-    IR::Emit16(ctx, arg); // low byte
-    IR::Emit8(ctx, 0);   // zero-nested
+    IR::Push8(ctx, 200); // 0xC8 -> enter
+    IR::Push16(ctx, arg); // low byte
+    IR::Push8(ctx, 0);   // zero-nested
     jump loop;
 
 lab asm_leave;
-    IR::Emit8(ctx, 201); // 0xC9 -> leave
-    IR::Emit8(ctx, 195); // 0xC3 -> near return
+    IR::Push8(ctx, 201); // 0xC9 -> leave
+    IR::Push8(ctx, 195); // 0xC3 -> near return
     jump loop;
 
 lab done;
