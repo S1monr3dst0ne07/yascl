@@ -82,11 +82,10 @@ fn Ast::FnDef::Compile(node, ctx)
     put frame_size = local_count * Config::WORD_SIZE;
 
     // function entry point
-    IR::Emit(ctx, IR::Op::REF);
     HT::Set(
-        ctx.Ctx::Global::FN_TABLE, // table
-        node.Ast::FnDef::NAME,     // from it's name
-        ctx.Ctx::Global::IR_ITER,  // to   it's node
+        ctx.Ctx::Global::DEF_TABLE, // table
+        node.Ast::FnDef::NAME,      // from it's name
+        IR::Emit(ctx, IR::Op::REF), // to   it's node
     );
 
     IR::Emit(ctx, IR::Op::ENTER, frame_size);

@@ -17,7 +17,8 @@ seq Ctx::Global
     PATCH_FILE_SIZE,
     PATCH_MEM_SIZE,
 
-    FN_TABLE, // HT<Name, IR::Node>
+    DEF_TABLE,  // HT<Name, IR::Node> (function name -> ref node)
+    CALL_TABLE, // Dyn<IR::Node>      (call nodes)
 
     PATHS,   // all included paths, prevent circular import
 
@@ -47,7 +48,8 @@ fn Ctx::MakeGlobal()
     put ctx.Ctx::Global::IR_ITER = ir_root;
     put ctx.Ctx::Global::OUTPUT  = Dyn::Create(); 
 
-    put ctx.Ctx::Global::FN_TABLE = HT::Create();
+    put ctx.Ctx::Global::DEF_TABLE  = HT::Create();
+    put ctx.Ctx::Global::CALL_TABLE = Dyn::Create();
 
     put ctx.Ctx::Global::PATHS   = HT::Create();
 

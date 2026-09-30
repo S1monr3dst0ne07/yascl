@@ -73,6 +73,8 @@ fn IR::Emit(ctx, opcode, arg)
     put new.IR::Node::PREV = iter;
 
     put ctx.Ctx::Global::IR_ITER = new;
+
+    return new;
 }
 
 fn IR::Addr(ctx)

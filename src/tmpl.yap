@@ -96,7 +96,7 @@ fn Tmpl::Finalize(ctx)
     IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MEM_SIZE,  segment_size);
     IR::Patch64(ctx, ctx.Ctx::Global::PATCH_FILE_SIZE, segment_size);
 
-    put main_node = HT::Get(ctx.Ctx::Global::FN_TABLE, "main");
+    put main_node = HT::Get(ctx.Ctx::Global::DEF_TABLE, "main");
     put main_addr = main_node.IR::Node::ADDR; // must be REF node.
     IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MAIN, main_addr);
 }
