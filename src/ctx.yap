@@ -190,7 +190,7 @@ fn Ctx::Output(ctx, path)
     put output = ctx.Ctx::Global::OUTPUT;
 
     // delete file, if exists
-    syscall(SYSCALL::UNLINK, path);
+    syscall(SYSCALL::UNLINK, FS::ConvertPath(path));
 
     // create with all perms
     put fd = syscall(SYSCALL::OPEN
