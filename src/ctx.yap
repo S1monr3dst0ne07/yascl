@@ -204,13 +204,14 @@ fn Ctx::Output(ctx, path)
     put file = Chunk::New(Dyn::Size(output));
     Mem::ToBytes(file, Dyn::Ptr(output), Dyn::Size(output));
     Sys::TryCall(
-        "output",
+        "Compiler Output",
         SYSCALL::WRITE,
         fd,
         file,
         Dyn::Size(output),
     );
 
+    FS::Sys::Close(fd);
     Chunk::Void(file);
 }
 
