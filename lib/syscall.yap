@@ -29,7 +29,8 @@ seq SYSCALL
 
     SETSOCKOPT = 54,
 
-    EXIT = 60,
+    EXECVE = 59,
+    EXIT   = 60,
 
     GETDENTS = 78,
 
