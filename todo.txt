@@ -1,15 +1,16 @@
 
 - compiler
-    -IR
-        - optimization
-        - backend
+    - optimization
+    - dump IR into file
+    - write proper section headers to elf
 
     (-fix seq value expr parsing and comptime eval)
         - this requires global context during parse-time.
         - hence it should require deep restructuring of the entire compiler.
 
-    - fix Lex::Info::PATH use after free
-    - fix zero default return value
+    - untangle call from Ast::Leaf::Call
+
+    - fix new memory leak introduced by backend implementation
 
 - fix time.yap, making bindings for time.h
 
