@@ -4,7 +4,7 @@ use "lib/io.yap"
 
 fn main()
 {
-    IO::OutString("hello world\n");
+    IO::Print("hello world\n");
 }
 
 
