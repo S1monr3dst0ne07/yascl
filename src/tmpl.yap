@@ -101,9 +101,13 @@ fn Tmpl::Header(ctx)
 
 fn Tmpl::Finalize(ctx)
 {
-    put segment_size = IR::Addr(ctx);
-    IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MEM_SIZE,  segment_size);
-    IR::Patch64(ctx, ctx.Ctx::Global::PATCH_FILE_SIZE, segment_size);
+    put segment_size = IR::Addr(ctx) - Tmpl::Config::LOAD_ADDR;
+    put size_diff = ctx.Ctx::Global::STATIC_OFFSET;
+
+    put file_size = segment_size;
+    put mem_size  = segment_size + size_diff;
+    IR::Patch64(ctx, ctx.Ctx::Global::PATCH_FILE_SIZE, file_size);
+    IR::Patch64(ctx, ctx.Ctx::Global::PATCH_MEM_SIZE,  mem_size);
 
     put main_node = HT::Get(ctx.Ctx::Global::DEF_TABLE, "main");
     put main_addr = main_node.IR::Node::ADDR; // must be REF node.
