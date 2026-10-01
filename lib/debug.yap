@@ -10,7 +10,7 @@ fn print(pattern, args)
 {
     static 16384 ~ buffer;
     Str::Format(buffer, pattern, args);
-    IO::OutString(buffer);
+    IO::Print(buffer);
 }
 
 

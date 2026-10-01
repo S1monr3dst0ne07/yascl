@@ -2,27 +2,33 @@
 
 use "lib/syscall.yap"
 
-
-fn IO::OutChar(char)
+seq IO::STD
 {
-    put buffer = " ";
-    put buffer.0 = char;
-
-    syscall(SYSCALL::WRITE, 1, buffer, 1);
+    IN  = 0,
+    OUT = 1,
+    ERR = 2,
 }
 
-fn IO::OutString(str)
+
+fn IO::Write(fd, qstr, len)
 {
-    put i = 0;
-    lab loop;
-        put char = str.i;
-        jump done ~ char == '\0';
+    // syscall are slow anyways.
+    put bstr = Chunk::New(len);
+    Mem::ToBytes(bstr, qstr, len);
+    syscall(SYSCALL::WRITE, fd, bstr, len);
+    Chunk::Void(bstr);
+}
 
-        put i = i + 1;
-        IO::OutChar(char);
+fn IO::Print(str)
+{
+    put len = Str::Len(str);
+    IO::Write(IO::STD::OUT, str, len);
+}
 
-        jump loop;
-    lab done;
+fn IO::Error(str)
+{
+    put len = Str::Len(str);
+    IO::Write(IO::STD::ERR, str, len);
 }
 
 

@@ -4,7 +4,7 @@ use "lib/syscall.yap"
 
 fn Error::Error(msg)
 {
-    IO::OutString(msg);
+    IO::Error(msg);
     syscall(
         SYSCALL::EXIT,
         1,
