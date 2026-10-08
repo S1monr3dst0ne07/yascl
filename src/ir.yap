@@ -178,8 +178,8 @@ fn IR::PushCompare(ctx, cond)
 }
 
 fn IR::PostStatic(ctx, static_nodes)
-    // static patches are keep separate.
-    // they are compute last which allows
+    // static patches are keeped separate.
+    // they are computed last which allows
     // truncation of the binary.
     // this also makes the compiler faster,
     // because it doesn't have to emit megabytes
