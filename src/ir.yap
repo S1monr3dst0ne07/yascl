@@ -57,11 +57,26 @@ seq IR::Op
     SHR, // mov rcx, rbx; shr rax, cl
     SHL, // mov rcx, rbx; shl rax, cl
 
+    // floating point operation.
+    // argument specifies IR::FloatOp.
+    FLOAT, 
+
     INDIRECT_STORE, // mov [rax], rbx
     OFFSET_STORE,   // mov [rbx + arg], rax
 
     SYSCALL,
 }
+
+seq IR::FloatOp
+{
+	ADD,
+	SUB,
+	MUL,
+	DIV,
+	LESSER,
+	GREATER,
+}
+
 
 seq IR::Node
 {
@@ -318,6 +333,8 @@ lab loop;
     jump asm_shr        ~ opcode == IR::Op::SHR;
     jump asm_shl        ~ opcode == IR::Op::SHL;
 
+    jump asm_float      ~ opcode == IR::Op::FLOAT;
+
     Error::PrintError("INTERNAL: Invalid IR opcode %d", [opcode]);
 
 lab asm_ref;
@@ -366,9 +383,6 @@ lab asm_push_aux;
 lab asm_pop_aux;
     IR::Push8(ctx, 91); // 0x5b -> pop rbx
     jump loop;
-
-lab asm_branch;
-
 
 lab asm_call;
     IR::Push8(ctx, 232);
@@ -517,7 +531,10 @@ lab asm_load_static;
     Dyn::Push(static_nodes, iter);
     jump loop;
 
-    
+
+lab asm_float;
+	IR::AsmFloat(ctx, iter);
+	jump loop;
 
 lab done;
     IR::PostPatch (ctx, patch_nodes);  Dyn::Void(patch_nodes);
@@ -525,5 +542,67 @@ lab done;
     Tmpl::Finalize(ctx);
 }
 
+
+
+fn IR::AsmFloat(ctx, iter)
+{
+	// warning! nasty SSE2 stuff ahead.
+    put arg = iter.IR::Node::ARG;
+
+	// mov xmm0, rax
+	IR::Push8(ctx, 102); 
+	IR::PushREXW(ctx);
+	IR::Push8(ctx, 15);
+	IR::Push8(ctx, 110);
+	IR::Push8(ctx, 192);
+
+	// mov xmm1, rbx
+	IR::Push8(ctx, 102); 
+	IR::PushREXW(ctx);
+	IR::Push8(ctx, 15);
+	IR::Push8(ctx, 110);
+	IR::Push8(ctx, 203);
+
+	// common prefix for operations
+	IR::Push8(ctx, 242);
+	IR::Push8(ctx, 15);
+
+	jump asm_add ~ arg == IR::FloatOp::ADD;
+	jump asm_sub ~ arg == IR::FloatOp::SUB;
+	jump asm_mul ~ arg == IR::FloatOp::MUL;
+	jump asm_div ~ arg == IR::FloatOp::DIV;
+	jump asm_cmp ~ arg == IR::FloatOp::LESSER;
+	jump asm_cmp ~ arg == IR::FloatOp::GREATER;
+
+	lab asm_add; IR::Push8(ctx,  88); jump done; // addsd xmm0, xmm1
+	lab asm_sub; IR::Push8(ctx,  92); jump done; // subsd xmm0, xmm1
+	lab asm_mul; IR::Push8(ctx,  89); jump done; // mulsd xmm0, xmm1
+	lab asm_div; IR::Push8(ctx,  94); jump done; // divsd xmm0, xmm1
+	lab asm_cmp; IR::Push8(ctx, 194); jump done; // cmpsd xmm0, xmm1, op
+	lab done;
+
+	// common ModRM: 0xc1
+	//  addr=2 -> direct
+	//  reg=0, r/m=1
+	IR::Push8(ctx, 193);
+
+	// operator suffix for compare 
+	jump op_lt ~ arg == IR::FloatOp::LESSER;
+	jump op_gt ~ arg == IR::FloatOp::GREATER;
+	jump op_done;
+
+	// https://www.felixcloutier.com/x86/cmpsd
+	lab op_lt; IR::Push8(ctx, 1);  jump op_done;
+	lab op_gt; IR::Push8(ctx, 14); jump op_done;
+	lab op_done;
+
+
+	// mov rax, xmm0
+	IR::Push8(ctx, 102); 
+	IR::PushREXW(ctx);
+	IR::Push8(ctx, 15);
+	IR::Push8(ctx, 126);
+	IR::Push8(ctx, 192);
+}
 
 

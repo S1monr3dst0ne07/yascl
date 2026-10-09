@@ -21,6 +21,13 @@ seq Ast::Expr::Op
     SHIFT_RIGHT,
     SHIFT_LEFT,
     MODULO,
+
+    FADD,
+    FSUB,
+    FMUL,
+    FDIV,
+    FLESSER,
+    FGREATER,
 }
 
 
@@ -52,6 +59,14 @@ fn Ast::Expr::OpDecode(op)
 	jump skip_SHIFT_RIGHT 	~ Str::Diff(op, ">>"); return Ast::Expr::Op::SHIFT_RIGHT;   lab skip_SHIFT_RIGHT;
 	jump skip_SHIFT_LEFT 	~ Str::Diff(op, "<<"); return Ast::Expr::Op::SHIFT_LEFT;    lab skip_SHIFT_LEFT;
 	jump skip_MODULO 	    ~ Str::Diff(op, "%");  return Ast::Expr::Op::MODULO;        lab skip_MODULO;
+
+	// float operators
+	jump skip_FADD     ~ Str::Diff(op, "~+"); return Ast::Expr::Op::FADD;     lab skip_FADD;
+	jump skip_FSUB     ~ Str::Diff(op, "~-"); return Ast::Expr::Op::FSUB;     lab skip_FSUB;
+	jump skip_FMUL     ~ Str::Diff(op, "~*"); return Ast::Expr::Op::FMUL;     lab skip_FMUL;
+	jump skip_FDIV     ~ Str::Diff(op, "~/"); return Ast::Expr::Op::FDIV;     lab skip_FDIV;
+	jump skip_FLESSER  ~ Str::Diff(op, "~<"); return Ast::Expr::Op::FLESSER;  lab skip_FLESSER;
+	jump skip_FGREATER ~ Str::Diff(op, "~>"); return Ast::Expr::Op::FGREATER; lab skip_FGREATER;
 
     return Ast::Expr::Op::NONE;
 }
@@ -155,6 +170,14 @@ fn Ast::Expr::Load(node, ctx)
     jump compile_shift_left  ~ op == Ast::Expr::Op::SHIFT_LEFT;
     jump compile_modulo      ~ op == Ast::Expr::Op::MODULO;
 
+    // floating point
+    jump compile_fadd     ~ op == Ast::Expr::Op::FADD;
+    jump compile_fsub     ~ op == Ast::Expr::Op::FSUB;
+    jump compile_fmul     ~ op == Ast::Expr::Op::FMUL;
+    jump compile_fdiv     ~ op == Ast::Expr::Op::FDIV;
+    jump compile_flesser  ~ op == Ast::Expr::Op::FLESSER;
+    jump compile_fgreater ~ op == Ast::Expr::Op::FGREATER;
+
 
     lab compile_add; IR::Emit(ctx, IR::Op::ADD); jump done;
     lab compile_sub; IR::Emit(ctx, IR::Op::SUB); jump done;
@@ -174,6 +197,13 @@ fn Ast::Expr::Load(node, ctx)
     lab compile_xor;            IR::Emit(ctx, IR::Op::XOR); jump done;
     lab compile_shift_right;    IR::Emit(ctx, IR::Op::SHR); jump done;
     lab compile_shift_left;     IR::Emit(ctx, IR::Op::SHL); jump done;
+
+    lab compile_fadd;     IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::ADD);     jump done;
+    lab compile_fsub;     IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::SUB);     jump done;
+    lab compile_fmul;     IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::MUL);     jump done;
+    lab compile_fdiv;     IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::DIV);     jump done;
+    lab compile_flesser;  IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::LESSER);  jump done;
+    lab compile_fgreater; IR::Emit(ctx, IR::Op::FLOAT, IR::FloatOp::GREATER); jump done;
 
 lab only_leaf;
     Ast::Leaf::Load(node.Ast::Expr::LEFT, ctx);
