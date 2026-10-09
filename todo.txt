@@ -10,6 +10,12 @@
 
     - reimplement machine codegen with proper encoding
     - implement hex constants
+    	- rewrite backend
+
+    -native floating point
+
+    -fix slow lexer
+    	- make single char class for "must emit" for e.g. parens and curlies
 
     (-fix seq value expr parsing and comptime eval)
         - this requires global context during parse-time.
@@ -20,6 +26,7 @@
     - fix new memory leak introduced by backend implementation
 
 - fix time.yap, making bindings for time.h
+- implement poll bindings
 
 
 
