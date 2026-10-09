@@ -207,14 +207,16 @@ fn Lex::Tokenize(path)
         put state_comment = state_comment | ((Str::Diff(buffer, "//") == 0) & Bool::Not(state_string));
         put state_string  = state_string  ^ (last == Lex::Kind::DOUBLE_QUOTE);
         put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
-    
 
         // state transition. or must trigger on symbol.
         put transition = (kind != last)
                        | (last == Lex::Kind::BLOCK_OPEN)
                        | (last == Lex::Kind::BLOCK_CLOSE)
                        | (last == Lex::Kind::PAREN_OPEN)
-                       | (last == Lex::Kind::PAREN_CLOSE);
+                       | (last == Lex::Kind::PAREN_CLOSE)
+                       | (last == Lex::Kind::ARRAY_OPEN)
+                       | (last == Lex::Kind::ARRAY_CLOSE);
+
 
         // can emit?
         put unlocked = Bool::Not(state_comment)
