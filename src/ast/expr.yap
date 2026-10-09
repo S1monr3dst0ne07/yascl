@@ -78,6 +78,43 @@ fn Ast::Expr::Parse(stream)
 }
 
 
+fn Ast::Expr::FloatLiteral(node)
+{
+	// EXPERIMENTAL FEATURE
+	// convert to floating point literal
+	// if lhs and rhs of dot operator are
+	// integer literals.
+
+	// check operator
+	jump no ~ (node.Ast::Expr::OP) != Ast::Expr::Op::DOT;
+	put left = node.Ast::Expr::LEFT;
+	put next = node.Ast::Expr::RIGHT;
+
+	// check right hand side
+	jump no ~ (next.Ast::Expr::OP) != Ast::Expr::Op::NONE;
+	put right = next.Ast::Expr::LEFT;
+
+	// check leaf types
+	jump no ~ (left.Ast::Leaf::KIND ) != Ast::Leaf::Kind::NUMBER;
+	jump no ~ (right.Ast::Leaf::KIND) != Ast::Leaf::Kind::NUMBER;
+
+	put real = left.Ast::Leaf::VALUE;
+	put frac = right.Ast::Leaf::VALUE;
+
+	put value = Utils::FloatEncode(real, frac);
+
+	// deallocate right hand size
+	Ast::Expr::Void(next);
+
+	// update with new information
+	put node.Ast::Expr::OP = Ast::Expr::Op::NONE;
+	put left.Ast::Leaf::VALUE = value;
+	put left.Ast::Leaf::KIND  = Ast::Leaf::Kind::NUMBER;
+
+lab no;
+}
+
+
 fn Ast::Expr::Resolve(node, ctx)
 {
     Ast::Leaf::Resolve(node.Ast::Expr::LEFT, ctx);
@@ -85,6 +122,8 @@ fn Ast::Expr::Resolve(node, ctx)
     jump skip_right ~ (node.Ast::Expr::OP) == Ast::Expr::Op::NONE;
         Ast::Expr::Resolve(node.Ast::Expr::RIGHT, ctx);
     lab skip_right;
+
+	Ast::Expr::FloatLiteral(node);
 }
 
 

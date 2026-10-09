@@ -44,3 +44,67 @@ fn Utils::Unescape(content)
         put content.(i-offset) = '\0';
         return content;
 }
+
+
+
+fn Utils::FloatEncode(real, frac)
+{
+	// this routine is no efficient.
+	// it is implemented like this for ease of understanding.
+	// it is NOT intended as a high-performance double parser.
+
+	// the algorithm can be divided into 3 steps:
+	// 1. scale decimal literal to integer, keep track of negative exponent
+	// 2. convert negative base 10 exponent to base 2
+	// 3. normalize and encode floating point number
+
+	// --- step 1 scale decimal ---
+
+	// fine base 10 exponent needed to commondate all
+	// fractional digits.
+	put base10_exp = Str::Len(Str::FromIntBase(frac, 10));
+
+	// compute scaling factor  
+	put base10_factor = 1;
+	put i = 0;
+	lab scale_loop;
+		put base10_factor = base10_factor * 10;
+		put i = i + 1;
+	jump scale_loop ~ i < base10_exp;
+
+	// compute final scaled decimal
+	put base10_value = (real * base10_factor) + frac;
+
+	// --- step 2 convert exponent ---
+
+	// find biggest possbile base 2 exponent,
+	// to reduce error during scaling-down by base 10 factor.
+	put base2_exp = 0;
+	lab find_loop;
+		put base2_exp = base2_exp + 1;
+	jump find_loop ~ ((base10_value << base2_exp) >> 63) == 0;
+
+	// compute corrected base 2 value
+	put base2_value = (base10_value << base2_exp) / base10_factor;
+
+	// --- step 3 normalize and encode ---
+
+	// align number to end of 64 bit register
+	// and cut off leading bit. (ieee does not store the leading bit)
+	lab norm_loop;
+		put msb = base2_value >> 63;
+		put base2_value = base2_value << 1;
+		put base2_exp   = base2_exp + 1;
+	jump norm_loop ~ msb == 0;
+
+	// move into first 52 bits
+	put man = base2_value >> 12;
+	put exp = base2_exp    - 12;
+
+	// invert and bias exponent
+	put exp = 1023 + (52 - exp);
+
+	// assemble final value
+	return (exp << 52) | man;
+}
+
