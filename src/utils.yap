@@ -74,6 +74,7 @@ fn Utils::FloatEncode(real, frac)
 
 	// compute final scaled decimal
 	put base10_value = (real * base10_factor) + frac;
+	jump zero ~ base10_value == 0; // zero is special (just like me Owo)
 
 	// --- step 2 convert exponent ---
 
@@ -106,5 +107,9 @@ fn Utils::FloatEncode(real, frac)
 
 	// assemble final value
 	return (exp << 52) | man;
+
+lab zero;
+	// incidentally (or intentionally idk)
+	return 0;
 }
 
