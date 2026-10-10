@@ -9,10 +9,10 @@ fn main()
     X11::CreateGC(state);
 
 
-    put width  = 400;
-    put height = 400;
+    put width  = 800;
+    put height = 800;
 
-    put win = X11::CreateWindow(state, 200, 200, width*2, height*2);
+    put win = X11::CreateWindow(state, 200, 200, width, height);
     X11::SelectInput(state, win, X11::Mask::EXPOSURE);
     X11::MapWindow(state, win);
 
@@ -32,6 +32,27 @@ fn main()
 
 fn mandel(state, win, iXmax, iYmax)
 {
+	put table = [
+		[66,  30,  15 ],
+		[25,  7,   26 ],
+		[9,   1,   47 ],
+		[4,   4,   73 ],
+		[0,   7,   100],
+		[12,  44,  138],
+		[24,  82,  177],
+		[57,  125, 209],
+		[134, 181, 229],
+		[211, 236, 248],
+		[241, 233, 191],
+		[248, 201, 95 ],
+		[255, 170, 0  ],
+		[204, 128, 0  ],
+		[153, 87,  0  ],
+		[106, 52,  3  ],
+		[0,   0,   0  ],
+	];
+
+
 
     put zoom       = 2.0;
 
@@ -44,7 +65,7 @@ fn mandel(state, win, iXmax, iYmax)
     put PixelWidth  = (CxMax ~- CxMin) ~/ Float::FromInt(iXmax);
     put PixelHeight = (CyMax ~- CyMin) ~/ Float::FromInt(iYmax);
 
-    put IterationMax = 50;
+    put IterationMax = 30;
     put ER2 = 4.0; // 2^2
 
     put iY = 0;
@@ -73,12 +94,14 @@ fn mandel(state, win, iXmax, iYmax)
                 jump iter_loop;
             lab iter_done;
 
+            put i = Iteration & 15;
+            jump black ~ Iteration != IterationMax; put i = 16; lab black;
 
-            put col = (Iteration * 255) / IterationMax;
-            X11::DrawPixel(state, win, iX,       iY,       0,   col, col);
-            X11::DrawPixel(state, win, iX+iXmax, iY,       col, 0,   col);
-            X11::DrawPixel(state, win, iX,       iY+iYmax, col, col, 0  );
-            X11::DrawPixel(state, win, iX+iXmax, iY+iYmax, col, col, col);
+            put entry = table.i;
+            X11::DrawPixel(state, win, iX, iY,
+            	entry.2, entry.1, entry.0,
+           	);
+
 
             put iX = iX + 1;
         jump x_loop ~ iX < iXmax;
