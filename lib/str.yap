@@ -2,7 +2,7 @@
 
 use "lib/mem.yap"
 use "lib/chunk.yap"
-
+use "lib/float.yap"
 
 fn Str::Len(str)
 {
@@ -138,6 +138,7 @@ fn Str::Format(buffer, pattern, args)
         jump digits ~ char == 'd';
         jump binary ~ char == 'b';
         jump string ~ char == 's';
+        jump float  ~ char == 'f';
         jump loop;
 
     lab digits;
@@ -155,6 +156,11 @@ fn Str::Format(buffer, pattern, args)
         put args = args : 1;
         jump handle_subbuffer;
 
+    lab float;
+    	// TODO: implemented dynamic digits
+    	put subbuffer = Float::ToStr(args.0, 6);
+    	put args = args : 1;
+    	jump handle_subbuffer;
 
     lab handle_subbuffer;
         put len = Str::Len(subbuffer);
