@@ -30,6 +30,9 @@
 
     - fix new memory leak introduced by backend implementation
 
+    - fix bootstrap compiler
+    - fix prg/mandel-ascii.yap
+
 - fix time.yap, making bindings for time.h
 - implement poll bindings
 
