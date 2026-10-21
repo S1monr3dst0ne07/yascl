@@ -54,7 +54,7 @@ fn Ast::Prog::Parse(stream, ctx)
 
         print("using: %s\n", [path]);
 
-        HT::Set(path_pool, path, Bool::TRUE);
+        HT::Set(path_pool, path, path);
         put subprog = Ast::Prog::File(path, ctx);
         Dyn::Merge(fns, subprog.Ast::Prog::FNS);
 

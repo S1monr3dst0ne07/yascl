@@ -182,14 +182,24 @@ fn Ctx::VoidLocal(local_ctx)
     Chunk::Void(local_ctx);
 }
 
+fn Ctx::VoidPaths(paths)
+{
+	put iter = HT::MakeIter(paths);
+	lab loop;
+		jump done ~ Bool::Not(HT::Next(iter));
+		Chunk::Void(iter.HT::Iter::VALUE);
+		jump loop;
+	lab done;
+}
+
 fn Ctx::VoidGlobal(ctx)
 {
 	IR::Void(ctx);
 
-	HT::Void(ctx.Ctx::Global::PATHS);
-	HT::Void(ctx.Ctx::Global::CONSTS);
-	HT::Void(ctx.Ctx::Global::DEF_TABLE);
-	Dyn::Void(ctx.Ctx::Global::CALL_TABLE);
+	Ctx::VoidPaths(ctx.Ctx::Global::PATHS     );
+ 	 HT::Void     (ctx.Ctx::Global::CONSTS    );
+	 HT::Void     (ctx.Ctx::Global::DEF_TABLE );
+	Dyn::Void     (ctx.Ctx::Global::CALL_TABLE);
 
     Chunk::Void(ctx);
 }
