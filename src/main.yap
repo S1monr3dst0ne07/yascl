@@ -25,13 +25,14 @@ fn cmdline(argc, argv)
     static Options ~ opt;
 
     put opt.Options::SOURCE = Args::Read(argv.1);
-    put opt.Options::OUTPUT = "/tmp/a.out";
+    put opt.Options::OUTPUT = Str::Copy("/tmp/a.out");
     put opt.Options::RUN    = Bool::TRUE;
 
     jump have_output_path ~ argc > 2;
     return opt;
 
 lab have_output_path;
+	Chunk::Void(opt.Options::OUTPUT);
     put opt.Options::OUTPUT = Args::Read(argv.2);
     put opt.Options::RUN    = Bool::FALSE;
     return opt;
@@ -63,24 +64,28 @@ fn main(argc, argv)
 {
     put opt = cmdline(argc, argv);
 
-    put ctx = Ctx::MakeGlobal();
+    //put ctx = Ctx::MakeGlobal();
 
-    put root = Ast::Prog::File(opt.Options::SOURCE, ctx);
-    Ast::Prog::Resolve(root, ctx);
+    //put root = Ast::Prog::File(opt.Options::SOURCE, ctx);
+    //Ast::Prog::Resolve(root, ctx);
     
-    Ast::Prog::Compile(root, ctx);
-    Ctx::LinkGlobal(ctx);
-    IR::Asm(ctx);
+    //Ast::Prog::Compile(root, ctx);
+    //Ctx::LinkGlobal(ctx);
+    //IR::Asm(ctx);
 
     print("Compilation successful\n");
 
-    Ctx::Output(ctx, opt.Options::OUTPUT);
+    //Ctx::Output(ctx, opt.Options::OUTPUT);
 
+    //Ast::Prog::Void(root);
+    //Ctx::VoidGlobal(ctx);
+    Chunk::Void(opt.Options::SOURCE);
+    Chunk::Void(opt.Options::OUTPUT);
 
     //dump_ht("consts.txt", "%s: %d\n", ctx.Ctx::Global::CONSTS);
-    //dump_heap("core");
+    dump_heap("core");
 
-    maybe_run(opt);
+    //maybe_run(opt);
 }
 
 
