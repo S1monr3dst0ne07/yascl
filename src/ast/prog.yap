@@ -47,11 +47,11 @@ fn Ast::Prog::Parse(stream, ctx)
     lab use;
         Lex::Expect(stream, "use");
         put path_token = Lex::PopCheck(stream, Lex::Kind::DOUBLE_QUOTE);
-        put path = Str::Copy(path_token);
         
         put path_pool = ctx.Ctx::Global::PATHS;
-        jump loop ~ HT::Has(path_pool, path);
+        jump loop ~ HT::Has(path_pool, path_token);
 
+        put path = Str::Copy(path_token);
         print("using: %s\n", [path]);
 
         HT::Set(path_pool, path, path);
