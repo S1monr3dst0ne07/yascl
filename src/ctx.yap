@@ -175,6 +175,9 @@ fn Ctx::VarExists(ctx, name)
 
 fn Ctx::VoidLocal(local_ctx)
 {
+	HT::Void (local_ctx.Ctx::Local::LAB_TABLE);
+	Dyn::Void(local_ctx.Ctx::Local::JMP_TABLE);
+
     HT::Void(local_ctx.Ctx::Local::VARS);
     Chunk::Void(local_ctx);
 }
