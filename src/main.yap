@@ -64,28 +64,28 @@ fn main(argc, argv)
 {
     put opt = cmdline(argc, argv);
 
-    //put ctx = Ctx::MakeGlobal();
+    put ctx = Ctx::MakeGlobal();
 
-    //put root = Ast::Prog::File(opt.Options::SOURCE, ctx);
-    //Ast::Prog::Resolve(root, ctx);
+    put root = Ast::Prog::File(opt.Options::SOURCE, ctx);
+    Ast::Prog::Resolve(root, ctx);
     
-    //Ast::Prog::Compile(root, ctx);
-    //Ctx::LinkGlobal(ctx);
-    //IR::Asm(ctx);
+    Ast::Prog::Compile(root, ctx);
+    Ctx::LinkGlobal(ctx);
+    IR::Asm(ctx);
 
     print("Compilation successful\n");
 
-    //Ctx::Output(ctx, opt.Options::OUTPUT);
+    Ctx::Output(ctx, opt.Options::OUTPUT);
 
-    //Ast::Prog::Void(root);
-    //Ctx::VoidGlobal(ctx);
+    Ast::Prog::Void(root);
+    Ctx::VoidGlobal(ctx);
     Chunk::Void(opt.Options::SOURCE);
     Chunk::Void(opt.Options::OUTPUT);
 
     //dump_ht("consts.txt", "%s: %d\n", ctx.Ctx::Global::CONSTS);
     dump_heap("core");
 
-    //maybe_run(opt);
+    maybe_run(opt);
 }
 
 
