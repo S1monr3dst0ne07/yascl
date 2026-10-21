@@ -113,6 +113,24 @@ fn IR::Emit(ctx, opcode, arg)
     return new;
 }
 
+fn IR::Void(ctx)
+{
+	// void ir node chain
+	put iter = ctx.Ctx::Global::IR_ROOT;
+	lab loop;
+		jump done ~ iter == Mem::NULL;
+		put next = iter.IR::Node::NEXT;
+
+		Chunk::Void(iter);
+
+		put iter = next;
+		jump loop;
+	lab done;
+
+	// void output byte buffer
+	Dyn::Void(ctx.Ctx::Global::OUTPUT);
+}
+
 fn IR::Addr(ctx)
 {
     put output = ctx.Ctx::Global::OUTPUT;
