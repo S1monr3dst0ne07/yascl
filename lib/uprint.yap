@@ -9,7 +9,7 @@ fn Uprint::PutChar(char)
     put buffer = " ";
     put buffer.0 = char;
 
-    syscall(SYSCALL::WRITE, 1, buffer, 1);
+    syscall(1, 1, buffer, 1);
 }
 
 fn Uprint::Print(str)
