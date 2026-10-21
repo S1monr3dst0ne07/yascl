@@ -28,8 +28,6 @@
 
     - untangle call from Ast::Leaf::Call
 
-    - fix new memory leak introduced by backend implementation
-
     - fix bootstrap compiler
     - fix prg/mandel-ascii.yap
 
