@@ -83,7 +83,7 @@ fn main(argc, argv)
     Chunk::Void(opt.Options::OUTPUT);
 
     //dump_ht("consts.txt", "%s: %d\n", ctx.Ctx::Global::CONSTS);
-    dump_heap("core");
+    //dump_heap("core");
 
     maybe_run(opt);
 }
