@@ -149,7 +149,7 @@ fn Ctx::VarAlloc(ctx, name)
 
     // compute address and increment allocation counter.
     // needs to be pre-inc'd because rbp-addr
-    // runs in revserve.
+    // runs in reverse.
     put allocer = (local.Ctx::Local::ALLOCER) + 1;
     put addr = allocer * Config::WORD_SIZE;
     put local.Ctx::Local::ALLOCER = allocer;
@@ -181,7 +181,13 @@ fn Ctx::VoidLocal(local_ctx)
 
 fn Ctx::VoidGlobal(ctx)
 {
-    // TODO: reimplement this, when done with backend
+	IR::Void(ctx);
+
+	HT::Void(ctx.Ctx::Global::PATHS);
+	HT::Void(ctx.Ctx::Global::CONSTS);
+	HT::Void(ctx.Ctx::Global::DEF_TABLE);
+	Dyn::Void(ctx.Ctx::Global::CALL_TABLE);
+
     Chunk::Void(ctx);
 }
 
