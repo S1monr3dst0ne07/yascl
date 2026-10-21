@@ -190,6 +190,8 @@ fn Ctx::VoidPaths(paths)
 		Chunk::Void(iter.HT::Iter::VALUE);
 		jump loop;
 	lab done;
+
+	HT::Void(paths);
 }
 
 fn Ctx::VoidGlobal(ctx)
