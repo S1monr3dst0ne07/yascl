@@ -94,7 +94,7 @@ lab generic_error;
         Sys::ErrorMsg(status),
     ]);
 lab not_readable;
-    Error::PrintError("No file `%s` is not readable", [path]);
+    Error::PrintError("File `%s` is not readable", [path]);
 
 lab good;
     put mode = (stat + FS::Struct::Stat::MODE).0;
