@@ -4,16 +4,11 @@
     - dump IR into file
     - write proper section headers to elf
 
+    - implement hex constants
+    	- refactor backend
+
     (
     	(it's kinda good enough)
-		- improve int operation codegen
-			- REX.W <opcode> <modrm> (r/m -> rax, reg -> rbx)
-			- this is the common case for operations like add/sub/bitwise/compare/etc.
-	    - reimplement machine codegen with proper encoding
-	    - implement hex constants
-	    	- rewrite backend
-
-
 	    ( 
 	        - this requires global context during parse-time.
 	        - hence it should require deep restructuring of the entire compiler.
@@ -27,9 +22,13 @@
     	- refactor token to be linked list
 
     - untangle call from Ast::Leaf::Call
+    - make separate linker and assembler
+    	file from ir.yap
 
     - fix bootstrap compiler
     - fix prg/mandel-ascii.yap
+
+    -fix compiler segfault on unclosed function call
 
 - fix time.yap, making bindings for time.h
 - implement poll bindings
