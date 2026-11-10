@@ -30,8 +30,10 @@
 
     -fix compiler segfault on unclosed function call
 
-- fix time.yap, making bindings for time.h
-- implement poll bindings
+	- operator precedence
 
-
-
+- stdlib
+	- percent symbol in format string
+	- implemented Float::Abs
+	- fix time.yap, making bindings for time.h
+	- implement poll bindings
