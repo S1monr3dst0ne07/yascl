@@ -105,3 +105,23 @@ fn Float::ToStr(float, prec)
 }
 
 
+
+fn Float::BabSqrtIter(x, n)
+	// assuming n > 0
+{
+	put r = 1.0;
+	lab loop;
+		put r = (r ~+ (x ~/ r)) ~/ (2.0);
+		
+		put n = n - 1;
+	jump loop ~ n;
+
+	return r;
+}
+
+fn Float::BabSqrt(x)
+{
+	return Float::BabSqrtIter(x, 10);
+}
+
+
