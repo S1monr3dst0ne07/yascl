@@ -73,6 +73,12 @@ fn Float::ToStr(float, prec)
 {
 	put output = AStr::Create();
 
+	// sign
+	jump positive ~ (float & (1 << 63)) == 0;
+	AStr::AppendChar(output, '-');
+
+	lab positive;
+
 	// real part
 	AStr::AppendStr(
 		output
