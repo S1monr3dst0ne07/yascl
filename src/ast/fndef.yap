@@ -13,6 +13,7 @@ seq Ast::FnDef
     NAME,   // Str
     PARAMS, // Dyn<Str>
     BODY,   // Ast::Block
+    INFO,   // Lex::Info
 }
 
 
@@ -25,6 +26,7 @@ fn Ast::FnDef::Parse(stream)
     put node = Chunk::New(Ast::FnDef);
     
     Lex::Expect(stream, "fn");
+    put node.Ast::FnDef::INFO = Lex::Info(stream);
     put node.Ast::FnDef::NAME = Str::Copy(Lex::PopCheck(stream, Lex::Kind::IDEN));
     Lex::Expect(stream, "(");
 
@@ -79,6 +81,12 @@ fn Ast::FnDef::Compile(node, ctx)
     put local_count = (local_ctx.Ctx::Local::VARS).HT::LENGTH;
     put frame_size = local_count * Config::WORD_SIZE;
 
+	// check if function has already been defined
+	jump error_fn_alread_defined ~ HT::Has(
+		ctx.Ctx::Global::DEF_TABLE,
+		node.Ast::FnDef::NAME,
+	);
+
     // function entry point
     HT::Set(
         ctx.Ctx::Global::DEF_TABLE, // table
@@ -91,8 +99,8 @@ fn Ast::FnDef::Compile(node, ctx)
     // populate parameter variables.
     put params = node.Ast::FnDef::PARAMS;
     put i = 0;
-    lab loop;
-        jump done ~ i == Dyn::Size(params);
+    lab param_loop;
+        jump param_done ~ i == Dyn::Size(params);
 
         put param_name = Dyn::Ptr(params).i;
         put param_addr = Ctx::VarLookup(ctx, param_name);
@@ -100,8 +108,8 @@ fn Ast::FnDef::Compile(node, ctx)
         IR::Emit(ctx, IR::Op::STORE_LOCAL, param_addr);
         
         put i = i + 1;
-        jump loop;
-    lab done;
+        jump param_loop;
+    lab param_done;
         
     // body
     Ast::Block::Compile(node.Ast::FnDef::BODY, ctx);
@@ -116,6 +124,16 @@ fn Ast::FnDef::Compile(node, ctx)
     // void subctx, restore superctx
     Ctx::VoidLocal(local_ctx);
     put ctx.Ctx::Global::LOCAL = local_super_ctx;
+
+    jump done;
+lab error_fn_alread_defined;
+	Error::LexError(
+		node.Ast::FnDef::INFO,
+		"Function `%s` has already been defined",
+		[node.Ast::FnDef::NAME],
+	);
+
+lab done;
 }
 
 
@@ -156,6 +174,7 @@ fn Ast::FnDef::Void(node)
     lab done;
     
     Dyn::Void(node.Ast::FnDef::PARAMS);
+    Lex::VoidInfo(node.Ast::FnDef::INFO);
     Chunk::Void(node.Ast::FnDef::NAME);
     Ast::Block::Void(node.Ast::FnDef::BODY);
     Chunk::Void(node);
