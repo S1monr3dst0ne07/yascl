@@ -151,6 +151,12 @@ fn Float::FastSqrt(x)
 	// and perform exponent halving by bitshift
 	// = (x >> 1) + (1023 << 51)
 
+	// note: 
+	//  phy_man >> 1 is the same as doing (man + 1) / 2, 
+	//  which is a good approximation of sqrt(man) in
+	//  the image interval of [1, 1.414).
+	//  this further aids the precision of the algorithm.
+
 	// pure dark magic. also known as math.
 	put t = (x >> 1) + Float::FastSqrt::MAGIC;
 	
