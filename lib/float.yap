@@ -111,7 +111,7 @@ fn Float::BabSqrtIter(x, n)
 {
 	put r = 1.0;
 	lab loop;
-		put r = (r ~+ (x ~/ r)) ~/ (2.0);
+		put r = (r ~+ (x ~/ r)) ~* (0.5);
 		
 		put n = n - 1;
 	jump loop ~ n;
@@ -122,6 +122,49 @@ fn Float::BabSqrtIter(x, n)
 fn Float::BabSqrt(x)
 {
 	return Float::BabSqrtIter(x, 10);
+}
+
+
+seq Float::FastSqrt
+{
+	MAGIC = 2303591209400008704,
+}
+
+fn Float::FastSqrt(x)
+{
+	// the mantissa must be in the interal [1,2).
+	// given that the square root function is monotonic,
+	// the image of the mantissa must be 
+	// 		[√1, √2) =~ [1, 1.414)
+	// this interval is small enough to be recovered by newton-raphson.
+	// hence we can ignore the mantissa for now.
+
+	// now consider the remaining work.
+	// let b be the exponent bias
+	// and m be the physical mantissa bit count.
+	// then exp = (x >> m) - b
+	//   sqrt(x)                       | by halving of exponent
+	// = (((x >> m) - b) / 2 + b) << m | distribute outer bitshift
+	// = (x - (b << m)) / 2 + (b << m) | distribute halving
+	// = x/2 + (b << (m - 1))
+	// now substitude b=1023 and m=52 according to IEEE 754.
+	// and perform exponent halving by bitshift
+	// = (x >> 1) + (1023 << 51)
+
+	// pure dark magic. also known as math.
+	put t = (x >> 1) + Float::FastSqrt::MAGIC;
+	
+	// newton-raphson refinement.
+	put t = (t ~+ (x ~/ t)) ~* (0.5);
+
+	return t;
+}
+
+fn Float::Sqrt(x)
+{
+	// default square root.
+	// change algorithm here.
+	return Float::FastSqrt(x);
 }
 
 
