@@ -34,6 +34,9 @@
 
 - stdlib
 	- percent symbol in format string
-	- implemented Float::Abs
+	- implement Float::{Abs, Neg}
+	- implement Random library
+	- implement Term terminal library
+		- SetCursor, SetColor, etc.
 	- fix time.yap, making bindings for time.h
 	- implement poll bindings
