@@ -3,6 +3,8 @@
 #include <asm/stat.h>
 #include <asm/fcntl.h>
 #include <asm/errno.h>
+#include <asm/ioctls.h>
+#include <asm/termios.h>
 #include <linux/fs.h>
 #include <linux/poll.h>
 
@@ -126,6 +128,26 @@ seq Poll::Event
 	POLLOUT = `POLLOUT`,
 }
 
+
+
+seq TermCtl::Op
+{
+	GETS = `TCGETS`,
+	SETS = `TCSETS`,
+}
+seq TermCtl::Termios
+{
+	IFLAG = `offsetof(struct termios, c_iflag)`,
+	OFLAG = `offsetof(struct termios, c_oflag)`,
+	CFLAG = `offsetof(struct termios, c_cflag)`,
+	LFLAG = `offsetof(struct termios, c_lflag)`,
+	LINE  = `offsetof(struct termios, c_line)`,
+	CC    = `offsetof(struct termios, c_cc)`,
+}
+seq TermCtl::Termios::Flags
+{
+	ICANON = `ICANON`,
+}
 
 
 seq Sys::Errno

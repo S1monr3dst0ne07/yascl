@@ -17,6 +17,8 @@ seq SYSCALL
 
     BRK = 12,
 
+    IOCTL = 16,
+
     NANOSLEEP = 35,
 
     SOCKET  = 41,
