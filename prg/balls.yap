@@ -122,11 +122,6 @@ fn alt_screen_end()
     print_escape("[?1049l");
 }
 
-fn abs(f)
-{
-    return f & ((0 - 1) >> 1);
-}
-
 fn fadd_ball_field(ball, field, delta)
 {
 	put ball.field = (ball.field) ~+ delta;
@@ -154,21 +149,21 @@ fn coll_two_balls(b1, b2)
     put cx = c ~* dx;
     put cy = c ~* dy;
 
-	fadd_ball_field(b1, Ball::VX, neg(cx));
-	fadd_ball_field(b2, Ball::VX,     cx );
+	fadd_ball_field(b1, Ball::VX, Float::Neg(cx));
+	fadd_ball_field(b2, Ball::VX,            cx );
 
-	fadd_ball_field(b1, Ball::VY, neg(cy));
-	fadd_ball_field(b2, Ball::VY,     cy );
+	fadd_ball_field(b1, Ball::VY, Float::Neg(cy));
+	fadd_ball_field(b2, Ball::VY,            cy );
 
     put correction = overlap ~* (0.501);
     put dx = (dx ~/ dist) ~* correction;
     put dy = (dy ~/ dist) ~* correction;
 
-	fadd_ball_field(b1, Ball::PX,     dx);
-	fadd_ball_field(b2, Ball::PX, neg(dx));
+	fadd_ball_field(b1, Ball::PX,            dx );
+	fadd_ball_field(b2, Ball::PX, Float::Neg(dx));
 
-	fadd_ball_field(b1, Ball::PY,     dy);
-	fadd_ball_field(b2, Ball::PY, neg(dy));
+	fadd_ball_field(b1, Ball::PY,            dy );
+	fadd_ball_field(b2, Ball::PY, Float::Neg(dy));
 
     lab end;
 }
@@ -209,11 +204,6 @@ fn clamp(x, min, max)
 		lab smaller_max;
 
 	return x;
-}
-
-fn neg(x)
-{
-	return x ^ (1 << 63);
 }
 
 fn update(balls, delta_time)
@@ -263,10 +253,10 @@ fn update(balls, delta_time)
 		put damping = 0.9;
 
 		jump x_no_coll ~ x_no_diff;
-			put vx = neg(vx) ~* damping;
+			put vx = Float::Neg(vx) ~* damping;
 			lab x_no_coll;
 		jump y_no_coll ~ y_no_diff;
-			put vy = neg(vy) ~* damping;
+			put vy = Float::Neg(vy) ~* damping;
 			lab y_no_coll;
 
 		// write back velocities

@@ -53,6 +53,17 @@ fn Float::ToSigned(float)
 }
 
 
+fn Float::Abs(float)
+{
+	return float & ((1 << 63) - 1);
+}
+fn Float::Neg(float)
+{
+	return float ^ (1 << 63);
+}
+
+
+
 fn Float::IntPow(base, power)
 {
 	jump pos ~ (power >> 63) == 0;

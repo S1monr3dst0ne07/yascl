@@ -36,7 +36,6 @@
 		- automatic namespacing (file based?) "Also one thing I'd like to have just for QOL would be file scope name spaces, just so I don't have to keep writing Name1::Name2::Value thing in the same file all the time. Let me know what you think."
 
 - stdlib
-	- implement Float::{Abs, Neg}
 	- implement Random library
 	- implement Term terminal library
 		- SetCursor, SetColor, etc.
