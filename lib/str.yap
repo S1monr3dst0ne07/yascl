@@ -135,12 +135,18 @@ fn Str::Format(buffer, pattern, args)
     lab special;
         put char = pattern.0; put pattern = pattern : 1;
 
+        jump perc   ~ char == '%';
         jump digits ~ char == 'd';
         jump char   ~ char == 'c';
         jump binary ~ char == 'b';
         jump string ~ char == 's';
         jump float  ~ char == 'f';
         jump loop;
+
+    lab perc;
+    	put buffer.0 = char;
+    	put buffer = buffer : 1;
+    	jump loop;
 
     lab digits;
         put subbuffer = Str::FromIntBase(args.0, 10);
