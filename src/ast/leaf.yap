@@ -80,9 +80,11 @@ lab array;
     put elems = Dyn::Create();
     
     lab array_loop;
-        jump array_done ~ (Lex::Peek(stream).0) == ']';
+        jump array_done ~ Lex::Test(stream, "]", Lex::Kind::PAREN);
+
         Dyn::Push(elems, Ast::Expr::Parse(stream));
-        jump array_loop ~ (Lex::Peek(stream).0) != ',';
+
+        jump array_loop ~ Lex::TestNeg(stream, ",", Lex::Kind::SYMBOL);
         Lex::Expect(stream, ",");
         jump array_loop;
     lab array_done;
@@ -114,12 +116,11 @@ lab call;
     put params = Dyn::Create();
     
     lab call_loop;
-        put tok = Lex::PeekTok(stream);
-        jump call_done ~ (tok.Lex::Token::KIND) == Lex::Kind::PAREN_CLOSE;
+        jump call_done ~ Lex::Test(stream, ")", Lex::Kind::PAREN);
         Dyn::Push(params, Ast::Expr::Parse(stream));
         
-        jump call_loop ~ (Lex::Peek(stream).0) != ',';
-        Lex::Expect(stream, ",");
+        jump call_loop ~ Lex::TestNeg(stream, ",", Lex::Kind::SYMBOL);
+	        Lex::Expect(stream, ",");
         jump call_loop;
     lab call_done;
 

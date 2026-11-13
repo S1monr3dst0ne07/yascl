@@ -9,14 +9,9 @@ use "src/error.yap"
 
 seq Lex::Kind
 {
-    NONE, // initial fsm state
+    NONE,  // initial fsm state
     IDEN,
-    BLOCK_OPEN,
-    BLOCK_CLOSE,
-    PAREN_OPEN,
-    PAREN_CLOSE,
-    ARRAY_OPEN,
-    ARRAY_CLOSE,
+    PAREN, // any kind of parenthesis
     END_OF_STATEMENT,
     DOUBLE_QUOTE,
     SINGLE_QUOTE,
@@ -26,19 +21,14 @@ seq Lex::Kind
 
 fn Lex::DecodeKind(kind)
 {
-	jump skip_NONE 	        	~ kind != Lex::Kind::NONE;              return "<NONE>"; lab skip_NONE ;
-	jump skip_IDEN	        	~ kind != Lex::Kind::IDEN;              return "identifier"; lab skip_IDEN;
-	jump skip_BLOCK_OPEN		~ kind != Lex::Kind::BLOCK_OPEN;        return "{"; lab skip_BLOCK_OPEN;
-	jump skip_BLOCK_CLOSE		~ kind != Lex::Kind::BLOCK_CLOSE;       return "}"; lab skip_BLOCK_CLOSE;
-	jump skip_PAREN_OPEN		~ kind != Lex::Kind::PAREN_OPEN;        return "("; lab skip_PAREN_OPEN;
-	jump skip_PAREN_CLOSE		~ kind != Lex::Kind::PAREN_CLOSE;       return ")"; lab skip_PAREN_CLOSE;
-	jump skip_ARRAY_OPEN		~ kind != Lex::Kind::ARRAY_OPEN;        return "["; lab skip_ARRAY_OPEN;
-	jump skip_ARRAY_CLOSE		~ kind != Lex::Kind::ARRAY_CLOSE;       return "]"; lab skip_ARRAY_CLOSE;
-	jump skip_END_OF_STATEMENT	~ kind != Lex::Kind::END_OF_STATEMENT;  return ";"; lab skip_END_OF_STATEMENT;
-	jump skip_DOUBLE_QUOTE	    ~ kind != Lex::Kind::DOUBLE_QUOTE;      return "string"; lab skip_DOUBLE_QUOTE;
+	jump skip_NONE 	        	~ kind != Lex::Kind::NONE;              return "none"; 				lab skip_NONE;
+	jump skip_IDEN	        	~ kind != Lex::Kind::IDEN;              return "identifier"; 		lab skip_IDEN;
+	jump skip_PAREN             ~ kind != Lex::Kind::PAREN;             return "parenthesis"; 		lab skip_PAREN;
+	jump skip_END_OF_STATEMENT	~ kind != Lex::Kind::END_OF_STATEMENT;  return "semicolon"; 		lab skip_END_OF_STATEMENT;
+	jump skip_DOUBLE_QUOTE	    ~ kind != Lex::Kind::DOUBLE_QUOTE;      return "string"; 			lab skip_DOUBLE_QUOTE;
 	jump skip_SINGLE_QUOTE	    ~ kind != Lex::Kind::SINGLE_QUOTE;      return "character literal"; lab skip_SINGLE_QUOTE;
-	jump skip_FORMAT	        ~ kind != Lex::Kind::FORMAT;            return "formatting"; lab skip_FORMAT;
-	jump skip_SYMBOL	        ~ kind != Lex::Kind::SYMBOL;            return "symbol"; lab skip_SYMBOL;
+	jump skip_FORMAT	        ~ kind != Lex::Kind::FORMAT;            return "formatting"; 		lab skip_FORMAT;
+	jump skip_SYMBOL	        ~ kind != Lex::Kind::SYMBOL;            return "symbol"; 			lab skip_SYMBOL;
 }
 
 
@@ -52,14 +42,12 @@ fn Lex::Get(char)
     jump iden ~ char == '_';
     jump iden ~ char == ':';
 
-    jump block_open  ~ char == '{';
-    jump block_close ~ char == '}';
-
-    jump paren_open  ~ char == '(';
-    jump paren_close ~ char == ')';
-
-    jump array_open  ~ char == '[';
-    jump array_close ~ char == ']';
+    jump paren ~ char == '{';
+    jump paren ~ char == '}';
+    jump paren ~ char == '(';
+    jump paren ~ char == ')';
+    jump paren ~ char == '[';
+    jump paren ~ char == ']';
 
     jump end_of_statement ~ char == ';';
     jump double_quote     ~ char == 34; // double quote
@@ -73,12 +61,7 @@ fn Lex::Get(char)
     
 
     lab iden;               return Lex::Kind::IDEN;
-    lab block_open;         return Lex::Kind::BLOCK_OPEN;
-    lab block_close;        return Lex::Kind::BLOCK_CLOSE;
-    lab paren_open;         return Lex::Kind::PAREN_OPEN;
-    lab paren_close;        return Lex::Kind::PAREN_CLOSE;
-    lab array_open;         return Lex::Kind::ARRAY_OPEN;
-    lab array_close;        return Lex::Kind::ARRAY_CLOSE;
+    lab paren;				return Lex::Kind::PAREN;
     lab end_of_statement;   return Lex::Kind::END_OF_STATEMENT;
     lab double_quote;       return Lex::Kind::DOUBLE_QUOTE;
     lab single_quote;       return Lex::Kind::SINGLE_QUOTE;
@@ -153,6 +136,21 @@ fn Lex::Info(stream)
     return copy;
 }
 
+fn Lex::Test(stream, content, kind)
+{
+	put token = Lex::PeekTok(stream);
+	jump fail ~ (token.Lex::Token::KIND) != kind;
+	jump fail ~ Str::Diff(token.Lex::Token::CONTENT, content);
+
+	return Bool::TRUE;
+lab fail;
+	return Bool::FALSE;
+}
+fn Lex::TestNeg(stream, content, kind)
+{
+	return Bool::Not(Lex::Test(stream, content, kind));
+}
+
 fn Lex::PopCheck(stream, kind)
 {
     put token = Lex::PopTok(stream);
@@ -207,14 +205,7 @@ fn Lex::Tokenize(path)
         put state_char    = state_char    ^ (last == Lex::Kind::SINGLE_QUOTE);
 
         // state transition. or must trigger on symbol.
-        put transition = (kind != last)
-                       | (last == Lex::Kind::BLOCK_OPEN)
-                       | (last == Lex::Kind::BLOCK_CLOSE)
-                       | (last == Lex::Kind::PAREN_OPEN)
-                       | (last == Lex::Kind::PAREN_CLOSE)
-                       | (last == Lex::Kind::ARRAY_OPEN)
-                       | (last == Lex::Kind::ARRAY_CLOSE);
-
+        put transition = (kind != last) | (last == Lex::Kind::PAREN);
 
         // can emit?
         put unlocked = Bool::Not(state_comment)

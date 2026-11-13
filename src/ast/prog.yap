@@ -123,10 +123,11 @@ fn Ast::Prog::ParseSeq(stream, ctx)
 
     put i = 0;
     lab loop;
-        jump done ~ (Lex::Peek(stream).0) == '}';
+        jump done ~ Lex::Test(stream, "}", Lex::Kind::PAREN);
+
         put field = Lex::PopCheck(stream, Lex::Kind::IDEN);
 
-        jump skip_assign ~ (Lex::Peek(stream).0) != '=';
+        jump skip_assign ~ Lex::TestNeg(stream, "=", Lex::Kind::SYMBOL);
             Lex::Expect(stream, "=");
             put i = Str::ToInt(Lex::Pop(stream));
         lab skip_assign;
@@ -135,7 +136,8 @@ fn Ast::Prog::ParseSeq(stream, ctx)
         HT::Set(ctx.Ctx::Global::CONSTS, iden, i);
         put i = i + 1;
         
-        jump loop ~ (Lex::Peek(stream).0) != ',';
+        jump loop ~ Lex::TestNeg(stream, ",", Lex::Kind::SYMBOL);
+
         Lex::Expect(stream, ",");
         jump loop;
     lab done;

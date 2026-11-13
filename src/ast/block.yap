@@ -92,7 +92,7 @@ fn Ast::Block::Parse(stream)
 
     put nodes = Dyn::Create();
     lab loop;
-        jump done ~ (Lex::Peek(stream).0) == '}';
+        jump done ~ Lex::Test(stream, "}", Lex::Kind::PAREN);
 
         Dyn::Push(nodes, Ast::Block::ParseNode(stream));
 

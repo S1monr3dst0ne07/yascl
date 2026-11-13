@@ -18,7 +18,7 @@ fn Ast::Jump::Parse(stream)
     put node.Ast::Jump::TARGET = Str::Copy(Lex::PopCheck(stream, Lex::Kind::IDEN));
     put node.Ast::Jump::COND = Mem::NULL;
 
-    jump skip_cond ~ (Lex::Peek(stream).0) != '~';
+    jump skip_cond ~ Lex::TestNeg(stream, "~", Lex::Kind::SYMBOL);
         Lex::Expect(stream, "~");
         put node.Ast::Jump::COND = Ast::Expr::Parse(stream);
     lab skip_cond;

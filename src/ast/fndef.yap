@@ -33,10 +33,10 @@ fn Ast::FnDef::Parse(stream)
 
     put params = Dyn::Create();
     lab loop;
-        jump done ~ (Lex::Peek(stream).0) == ')';
+        jump done ~ Lex::Test(stream, ")", Lex::Kind::PAREN);
         Dyn::Push(params, Str::Copy(Lex::PopCheck(stream, Lex::Kind::IDEN)));
 
-        jump loop ~ (Lex::Peek(stream).0) != ',';
+        jump loop ~ Lex::TestNeg(stream, ",", Lex::Kind::SYMBOL);
 
         Lex::Pop(stream);
         jump loop;
