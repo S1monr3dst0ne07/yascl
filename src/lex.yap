@@ -65,7 +65,7 @@ fn Lex::Get(char)
     jump double_quote     ~ char == 34; // double quote
     jump single_quote     ~ char == 39; // single quote
 
-    jump format ~ char == 32;
+    jump format ~ char == ' ' ;
     jump format ~ char == '\n';
     jump format ~ char == '\t';
 
