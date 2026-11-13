@@ -53,12 +53,15 @@ fn Ast::Leaf::Parse(stream)
 {
     put info = Lex::Info(stream);
 
-    put token = Lex::PopTok(stream);
+    jump error_unexpected ~ Lex::Test(stream, ";", Lex::Kind::END_OF_STATEMENT);
+    jump error_unexpected ~ Lex::Test(stream, "}", Lex::Kind::PAREN);
+    jump error_unexpected ~ Lex::Test(stream, "{", Lex::Kind::PAREN);
+
+    put token    = Lex::PopTok(stream);
     put tok_kind = token.Lex::Token::KIND;
     put content  = token.Lex::Token::CONTENT;
 
-    put next = Lex::Peek(stream);
-
+    put next     = Lex::Peek(stream);
 
     jump char_lit  ~ tok_kind == Lex::Kind::SINGLE_QUOTE;
     jump string    ~ tok_kind == Lex::Kind::DOUBLE_QUOTE;
@@ -144,8 +147,12 @@ lab meta;
     return Ast::Leaf::Local::MakeLeaf(
         Str::Copy(content), Ast::Leaf::Kind::META, info
     );
-    
 
+
+lab error_unexpected;
+	Error::LexError(info, "
+	Encountered unexpected token `%s` during leaf-expression parsing.
+	This might be caused by a missing parenthesis.", [Lex::Pop(stream)]);
 }
 
 

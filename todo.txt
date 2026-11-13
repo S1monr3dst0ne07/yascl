@@ -28,8 +28,6 @@
     - fix bootstrap compiler
     - fix prg/mandel-ascii.yap
 
-    -fix compiler segfault on unclosed function call
-
 	- operator precedence
 
 
