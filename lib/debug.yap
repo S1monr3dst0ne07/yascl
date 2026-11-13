@@ -33,7 +33,7 @@ fn dump_heap(path)
 {
     print("[DEBUG] heap dump in progress\n");
     Chunk::Local::Init();
-    put primal = Chunk::PrimalPtr();
+    put primal = Chunk::GetPrimalPtr();
 
     put prim_next = primal.Chunk::FB::NEXT;
     jump primal_good ~ prim_next != primal;

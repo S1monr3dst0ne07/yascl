@@ -23,13 +23,13 @@ seq Chunk::FB // free block
 }
 
 
-fn Chunk::FreePtr()
+fn Chunk::GetFreePtr()
 {
     static 1 ~ ptr;
     return ptr;
 }
 
-fn Chunk::PrimalPtr()
+fn Chunk::GetPrimalPtr()
 {
     // first chunk, ever!
     // globally accessible.
@@ -41,12 +41,12 @@ fn Chunk::PrimalPtr()
 
 fn Chunk::Local::Init()
 {
-    jump done ~ Chunk::FreePtr().0;
+    jump done ~ Chunk::GetFreePtr().0;
 
-    put primal = Chunk::PrimalPtr();
+    put primal = Chunk::GetPrimalPtr();
 
     // initialize free list
-    put Chunk::FreePtr().0 = primal;
+    put Chunk::GetFreePtr().0 = primal;
 
     // initialize primal chunk, making it point to itself.
     //  (the free block for a cyclic linked list)
@@ -65,7 +65,7 @@ fn Chunk::New(words)
     put need = ((words + Chunk::FB - 1) / Chunk::FB) + 1;
     Chunk::Local::Init(); // make sure heap is initialized.
 
-    put prev = Chunk::FreePtr().0;
+    put prev = Chunk::GetFreePtr().0;
     put curr = prev.Chunk::FB::NEXT;
 
 
@@ -76,7 +76,7 @@ fn Chunk::New(words)
         jump cut_block;
 
     lab not_big_enough;
-        jump still_in_free_list ~ curr != Chunk::FreePtr().0;
+        jump still_in_free_list ~ curr != Chunk::GetFreePtr().0;
 
         // free list has wrapped around.
         // the heap needs to be expanded.
@@ -101,7 +101,7 @@ lab cut_block;
     put curr.Chunk::FB::UNITS = need;
 
 lab done;
-    put Chunk::FreePtr().0 = prev;
+    put Chunk::GetFreePtr().0 = prev;
     put curr.Chunk::FB::SIZE = words; // update metadata
     put base = curr : Chunk::FB;
 
@@ -122,7 +122,7 @@ fn Chunk::MoreCore(units)
     put base = head : Chunk::FB;
     Chunk::Void(base); //merge into free list
 
-    return Chunk::FreePtr().0;
+    return Chunk::GetFreePtr().0;
 }
 
 
@@ -137,7 +137,7 @@ fn Chunk::Void(ptr)
 {
     put head = ptr : (0 - Chunk::FB);
     put head.Chunk::FB::SIZE = 0;
-    put neigh = Chunk::FreePtr().0;
+    put neigh = Chunk::GetFreePtr().0;
 
     lab find_neighbor_loop;
         // block has been found on bounds enter.
@@ -166,7 +166,7 @@ fn Chunk::Void(ptr)
     lab no_backward_coalesce;
     put neigh.Chunk::FB::NEXT = head;
 
-    put Chunk::FreePtr().0 = neigh;
+    put Chunk::GetFreePtr().0 = neigh;
 }
 
 fn Chunk::Size(ptr)
