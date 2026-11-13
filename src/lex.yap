@@ -46,9 +46,7 @@ fn Lex::DecodeKind(kind)
 
 fn Lex::Get(char)
 {
-    // isalphanum(char)
-    jump iden ~ (('a' - 1) < char) & (('z' + 1) > char);
-    jump iden ~ (('A' - 1) < char) & (('Z' + 1) > char);
+    jump iden ~ Str::IsAlpha(char);
     jump iden ~ Str::IsDigit(char);
 
     jump iden ~ char == '_';

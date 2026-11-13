@@ -99,7 +99,19 @@ fn Str::Token(buffer, delim)
 
 fn Str::IsDigit(char)
 {
-    return (('0' - 1) < char) & (('9' + 1) > char);
+    return (('0' - 1) < char) & 
+           (('9' + 1) > char);
+}
+fn Str::IsAlpha(char)
+{
+	return 
+		(
+			(('a' - 1) < char) & 
+		    (('z' + 1) > char) 
+	    ) | (
+			(('A' - 1) < char) & 
+			(('Z' + 1) > char)
+	    );
 }
 
 fn Str::IsNumber(str)
