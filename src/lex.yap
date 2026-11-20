@@ -56,6 +56,7 @@ fn Lex::Get(char)
     jump format ~ char == ' ' ;
     jump format ~ char == '\n';
     jump format ~ char == '\t';
+    jump format ~ char == '\0';
 
     jump symbol;
     
@@ -195,7 +196,6 @@ fn Lex::Tokenize(path)
     put i = 0;
     lab loop;
         put char = src.i;
-        jump done ~ char == '\0';
         put i = i + 1;
         put kind = Lex::Get(char);
 
@@ -256,8 +256,7 @@ fn Lex::Tokenize(path)
         lab skip_write;
 
         put last = kind;
-    jump loop;
-    lab done;
+    jump loop ~ char != '\0';
 
     Chunk::Void(src);
 
