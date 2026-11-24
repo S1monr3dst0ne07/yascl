@@ -47,18 +47,51 @@ fn Str::Copy(str)
 fn Str::FromIntBase(numb, base)
 {
     static 256 ~ buffer;
+    put buffer.255 = '\0';
+
     put i = 255;
 
-    // put terminator
-    put buffer.i = 0;
+    put number_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     lab loop;
-        put i = i - 1;
-        put buffer.i = (numb % base) + ("0".0);
-        put numb = numb / base;
+        put i        = i - 1;
+        put buffer.i = number_chars.(numb % base);
+        put numb     = numb / base;
     jump loop ~ numb;
 
     return buffer : i;
+}
+
+fn Str::FromSignedBase(numb, base)
+{
+    jump positive ~ Mem::GetBitBE(numb, 0) ^ 1;
+
+    put numb   = 0 - numb;
+    put buffer = Str::FromIntBase(numb, base) - 8;
+    put buffer.0 = '-';
+    return buffer;
+
+    lab positive;
+    return Str::FromIntBase(numb, base);
+}
+
+// Digits: 0-9, A-Z
+fn Str::ToIntBase(str, base)
+{
+    put numb = 0;
+
+    lab loop;
+        put char = str.0;
+        jump done ~ char == '\0';
+        put str = str : 1;
+
+        put numb = (numb * base)
+                 + ((char - '0') * (char < 'A'))
+                 + ((10 + (char - 'A')) * (char > '9'));
+    jump loop;
+    lab done;
+
+    return numb;
 }
 
 fn Str::ToInt(str)
@@ -76,6 +109,22 @@ fn Str::ToInt(str)
     lab done;
 
     return numb;
+}
+
+fn Str::ToSigned(str)
+{
+    put numb = 0;
+
+    put sign = 1;
+
+    put char = str.0;
+
+    jump positive ~ char != '-';
+        put sign = 0 - 1;
+        put str = str : 1;
+
+    lab positive;
+    return Str::ToInt(str) * sign;
 }
 
 fn Str::ToBytes(bstr, qstr)
@@ -171,6 +220,7 @@ fn Str::Format(buffer, pattern, args)
 
         jump perc   ~ char == '%';
         jump digits ~ char == 'd';
+        jump signed ~ char == 'D';
         jump char   ~ char == 'c';
         jump binary ~ char == 'b';
         jump string ~ char == 's';
@@ -184,6 +234,11 @@ fn Str::Format(buffer, pattern, args)
 
     lab digits;
         put subbuffer = Str::FromIntBase(args.0, 10);
+        put args = args : 1;
+        jump handle_subbuffer;
+
+    lab signed;
+        put subbuffer = Str::FromSignedBase(args.0, 10);
         put args = args : 1;
         jump handle_subbuffer;
 
