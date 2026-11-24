@@ -114,7 +114,7 @@ fn Section::GenSymTab(ctx, stuff)
 		put offset = HT::Get(map, symbol);
 
 		IR::Push32(ctx, offset); // st_name
-		IR::Push8 (ctx, 16    ); // st_info  = STT_NOTYPE | STB_GLOBAL
+		IR::Push8 (ctx, 16 | 2); // st_info  = STT_FUNC | STB_GLOBAL
 		IR::Push8 (ctx, 0     ); // st_other = STV_DEFAULT
 		IR::Push16(ctx, 3     ); // st_shndx = `.all`
 		IR::Push64(ctx, addr  ); // st_value
