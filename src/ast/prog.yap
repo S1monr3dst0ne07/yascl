@@ -108,7 +108,7 @@ fn Ast::Prog::File(path, ctx)
     put stream = Lex::Tokenize(path);
     put root = Ast::Prog::Parse(stream, ctx);
 
-    Lex::VoidStream(stream);
+    //Lex::VoidStream(stream);
     return root;
 }
 

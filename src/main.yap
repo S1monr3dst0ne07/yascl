@@ -96,8 +96,8 @@ fn main(argc, argv)
     print("Compilation successful\n");
     Ctx::Output(ctx, opt.Options::OUTPUT);
 
-    Ast::Prog::Void(root);
-    Ctx::VoidGlobal(ctx);
+    //Ast::Prog::Void(root);
+    //Ctx::VoidGlobal(ctx);
     Chunk::Void(opt.Options::SOURCE);
     Chunk::Void(opt.Options::OUTPUT);
 
