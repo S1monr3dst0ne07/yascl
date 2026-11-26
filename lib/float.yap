@@ -184,4 +184,17 @@ fn Float::Sqrt(x)
 	return Float::FastSqrt(x);
 }
 
+fn Float::Clamp(x, min, max)
+{
+	jump bigger_min ~ x ~> min;
+		return min;
+		lab bigger_min;
+
+	jump smaller_max ~ x ~< max;
+		return max;
+		lab smaller_max;
+
+	return x;
+}
+
 

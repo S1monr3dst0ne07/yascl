@@ -2,7 +2,6 @@
 - compiler
     - optimization
     - dump IR into file
-    - write proper section headers to elf
 
     - implement hex constants
     	- refactor backend
@@ -15,11 +14,6 @@
 	    )
 	    -fix seq value expr parsing and comptime eval
 	)
-
-
-    -fix slow lexer
-		- refactor token model
-    	- refactor token to be linked list
 
     - untangle call from Ast::Leaf::Call
     - make separate linker and assembler
@@ -39,3 +33,4 @@
 		- SetCursor, SetColor, etc.
 	- fix time.yap, making bindings for time.h
 	- implement poll bindings
+	- better heap
