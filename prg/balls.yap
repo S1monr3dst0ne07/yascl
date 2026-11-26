@@ -193,19 +193,6 @@ fn coll_all_balls(balls)
     jump loop ~ i < limit;
 }
 
-fn clamp(x, min, max)
-{
-	jump bigger_min ~ x ~> min;
-		return min;
-		lab bigger_min;
-
-	jump smaller_max ~ x ~< max;
-		return max;
-		lab smaller_max;
-
-	return x;
-}
-
 fn update(balls, delta_time)
 {
     put i = 0;
@@ -238,8 +225,8 @@ fn update(balls, delta_time)
         put y = y ~+ (vy ~* delta_time);
 
         // clamp into bounding box
-        put x_prime = clamp(x, x_min, x_max);
-        put y_prime = clamp(y, y_min, y_max);
+        put x_prime = Float::Clamp(x, x_min, x_max);
+        put y_prime = Float::Clamp(y, y_min, y_max);
 
 		// extract collision axies
 		put x_no_diff = x_prime == x;
